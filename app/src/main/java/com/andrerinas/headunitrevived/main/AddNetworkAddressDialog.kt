@@ -1,20 +1,20 @@
 package com.andrerinas.headunitrevived.main
 
 import android.app.AlertDialog
+import android.content.Context
+import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.utils.AppLog
+import com.andrerinas.headunitrevived.utils.toInetAddress
+import java.net.Inet4Address
 import java.net.InetAddress
-
-/**
- * @author algavris
- * *
- * @date 15/11/2016.
- */
 
 class AddNetworkAddressDialog : DialogFragment() {
 
@@ -23,12 +23,17 @@ class AddNetworkAddressDialog : DialogFragment() {
         val content = LayoutInflater.from(activity)
                 .inflate(R.layout.fragment_add_network_address, null, false)
 
-        val first = content.findViewById<EditText>(com.andrerinas.headunitrevived.R.id.first)
-        val second = content.findViewById<EditText>(com.andrerinas.headunitrevived.R.id.second)
-        val third = content.findViewById<EditText>(com.andrerinas.headunitrevived.R.id.third)
-        val fourth = content.findViewById<EditText>(com.andrerinas.headunitrevived.R.id.fourth)
+        val first = content.findViewById<EditText>(R.id.first)
+        val second = content.findViewById<EditText>(R.id.second)
+        val third = content.findViewById<EditText>(R.id.third)
+        val fourth = content.findViewById<EditText>(R.id.fourth)
 
-        val ip = arguments?.getSerializable("ip") as? java.net.InetAddress
+        val ip = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable("ip", InetAddress::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable("ip") as? InetAddress
+        }
         if (ip != null) {
             val addr = ip.address
             first.setText("${addr[0].toInt() and 0xFF}")
@@ -48,8 +53,8 @@ class AddNetworkAddressDialog : DialogFragment() {
                         newAddr[2] = strToByte(third.text.toString())
                         newAddr[3] = strToByte(fourth.text.toString())
 
-                        val f = parentFragment as NetworkListFragment
-                        f.addAddress(java.net.InetAddress.getByAddress(newAddr))
+                        val f = parentFragment as? NetworkListFragment
+                        f?.addAddress(InetAddress.getByAddress(newAddr))
                     } catch (e: java.net.UnknownHostException) {
                         AppLog.e(e)
                     } catch (e: NumberFormatException) {

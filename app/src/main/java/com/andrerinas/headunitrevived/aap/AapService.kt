@@ -98,7 +98,6 @@ class AapService : Service(), UsbReceiver.Listener {
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setContentIntent(PendingIntent.getActivity(this, 0, AapProjectionActivity.intent(this), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)) // Added FLAG_IMMUTABLE
-                .setPriority(Notification.PRIORITY_HIGH)
                 .build()
 
         startService(GpsLocationService.intent(this))

@@ -1,42 +1,55 @@
 package com.andrerinas.headunitrevived.main
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Build
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.andrerinas.headunitrevived.App
-
-import java.io.IOException
-import java.net.InetAddress
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.Locale
-
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.AapService
 import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.utils.changeLastBit
 import com.andrerinas.headunitrevived.utils.toInetAddress
-
-/**
- * @author algavris
- * *
- * @date 05/11/2016.
- */
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.util.*
 
 class NetworkListFragment : Fragment() {
     private lateinit var adapter: AddressAdapter
+    private lateinit var connectivityManager: ConnectivityManager
+
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null // Made nullable
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_list, container, false)
         val recyclerView = view.findViewById<RecyclerView>(android.R.id.list)
+        connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // Initialize networkCallback conditionally
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            networkCallback = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    updateCurrentAddress()
+                }
+
+                override fun onLost(network: Network) {
+                    updateCurrentAddress()
+                }
+            }
+        }
 
         adapter = AddressAdapter(requireContext(), childFragmentManager)
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -46,14 +59,43 @@ class NetworkListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val request = NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .build()
+            networkCallback?.let {
+                connectivityManager.registerNetworkCallback(request, it)
+            }
+        }
+        updateCurrentAddress()
+    }
 
-        try {
-            val currentIp = App.provide(requireContext()).wifiManager.connectionInfo.ipAddress
-            adapter.currentAddress = currentIp.toInetAddress().changeLastBit(1).hostAddress ?: ""
-        } catch (ignored: Exception) {
-            adapter.currentAddress = ""
+    override fun onPause() {
+        super.onPause()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            networkCallback?.let {
+                connectivityManager.unregisterNetworkCallback(it)
+            }
+        }
+    }
+
+    private fun updateCurrentAddress() {
+        var ipAddress: InetAddress? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val activeNetwork = connectivityManager.activeNetwork
+            val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
+            ipAddress = linkProperties?.linkAddresses?.find { it.address is Inet4Address }?.address
+        } else {
+            @Suppress("DEPRECATION")
+            val wifiManager = App.provide(requireContext()).wifiManager
+            @Suppress("DEPRECATION")
+            val currentIp = wifiManager.connectionInfo.ipAddress
+            if (currentIp != 0) {
+                ipAddress = currentIp.toInetAddress()
+            }
         }
 
+        adapter.currentAddress = ipAddress?.changeLastBit(1)?.hostAddress ?: ""
         adapter.loadAddresses()
     }
 
@@ -67,8 +109,8 @@ class NetworkListFragment : Fragment() {
     }
 
     private class AddressAdapter(
-                private val context: Context,
-                private val fragmentManager: FragmentManager
+        private val context: Context,
+        private val fragmentManager: FragmentManager
     ) : RecyclerView.Adapter<DeviceViewHolder>(), View.OnClickListener {
 
         private val addressList = ArrayList<String>()
@@ -107,20 +149,28 @@ class NetworkListFragment : Fragment() {
         }
 
         override fun getItemCount(): Int {
-           return addressList.size
+            return addressList.size
         }
 
         override fun onClick(v: View) {
             if (v.id == android.R.id.button2) {
                 if (v.getTag(R.integer.key_position) == 0) {
                     var ip: InetAddress? = null
-                    try {
-                        val ipInt = App.provide(context).wifiManager.connectionInfo.ipAddress
-                        ip = ipInt.toInetAddress()
-                    } catch (ignored: IOException) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                        val activeNetwork = connectivityManager.activeNetwork
+                        val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
+                        ip = linkProperties?.linkAddresses?.find { it.address is Inet4Address }?.address
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val wifiManager = App.provide(context).wifiManager
+                        @Suppress("DEPRECATION")
+                        val currentIp = wifiManager.connectionInfo.ipAddress
+                        if (currentIp != 0) {
+                            ip = currentIp.toInetAddress()
+                        }
                     }
-
-                    AddNetworkAddressDialog.show(ip, fragmentManager)
+                    com.andrerinas.headunitrevived.main.AddNetworkAddressDialog.show(ip, fragmentManager)
                 } else {
                     context.startService(AapService.createIntent(v.getTag(R.integer.key_data) as String, context))
                 }
@@ -157,7 +207,6 @@ class NetworkListFragment : Fragment() {
             settings.networkAddresses = newAddrs
             set(newAddrs)
         }
-
     }
 
     companion object {
