@@ -10,7 +10,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
-import android.widget.ImageButton
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -30,10 +30,10 @@ class MainActivity : FragmentActivity() {
     var keyListener: KeyListener? = null
     private val viewModel: MainViewModel by viewModels()
 
-    private lateinit var video_button: ImageButton
-    private lateinit var usb: ImageButton
-    private lateinit var settings: ImageButton
-    private lateinit var wifi: ImageButton
+    private lateinit var video_button: Button
+    private lateinit var usb: Button
+    private lateinit var settings: Button
+    private lateinit var wifi: Button
     private lateinit var ipView: TextView
 
     private var networkCallback: ConnectivityManager.NetworkCallback? = null // Made nullable

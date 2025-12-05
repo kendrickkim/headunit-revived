@@ -1,48 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"> <!-- Set a background for the whole activity -->
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="@color/primary_dark"
-        android:layout_gravity="bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:padding="16dp">
 
-        <ImageButton
-            android:id="@+id/video_button"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_launch_white_24dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/video" />
+        <!-- Projection Button Group -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="8dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/video_button"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:backgroundTint="@color/color_projection_blue"
+                android:drawableTop="@drawable/ic_launch_white_24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                app:cornerRadius="16dp"
+                app:iconPadding="0dp"
+                tools:ignore="HardcodedText" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/video"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/usb"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_usb_white_24dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/usb" />
+        <!-- USB Button Group -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="8dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/usb"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:backgroundTint="@color/color_usb_orange"
+                android:drawableTop="@drawable/ic_usb_white_24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                app:cornerRadius="16dp"
+                app:iconPadding="0dp"
+                tools:ignore="HardcodedText" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/usb"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/wifi"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_network_wifi_white_24dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/usb" />
+        <!-- WiFi Button Group -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="8dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/wifi"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:backgroundTint="@color/color_wifi_yellow"
+                android:drawableTop="@drawable/ic_network_wifi_white_24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                app:cornerRadius="16dp"
+                app:iconPadding="0dp"
+                tools:ignore="HardcodedText" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/wifi"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/settings"
-            android:layout_width="128dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_settings_white_24dp"
-            android:background="?android:attr/actionBarItemBackground"
-            android:contentDescription="@string/settings" />
+        <!-- Settings Button Group -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="8dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settings"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:backgroundTint="@color/color_settings_gray"
+                android:drawableTop="@drawable/ic_settings_white_24dp"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp"
+                app:cornerRadius="16dp"
+                app:iconPadding="0dp"
+                tools:ignore="HardcodedText" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout

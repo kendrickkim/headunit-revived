@@ -9,10 +9,15 @@
     <color name="material_orange_700">#f57c00</color>
     <color name="material_green_700">#388e3c</color>
 
-    <color name="text_primary">#f7f7f7</color>
+    <color name="text_primary">#f7f7f7</color>color>
     <color name="text_second">#bdbebd</color>
     <color name="text_dark">#b5babd</color>
     <color name="black_overlay">#66000000</color>
-    <color name="splash_background_color">#3198ef</color>
+
+    <!-- Custom Menu Colors -->
+    <color name="color_projection_blue">#3198ef</color>
+    <color name="color_usb_orange">#f57c00</color>
+    <color name="color_wifi_yellow">#FFEB3B</color>
+    <color name="color_settings_gray">#9E9E9E</color>
 
 </resources>
