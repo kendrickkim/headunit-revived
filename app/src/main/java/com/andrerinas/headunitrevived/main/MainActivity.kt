@@ -22,6 +22,7 @@ import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.AapProjectionActivity
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.toInetAddress
+import android.view.View // Added import
 import java.net.Inet4Address
 
 class MainActivity : FragmentActivity() {
@@ -35,6 +36,7 @@ class MainActivity : FragmentActivity() {
     private lateinit var settings: Button
     private lateinit var wifi: Button
     private lateinit var ipView: TextView
+    private lateinit var backButton: Button // Added backButton declaration
 
     private var networkCallback: ConnectivityManager.NetworkCallback? = null // Made nullable
 
@@ -49,9 +51,15 @@ class MainActivity : FragmentActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - lastBackPressTime < 2000) {
+                AppLog.d("MainActivity: handleOnBackPressed - backStackEntryCount: ${supportFragmentManager.backStackEntryCount}")
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    AppLog.d("MainActivity: handleOnBackPressed - popping back stack")
+                    supportFragmentManager.popBackStack()
+                } else if (System.currentTimeMillis() - lastBackPressTime < 2000) {
+                    AppLog.d("MainActivity: handleOnBackPressed - finishing activity")
                     finish()
                 } else {
+                    AppLog.d("MainActivity: handleOnBackPressed - showing exit toast")
                     lastBackPressTime = System.currentTimeMillis()
                     Toast.makeText(this@MainActivity, R.string.press_back_again_to_exit, Toast.LENGTH_SHORT).show()
                 }
@@ -59,10 +67,17 @@ class MainActivity : FragmentActivity() {
         })
 
         video_button = findViewById(R.id.video_button)
-        usb = findViewById(R.id.usb)
-        settings = findViewById(R.id.settings)
-        wifi = findViewById(R.id.wifi)
+        usb = findViewById(R.id.usb_button)
+        settings = findViewById(R.id.settings_button)
+        wifi = findViewById(R.id.wifi_button)
         ipView = findViewById(R.id.ip_address)
+        backButton = findViewById(R.id.back_button) // Initialized backButton
+
+        backButton.setOnClickListener {
+            if (supportFragmentManager.backStackEntryCount > 0) {
+                supportFragmentManager.popBackStack()
+            }
+        }
 
         // Initialize networkCallback conditionally
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -91,6 +106,7 @@ class MainActivity : FragmentActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.main_content, UsbListFragment())
+                .addToBackStack(null) // Added to back stack
                 .commit()
         }
 
@@ -98,6 +114,7 @@ class MainActivity : FragmentActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.main_content, SettingsFragment())
+                .addToBackStack(null) // Added to back stack
                 .commit()
         }
 
@@ -105,6 +122,7 @@ class MainActivity : FragmentActivity() {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.main_content, NetworkListFragment())
+                .addToBackStack(null) // Added to back stack
                 .commit()
         }
 
@@ -123,6 +141,15 @@ class MainActivity : FragmentActivity() {
                 .replace(R.id.main_content, HomeFragment())
                 .commit()
         }
+        supportFragmentManager.addOnBackStackChangedListener {
+            AppLog.d("MainActivity: onBackStackChanged - backStackEntryCount: ${supportFragmentManager.backStackEntryCount}")
+            updateBackButtonVisibility()
+        }
+        updateBackButtonVisibility() // Initial check
+    }
+
+    private fun updateBackButtonVisibility() {
+        backButton.visibility = if (supportFragmentManager.backStackEntryCount > 0) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {

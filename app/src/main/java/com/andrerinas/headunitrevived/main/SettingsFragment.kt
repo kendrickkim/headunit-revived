@@ -49,6 +49,7 @@ class SettingsFragment : Fragment() {
             parentFragmentManager.
                 beginTransaction()
                         .replace(R.id.main_content, KeymapFragment())
+                        .addToBackStack(null) // Added to back stack
                         .commit()
         }
 
