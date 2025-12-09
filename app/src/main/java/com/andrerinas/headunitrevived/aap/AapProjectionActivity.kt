@@ -8,8 +8,8 @@ import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import android.view.SurfaceView // Added import
-import com.andrerinas.headunitrevived.R // Added import for R.id
+import android.view.SurfaceView 
+import com.andrerinas.headunitrevived.R
 
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.aap.protocol.Screen

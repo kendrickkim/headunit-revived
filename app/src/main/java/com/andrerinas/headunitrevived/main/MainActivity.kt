@@ -22,7 +22,7 @@ import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.AapProjectionActivity
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.toInetAddress
-import android.view.View // Added import
+import android.view.View 
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import java.net.Inet4Address

@@ -10,7 +10,7 @@ import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 import com.andrerinas.headunitrevived.connection.UsbReceiver
 import com.andrerinas.headunitrevived.utils.Settings
 
-import android.content.Context.RECEIVER_NOT_EXPORTED // Added import
+import android.content.Context.RECEIVER_NOT_EXPORTED 
 
 class MainViewModel(application: Application): AndroidViewModel(application), UsbReceiver.Listener {
 

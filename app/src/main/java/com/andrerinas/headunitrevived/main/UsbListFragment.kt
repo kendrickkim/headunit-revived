@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbManager
+import android.os.Build 
 import android.os.Bundle
 import android.text.Html
 import android.view.LayoutInflater
@@ -24,6 +25,7 @@ import com.andrerinas.headunitrevived.connection.UsbAccessoryMode
 
 import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 import com.andrerinas.headunitrevived.utils.Settings
+import androidx.core.content.ContextCompat // Added import
 
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -103,15 +105,15 @@ class UsbListFragment : Fragment() {
 
             if (device.isInAccessoryMode) {
                 holder.allowButton.setText(R.string.allowed)
-                holder.allowButton.setTextColor(mContext.resources.getColor(R.color.material_green_700))
+                holder.allowButton.setTextColor(ContextCompat.getColor(mContext, R.color.material_green_700))
                 holder.allowButton.isEnabled = false
             } else {
                 if (allowedDevices.contains(device.uniqueName)) {
                     holder.allowButton.setText(R.string.allowed)
-                    holder.allowButton.setTextColor(mContext.resources.getColor(R.color.material_green_700))
+                    holder.allowButton.setTextColor(ContextCompat.getColor(mContext, R.color.material_green_700))
                 } else {
                     holder.allowButton.setText(R.string.ignored)
-                    holder.allowButton.setTextColor(mContext.resources.getColor(R.color.material_orange_700))
+                    holder.allowButton.setTextColor(ContextCompat.getColor(mContext, R.color.material_orange_700))
                 }
                 holder.allowButton.tag = position
                 holder.allowButton.isEnabled = true
@@ -149,7 +151,8 @@ class UsbListFragment : Fragment() {
                     } else {
                         Toast.makeText(mContext, "USB Permission is missing", Toast.LENGTH_SHORT).show()
                         usbManager.requestPermission(device.wrappedDevice, PendingIntent.getActivity(
-                            mContext, 500, Intent(mContext, UsbAttachedActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT))
+                            mContext, 500, Intent(mContext, UsbAttachedActivity::class.java),
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT))
                     }
                 }
             }

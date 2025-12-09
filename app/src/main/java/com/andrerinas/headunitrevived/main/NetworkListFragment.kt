@@ -95,8 +95,11 @@ class NetworkListFragment : Fragment() {
             }
         }
 
-        adapter.currentAddress = ipAddress?.changeLastBit(1)?.hostAddress ?: ""
-        adapter.loadAddresses()
+        // Ensure UI updates are on the main thread
+        requireActivity().runOnUiThread {
+            adapter.currentAddress = ipAddress?.changeLastBit(1)?.hostAddress ?: ""
+            adapter.loadAddresses()
+        }
     }
 
     fun addAddress(ip: InetAddress) {

@@ -19,7 +19,7 @@ import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.contract.KeyIntent
 
 
-import android.content.Context.RECEIVER_NOT_EXPORTED // Added import
+import android.content.Context.RECEIVER_NOT_EXPORTED 
 
 
 /**

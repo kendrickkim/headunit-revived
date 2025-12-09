@@ -15,9 +15,9 @@ import android.os.Build
 import com.andrerinas.headunitrevived.main.BackgroundNotification
 import java.io.File
 
-import android.content.Context.RECEIVER_NOT_EXPORTED // Added import
-import com.andrerinas.headunitrevived.utils.FileLog // Added import
-import com.andrerinas.headunitrevived.utils.Settings // Added import
+import android.content.Context.RECEIVER_NOT_EXPORTED 
+import com.andrerinas.headunitrevived.utils.FileLog 
+import com.andrerinas.headunitrevived.utils.Settings 
 
 /**
  * @author algavris
