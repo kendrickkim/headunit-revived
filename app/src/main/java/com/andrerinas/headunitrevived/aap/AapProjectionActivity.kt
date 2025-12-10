@@ -3,6 +3,7 @@ package com.andrerinas.headunitrevived.aap
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.KeyEvent
@@ -19,8 +20,6 @@ import com.andrerinas.headunitrevived.decoder.VideoDecoder
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.IntentFilters
 
-// Removed import kotlinx.android.synthetic.main.activity_headunit.*
-
 class AapProjectionActivity : SurfaceActivity(), SurfaceHolder.Callback {
 
     private lateinit var surface: SurfaceView // Added lateinit var for surface
@@ -34,7 +33,7 @@ class AapProjectionActivity : SurfaceActivity(), SurfaceHolder.Callback {
 
     private val keyCodeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val event: KeyEvent? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val event: KeyEvent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(KeyIntent.extraEvent, KeyEvent::class.java)
             } else {
                 @Suppress("DEPRECATION")
@@ -68,8 +67,13 @@ class AapProjectionActivity : SurfaceActivity(), SurfaceHolder.Callback {
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(disconnectReceiver, IntentFilters.disconnect)
-        registerReceiver(keyCodeReceiver, IntentFilters.keyEvent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            registerReceiver(disconnectReceiver, IntentFilters.disconnect, RECEIVER_NOT_EXPORTED)
+            registerReceiver(keyCodeReceiver, IntentFilters.keyEvent, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(disconnectReceiver, IntentFilters.disconnect)
+            registerReceiver(keyCodeReceiver, IntentFilters.keyEvent)
+        }
     }
 
     val transport: AapTransport
@@ -124,7 +128,7 @@ class AapProjectionActivity : SurfaceActivity(), SurfaceHolder.Callback {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        AppLog.i("KeyCode: %d", keyCode)
+        AppLog.i("onKeyUp: %d", keyCode)
         onKeyEvent(keyCode, false)
         return super.onKeyUp(keyCode, event)
     }
