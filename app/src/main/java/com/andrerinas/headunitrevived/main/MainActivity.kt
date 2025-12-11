@@ -169,6 +169,7 @@ class MainActivity : FragmentActivity() {
         ipView.visibility = if (isFragmentOnStack) View.GONE else View.VISIBLE // IP visible only on main screen
         mainButtonsContainer.visibility = if (isFragmentOnStack) View.GONE else View.VISIBLE
         mainContentFrame.visibility = if (isFragmentOnStack) View.VISIBLE else View.GONE
+        exitButton.visibility = if (isFragmentOnStack) View.GONE else View.VISIBLE
     }
 
     override fun onResume() {

@@ -36,10 +36,18 @@ https://github.com/mikereidis/headunit
 - Handshake failed sometimes and the devices won't connect. You need to try again, restart phone or clear caches
 
 ## Changelog
+### v.1.2.0 - Bugfix Release
+- Fixed a bug where the app crashed on startup on some devices
+- Fixed Layout on wider screens
+- Added Exit button to app
+- Added resolution settings back for better compatibility with different screen sizes
+- Fixed keymapping
+- Fixed a lot of color issues
+
 ### v1.1.0 - New Design
 - Changed the basic design to a modern look and bigger buttons
 - Hopefully fixed audio-stutters with audio thread and some logs
-- removed some deprecations
+- Removed some deprecations
 
 ### v1.0.0 - Initial Revived Release
 - Updated dependencies to latest versions.

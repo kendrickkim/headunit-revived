@@ -59,13 +59,13 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener, View.OnClickListene
         KeyEvent.KEYCODE_DPAD_RIGHT to KeyEvent.KEYCODE_DPAD_RIGHT,
         KeyEvent.KEYCODE_DPAD_CENTER to KeyEvent.KEYCODE_DPAD_CENTER,
 
-        KeyEvent.KEYCODE_MEDIA_PLAY to KeyEvent.KEYCODE_MEDIA_PLAY,
-        KeyEvent.KEYCODE_MEDIA_PAUSE to KeyEvent.KEYCODE_MEDIA_PAUSE,
-        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-        KeyEvent.KEYCODE_MEDIA_NEXT to KeyEvent.KEYCODE_MEDIA_NEXT,
-        KeyEvent.KEYCODE_MEDIA_PREVIOUS to KeyEvent.KEYCODE_MEDIA_PREVIOUS,
+        KeyEvent.KEYCODE_MEDIA_PLAY to R.id.keycode_media_play,
+        KeyEvent.KEYCODE_MEDIA_PAUSE to R.id.keycode_media_pause,
+        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE to R.id.keycode_media_play_pause,
+        KeyEvent.KEYCODE_MEDIA_NEXT to R.id.keycode_media_next,
+        KeyEvent.KEYCODE_MEDIA_PREVIOUS to R.id.keycode_media_previous,
 
-        KeyEvent.KEYCODE_SEARCH to KeyEvent.KEYCODE_SEARCH,
+        KeyEvent.KEYCODE_SEARCH to R.id.keycode_search,
         KeyEvent.KEYCODE_CALL to R.id.keycode_call,
         KeyEvent.KEYCODE_MUSIC to R.id.keycode_music,
         KeyEvent.KEYCODE_GUIDE to R.id.keycode_nav,
@@ -173,7 +173,7 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener, View.OnClickListene
             settings.keyCodes = codesMap
 
             val name = KeyEvent.keyCodeToString(this.assignCode)
-            Toast.makeText(activity, "'$name' is ${this.assignCode}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, "'$name' has been assigned to ${this.assignCode}", Toast.LENGTH_SHORT).show()
             this.assignCode = KeyEvent.KEYCODE_UNKNOWN
         }
 
