@@ -28,14 +28,18 @@ class ServiceDiscoveryResponse(private val context: Context)
             val displayMetrics = context.resources.displayMetrics
             var width = displayMetrics.widthPixels
             var height = displayMetrics.heightPixels
+            val rawDensity = displayMetrics.density
             val densityDpi = displayMetrics.densityDpi
-            AppLog.i("ServiceDiscoveryResponse: Actual width=$width, height=$height, densityDpi=$densityDpi")
+            AppLog.i("--- SCREEN NEGOTIATION DIAGNOSTICS ---")
+            AppLog.i("[ServiceDiscoveryResponse] Raw DisplayMetrics: widthPixels=$width, heightPixels=$height, density=$rawDensity, densityDpi=$densityDpi")
 
 
-            val dpiHeight = (displayMetrics.heightPixels / displayMetrics.density).roundToInt()
-            val dpiWidth  = (displayMetrics.widthPixels / displayMetrics.density).roundToInt()
+            val dpiHeight = (height / rawDensity).roundToInt()
+            val dpiWidth  = (width / rawDensity).roundToInt()
 
-            AppLog.i("ServiceDiscoveryResponse: DPI width=$width, height=$height")
+            AppLog.i("[ServiceDiscoveryResponse] Calculated DP values: dpiWidth=$dpiWidth, dpiHeight=$dpiHeight")
+            AppLog.w("[ServiceDiscoveryResponse] CURRENTLY USING raw pixel values for negotiation. Width=$width, Height=$height")
+
 
             // Lie to the phone for certain non-standard resolutions to improve compatibility.
 //            if (width == 1280 && height == 736) {

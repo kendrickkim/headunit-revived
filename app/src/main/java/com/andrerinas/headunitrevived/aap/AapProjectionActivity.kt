@@ -82,11 +82,12 @@ class AapProjectionActivity : SurfaceActivity(), SurfaceHolder.Callback {
     override fun surfaceCreated(holder: SurfaceHolder) {
         val width = resources.displayMetrics.widthPixels
         val height = resources.displayMetrics.heightPixels
-        AppLog.i("AapProjectionActivity: surfaceCreated width=$width, height=$height")
+        AppLog.i("[AapProjectionActivity] surfaceCreated. Using displayMetrics: width=$width, height=$height")
         videoDecoder.onSurfaceHolderAvailable(holder, width, height)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        AppLog.i("[AapProjectionActivity] surfaceChanged. Actual surface dimensions: width=$width, height=$height")
         transport.send(VideoFocusEvent(gain = true, unsolicited = false))
     }
 
