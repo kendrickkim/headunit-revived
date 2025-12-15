@@ -134,7 +134,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     override fun onVideoDimensionsChanged(width: Int, height: Int) {
         AppLog.i("[AapProjectionActivity] Received video dimensions: ${width}x$height")
         runOnUiThread {
-            (projectionView as? TextureProjectionView)?.setVideoSize(width, height)
+            val textureProjectionView = (projectionView as? TextureProjectionView)
+            textureProjectionView?.setVideoSize(width, height)
 
             // Update the touch matrix for correct touch event transformation
             val view = projectionView as android.view.View
@@ -142,25 +143,21 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             val viewHeight = view.height.toFloat()
 
             if (viewWidth > 0 && viewHeight > 0 && width > 0 && height > 0) {
-                val contentWidth = 1848f
-                val contentHeight = 720f
-                val videoWidthF = width.toFloat()
-                val videoHeightF = height.toFloat()
-
-                val scaleX = videoWidthF / contentWidth
-                val scaleY = videoHeightF / contentHeight
+                // Retrieve the actual scaleX and scaleY applied to the TextureProjectionView
+                val actualScaleX = (projectionView as TextureProjectionView).scaleX
+                val actualScaleY = (projectionView as TextureProjectionView).scaleY
 
                 val forwardMatrix = Matrix()
                 // The view is scaled around its center, so we build the forward matrix
                 // the same way.
-                forwardMatrix.setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f)
+                forwardMatrix.setScale(actualScaleX, actualScaleY, viewWidth / 2f, viewHeight / 2f)
 
                 // The touch matrix is the inverse of the view's transformation matrix.
                 if (!forwardMatrix.invert(touchMatrix)) {
                     AppLog.e("AapProjectionActivity", "Failed to invert the transformation matrix for touch events.")
                 }
 
-                AppLog.i("Touch matrix updated for ${width}x$height video on ${viewWidth}x$viewHeight view.")
+                AppLog.i("Touch matrix updated for ${width}x$height video on ${viewWidth}x$viewHeight view. Actual scales: ${actualScaleX}x${actualScaleY}")
             }
         }
     }

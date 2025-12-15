@@ -45,6 +45,11 @@ class TextureProjectionView @JvmOverloads constructor(
             // use the actual video dimensions it parses from the SPS.
             callbacks.forEach { cb -> cb.onSurfaceChanged(it, width, height) }
         }
+        // Set the default buffer size of the SurfaceTexture to the video dimensions
+        // This ensures the underlying buffer matches the video content
+        if (videoWidth > 0 && videoHeight > 0) {
+            surfaceTexture.setDefaultBufferSize(videoWidth, videoHeight)
+        }
         updateScale()
     }
 
