@@ -27,6 +27,12 @@ class VideoDecoder {
 
     var dimensionsListener: VideoDimensionsListener? = null
 
+    val videoWidth: Int
+        get() = mWidth
+
+    val videoHeight: Int
+        get() = mHeight
+
     fun decode(buffer: ByteArray, offset: Int, size: Int) {
         synchronized(sLock) {
             if (mCodec == null) {

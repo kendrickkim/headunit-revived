@@ -124,6 +124,19 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         AppLog.i("[AapProjectionActivity] onSurfaceChanged. Actual surface dimensions: width=$width, height=$height")
         videoDecoder.onSurfaceAvailable(surface)
         transport.send(VideoFocusEvent(gain = true, unsolicited = false))
+
+        // Explicitly check and set video dimensions if already known by the decoder
+        // This handles cases where the activity is recreated but the decoder already has dimensions
+        val currentVideoWidth = videoDecoder.videoWidth
+        val currentVideoHeight = videoDecoder.videoHeight
+
+        if (currentVideoWidth > 0 && currentVideoHeight > 0) {
+            AppLog.i("[AapProjectionActivity] Decoder already has dimensions: ${currentVideoWidth}x$currentVideoHeight. Applying to view.")
+            runOnUiThread {
+                val textureProjectionView = (projectionView as? TextureProjectionView)
+                textureProjectionView?.setVideoSize(currentVideoWidth, currentVideoHeight)
+            }
+        }
     }
 
     override fun onSurfaceDestroyed(surface: android.view.Surface) {
