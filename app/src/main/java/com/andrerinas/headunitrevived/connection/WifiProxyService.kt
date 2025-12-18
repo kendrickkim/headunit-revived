@@ -119,107 +119,100 @@ class WifiProxyService : Service() {
 
     private fun startServerSocket(): Job = serviceScope.launch {
         try {
-            // Check if port is available before trying to bind
-            val tempSocket = ServerSocket()
-            tempSocket.reuseAddress = true
-            tempSocket.bind(InetSocketAddress(PROXY_SERVER_PORT))
-            tempSocket.close()
-            AppLog.i("Port $PROXY_SERVER_PORT is available.")
-
             serverSocket = ServerSocket(PROXY_SERVER_PORT)
             serverSocket?.reuseAddress = true
-            AppLog.i("Proxy Server listening on port $PROXY_SERVER_PORT")
+            AppLog.i("Proxy Server listening on port $PROXY_SERVER_PORT for phone connection...")
+
             while (isActive && isRunning.get()) {
-                val clientSocket = serverSocket?.accept() // This blocks until a connection is made
-                if (clientSocket != null) {
-                    AppLog.i("WiFiLauncher Client connected from ${clientSocket.inetAddress}:${clientSocket.port}")
-                    handleClientConnection(clientSocket)
+                try {
+                    val phoneSocket = serverSocket?.accept() // Blocks until the PHONE connects
+                    if (phoneSocket != null) {
+                        AppLog.i("Phone connected from ${phoneSocket.inetAddress}:${phoneSocket.port}")
+                        // Handle this connection which involves waiting for a second client
+                        handleClientConnection(phoneSocket)
+                        AppLog.i("Connection handling finished. Ready for next phone connection.")
+                    }
+                } catch (e: IOException) {
+                    if (!isRunning.get() || serverSocket?.isClosed == true) {
+                        AppLog.i("Server socket closed, stopping accept loop.")
+                        break
+                    }
+                    AppLog.e("Error accepting phone connection: ${e.message}")
+                    delay(2000) // Wait a bit before trying to accept again
                 }
             }
         } catch (e: IOException) {
-            if (isActive && isRunning.get()) { // Only log if not intentionally stopped
-                AppLog.e("Proxy Server socket error: ${e.message}. Port $PROXY_SERVER_PORT might be in use.")
-                // Attempt to restart server socket after a delay
-                delay(5000)
-                startServerSocket()
-            } else {
-                AppLog.i("Proxy Server socket closed.")
-            }
-        } catch (e: Exception) {
-            AppLog.e("Proxy Server unexpected error: ${e.message}")
             if (isActive && isRunning.get()) {
-                delay(5000)
-                startServerSocket()
+                AppLog.e("Proxy Server socket error: ${e.message}. Port $PROXY_SERVER_PORT might be in use.")
             }
         } finally {
-            serverSocket?.close()
-            serverSocket = null
+            stopServerSocket()
+            AppLog.i("Proxy Server has shut down.")
         }
     }
 
     private fun stopServerSocket() {
         try {
             serverSocket?.close()
+            serverSocket = null
         } catch (e: IOException) {
             AppLog.e("Error closing proxy server socket: ${e.message}")
         }
     }
 
-    private fun handleClientConnection(clientSocket: Socket): Job = serviceScope.launch {
-        var localServerSocket: ServerSocket? = null
-        var aapTransportClientSocket: Socket? = null
+    private fun handleClientConnection(phoneSocket: Socket) = serviceScope.launch {
+        var aapServiceSocket: Socket? = null
         try {
-            // 1. Open a local server socket for AapService to connect to
-            localServerSocket = ServerSocket(0) // Use 0 for an ephemeral port
-            val localPort = localServerSocket.localPort
-            AppLog.i("Opened local server socket on port $localPort for AapService.")
-
-            // 2. Start AapService, telling it to connect to this local port
+            // 1. Start AapService, telling it to connect to our main port 5288
+            AppLog.i("Starting AapService, instructing it to connect to 127.0.0.1:$PROXY_SERVER_PORT")
             val aapServiceIntent = Intent(this@WifiProxyService, AapService::class.java).apply {
                 action = AapService.ACTION_START_FROM_PROXY
-                putExtra(AapService.EXTRA_LOCAL_PROXY_PORT, localPort)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Required if starting activity from service
+                // Tell AapService to connect to our main proxy port on localhost
+                putExtra(AapService.EXTRA_LOCAL_PROXY_PORT, PROXY_SERVER_PORT)
+                putExtra("PARAM_HOST_ADDRESS", "127.0.0.1") // Based on decompiled code
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             startService(aapServiceIntent)
-            AppLog.i("Started AapService with local proxy port $localPort.")
+            AppLog.i("Started AapService.")
 
-            // 3. Accept connection from AapService
-            aapTransportClientSocket = localServerSocket.accept()
-            AppLog.i("AapService connected to local proxy on port $localPort.")
+            // 2. Accept the second connection (from AapService) on the SAME server socket
+            AppLog.i("Waiting for local AapService to connect on port $PROXY_SERVER_PORT...")
+            serverSocket?.soTimeout = 15000 // 15 second timeout to prevent getting stuck
+            aapServiceSocket = serverSocket?.accept()
+            serverSocket?.soTimeout = 0 // Reset timeout to infinite for the next phone connection
 
-            // 4. Bidirectional proxying between clientSocket (from phone) and aapTransportClientSocket (from AapService)
-            val clientToAapJob = launch {
-                clientSocket.getInputStream().copyTo(aapTransportClientSocket.getOutputStream())
+            if (aapServiceSocket == null) {
+                throw IOException("AapService did not connect in time.")
             }
-            val aapToClientJob = launch {
-                aapTransportClientSocket.getInputStream().copyTo(clientSocket.getOutputStream())
-            }
+            AppLog.i("AapService connected locally from ${aapServiceSocket.inetAddress}:${aapServiceSocket.port}.")
+
+            // 3. Bidirectional proxying between phoneSocket and aapServiceSocket
+            AppLog.i("Starting bidirectional proxy between phone and AapService.")
+            val phoneToAapJob = launch { phoneSocket.inputStream.copyTo(aapServiceSocket.outputStream) }
+            val aapToPhoneJob = launch { aapServiceSocket.inputStream.copyTo(phoneSocket.outputStream) }
 
             // Wait for both directions to complete or fail
-            joinAll(clientToAapJob, aapToClientJob)
+            joinAll(phoneToAapJob, aapToPhoneJob)
 
+        } catch (e: java.net.SocketTimeoutException) {
+            AppLog.e("Timeout: AapService failed to connect to the proxy within 15 seconds.")
         } catch (e: IOException) {
             AppLog.e("Proxying error: ${e.message}")
         } catch (e: Exception) {
             AppLog.e("Unexpected proxying error: ${e.message}")
         } finally {
+            // Close sockets in separate try-catch blocks
             try {
-                clientSocket.close()
-                AppLog.i("Client socket closed.")
+                phoneSocket.close()
+                AppLog.i("Phone socket closed.")
             } catch (e: IOException) {
-                AppLog.e("Error closing client socket: ${e.message}")
+                AppLog.e("Error closing phone socket: ${e.message}")
             }
             try {
-                aapTransportClientSocket?.close()
-                AppLog.i("AapService client socket closed.")
+                aapServiceSocket?.close()
+                AppLog.i("AapService socket closed.")
             } catch (e: IOException) {
-                AppLog.e("Error closing AapService client socket: ${e.message}")
-            }
-            try {
-                localServerSocket?.close()
-                AppLog.i("Local server socket closed.")
-            } catch (e: IOException) {
-                AppLog.e("Error closing local server socket: ${e.message}")
+                AppLog.e("Error closing AapService socket: ${e.message}")
             }
         }
     }
