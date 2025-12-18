@@ -83,6 +83,9 @@
         <service
             android:name=".aap.AapService"
             android:foregroundServiceType="connectedDevice|mediaPlayback" /> <!-- Added foregroundServiceType -->
+        <service
+            android:name=".connection.WifiProxyService"
+            android:foregroundServiceType="connectedDevice" />
         <service android:name=".location.GpsLocationService" />
 
         <receiver android:name=".app.RemoteControlReceiver"

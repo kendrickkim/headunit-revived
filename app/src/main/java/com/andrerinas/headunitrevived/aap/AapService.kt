@@ -87,8 +87,28 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_SERVICE) {
+            AppLog.i("Stop action received, stopping service.")
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
-        accessoryConnection = connectionFactory(intent, this)
+        val localProxyPort = intent?.getIntExtra(EXTRA_LOCAL_PROXY_PORT, -1) ?: -1
+
+        if (localProxyPort != -1) {
+            AppLog.i("AapService started from WifiProxyService, connecting to local proxy on port $localProxyPort.")
+            accessoryConnection = SocketAccessoryConnection("127.0.0.1", localProxyPort)
+        } else {
+            // Original logic for USB or direct Wi-Fi connection (if not using proxy)
+            val connectionType = intent?.getIntExtra(EXTRA_CONNECTION_TYPE, 0) ?: 0
+            if (connectionType == TYPE_WIFI) {
+                val ip = intent?.getStringExtra(EXTRA_IP) ?: ""
+                accessoryConnection = SocketAccessoryConnection(ip, 5277) // Direct Wi-Fi connection to 5277
+            } else {
+                accessoryConnection = connectionFactory(intent, this) // USB connection
+            }
+        }
+
         if (accessoryConnection == null) {
             AppLog.e("Cannot create connection $intent")
             stopSelf()
@@ -212,6 +232,9 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     companion object {
+        const val ACTION_START_FROM_PROXY = "com.andrerinas.headunitrevived.ACTION_START_FROM_PROXY"
+        const val EXTRA_LOCAL_PROXY_PORT = "local_proxy_port"
+        private const val ACTION_STOP_SERVICE = "com.andrerinas.headunitrevived.ACTION_STOP_SERVICE"
         private const val TYPE_USB = 1
         private const val TYPE_WIFI = 2
         private const val EXTRA_CONNECTION_TYPE = "extra_connection_type"
@@ -245,7 +268,7 @@ class AapService : Service(), UsbReceiver.Listener {
                 return UsbAccessoryConnection(usbManager, device)
             } else if (connectionType == TYPE_WIFI) {
                 val ip = intent?.getStringExtra(EXTRA_IP) ?: ""
-                return SocketAccessoryConnection(ip)
+                return SocketAccessoryConnection(ip, 5277)
             }
 
             return null

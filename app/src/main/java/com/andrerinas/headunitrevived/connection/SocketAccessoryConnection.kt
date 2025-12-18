@@ -15,7 +15,7 @@ import java.net.Socket
  * *
  * @date 05/11/2016.
  */
-class SocketAccessoryConnection(private val ip: String) : AccessoryConnection {
+class SocketAccessoryConnection(private val ip: String, private val port: Int) : AccessoryConnection {
     private var output: OutputStream? = null
     private var input: DataInputStream? = null
     private var transport = Socket()
@@ -53,7 +53,7 @@ class SocketAccessoryConnection(private val ip: String) : AccessoryConnection {
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
             transport.soTimeout = 15000
-            transport.connect(InetSocketAddress(ip, 5277), 5000)
+            transport.connect(InetSocketAddress(ip, port), 5000)
             transport.tcpNoDelay = true
             input = DataInputStream(transport.getInputStream())
             output = transport.getOutputStream()

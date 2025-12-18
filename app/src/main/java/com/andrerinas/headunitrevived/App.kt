@@ -4,8 +4,10 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.multidex.MultiDex
+import com.andrerinas.headunitrevived.connection.WifiProxyService
 import com.andrerinas.headunitrevived.main.BackgroundNotification
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.FileLog
@@ -51,6 +53,11 @@ class App : Application() {
         } else {
             registerReceiver(AapBroadcastReceiver(), AapBroadcastReceiver.filter)
         }
+
+        // Start the WifiProxyService immediately
+        AppLog.d("App.onCreate: Attempting to start WifiProxyService.") // NEW LOG
+        startService(Intent(this, WifiProxyService::class.java))
+        AppLog.d("App.onCreate: WifiProxyService startService call completed.") // NEW LOG
     }
 
     companion object {
