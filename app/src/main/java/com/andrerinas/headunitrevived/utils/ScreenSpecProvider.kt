@@ -40,6 +40,7 @@ object ScreenSpecProvider {
         }
 
         val finalSpec = ScreenSpec(width, height, densityDpi)
+        AppLog.i("[ScreenSpecProvider] Density: $density")
         AppLog.i("[ScreenSpecProvider] Final negotiated spec: $finalSpec")
         return finalSpec
     }

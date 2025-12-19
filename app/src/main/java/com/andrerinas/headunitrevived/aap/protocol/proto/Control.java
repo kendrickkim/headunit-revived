@@ -2365,6 +2365,30 @@ public final class Control {
            * <code>_1920x1080 = 3;</code>
            */
           _1920x1080(3),
+          /**
+           * <code>_2560x1440 = 4;</code>
+           */
+          _2560x1440(4),
+          /**
+           * <code>_3840x2160 = 5;</code>
+           */
+          _3840x2160(5),
+          /**
+           * <code>_720x1280 = 6;</code>
+           */
+          _720x1280(6),
+          /**
+           * <code>_1080x1920 = 7;</code>
+           */
+          _1080x1920(7),
+          /**
+           * <code>_1440x2560 = 8;</code>
+           */
+          _1440x2560(8),
+          /**
+           * <code>_2160x3840 = 9;</code>
+           */
+          _2160x3840(9),
           ;
 
           /**
@@ -2379,6 +2403,30 @@ public final class Control {
            * <code>_1920x1080 = 3;</code>
            */
           public static final int _1920x1080_VALUE = 3;
+          /**
+           * <code>_2560x1440 = 4;</code>
+           */
+          public static final int _2560x1440_VALUE = 4;
+          /**
+           * <code>_3840x2160 = 5;</code>
+           */
+          public static final int _3840x2160_VALUE = 5;
+          /**
+           * <code>_720x1280 = 6;</code>
+           */
+          public static final int _720x1280_VALUE = 6;
+          /**
+           * <code>_1080x1920 = 7;</code>
+           */
+          public static final int _1080x1920_VALUE = 7;
+          /**
+           * <code>_1440x2560 = 8;</code>
+           */
+          public static final int _1440x2560_VALUE = 8;
+          /**
+           * <code>_2160x3840 = 9;</code>
+           */
+          public static final int _2160x3840_VALUE = 9;
 
 
           public final int getNumber() {
@@ -2404,6 +2452,12 @@ public final class Control {
               case 1: return _800x480;
               case 2: return _1280x720;
               case 3: return _1920x1080;
+              case 4: return _2560x1440;
+              case 5: return _3840x2160;
+              case 6: return _720x1280;
+              case 7: return _1080x1920;
+              case 8: return _1440x2560;
+              case 9: return _2160x3840;
               default: return null;
             }
           }
@@ -31188,7 +31242,7 @@ public final class Control {
     java.lang.String[] descriptorData = {
       "\n\rcontrol.proto\0221com.andrerinas.headunit" +
       "revived.aap.protocol.proto\032\014common.proto" +
-      "\032\013media.proto\032\rsensors.proto\"\237 \n\007Service" +
+      "\032\013media.proto\032\rsensors.proto\"\377 \n\007Service" +
       "\022k\n\024phone_status_service\030\n \001(\0132M.com.and" +
       "rerinas.headunitrevived.aap.protocol.pro" +
       "to.Service.PhoneStatusService\022\n\n\002id\030\001 \002(" +
@@ -31222,7 +31276,7 @@ public final class Control {
       "adunitrevived.aap.protocol.proto.Service" +
       ".SensorSourceService.Sensor\032U\n\006Sensor\022K\n" +
       "\004type\030\001 \002(\0162=.com.andrerinas.headunitrev" +
-      "ived.aap.protocol.proto.SensorType\032\277\007\n\020M" +
+      "ived.aap.protocol.proto.SensorType\032\237\010\n\020M" +
       "ediaSinkService\022Y\n\016available_type\030\001 \002(\0162" +
       "A.com.andrerinas.headunitrevived.aap.pro" +
       "tocol.proto.MediaCodecType\022V\n\naudio_type" +
@@ -31234,7 +31288,7 @@ public final class Control {
       "drerinas.headunitrevived.aap.protocol.pr" +
       "oto.Service.MediaSinkService.VideoConfig" +
       "uration\022\037\n\027available_while_in_call\030\005 \001(\010" +
-      "\032\201\004\n\022VideoConfiguration\022\221\001\n\020codec_resolu" +
+      "\032\341\004\n\022VideoConfiguration\022\221\001\n\020codec_resolu" +
       "tion\030\001 \002(\0162w.com.andrerinas.headunitrevi" +
       "ved.aap.protocol.proto.Service.MediaSink" +
       "Service.VideoConfiguration.VideoCodecRes" +
@@ -31244,131 +31298,134 @@ public final class Control {
       "guration.VideoFrameRateType\022\024\n\014margin_wi" +
       "dth\030\003 \002(\r\022\025\n\rmargin_height\030\004 \002(\r\022\017\n\007dens" +
       "ity\030\005 \002(\r\022 \n\030decoder_additional_depth\030\006 " +
-      "\001(\r\"G\n\030VideoCodecResolutionType\022\014\n\010_800x" +
-      "480\020\001\022\r\n\t_1280x720\020\002\022\016\n\n_1920x1080\020\003\"&\n\022" +
-      "VideoFrameRateType\022\007\n\003_30\020\001\022\007\n\003_60\020\002\032\273\002\n" +
-      "\022InputSourceService\022\032\n\022keycodes_supporte" +
-      "d\030\001 \003(\r\022n\n\013touchscreen\030\002 \001(\0132Y.com.andre" +
-      "rinas.headunitrevived.aap.protocol.proto" +
-      ".Service.InputSourceService.TouchConfig\022" +
-      "k\n\010touchpad\030\003 \001(\0132Y.com.andrerinas.headu" +
-      "nitrevived.aap.protocol.proto.Service.In" +
-      "putSourceService.TouchConfig\032,\n\013TouchCon" +
-      "fig\022\r\n\005width\030\001 \002(\r\022\016\n\006height\030\002 \002(\r\032\343\001\n\022M" +
-      "ediaSourceService\022O\n\004type\030\001 \002(\0162A.com.an" +
-      "drerinas.headunitrevived.aap.protocol.pr" +
-      "oto.MediaCodecType\022[\n\014audio_config\030\002 \002(\013" +
-      "2E.com.andrerinas.headunitrevived.aap.pr" +
-      "otocol.proto.AudioConfiguration\022\037\n\027avail" +
-      "able_while_in_call\030\003 \001(\010\032\225\001\n\020BluetoothSe" +
-      "rvice\022\023\n\013car_address\030\001 \002(\t\022l\n\031supported_" +
-      "pairing_methods\030\002 \003(\0162I.com.andrerinas.h" +
-      "eadunitrevived.aap.protocol.proto.Blueto" +
-      "othPairingMethod\032\242\003\n\027NavigationStatusSer" +
-      "vice\022\033\n\023minimum_interval_ms\030\001 \002(\r\022l\n\004typ" +
-      "e\030\002 \002(\0162^.com.andrerinas.headunitrevived" +
-      ".aap.protocol.proto.Service.NavigationSt" +
-      "atusService.ClusterType\022v\n\rimage_options" +
-      "\030\003 \001(\0132_.com.andrerinas.headunitrevived." +
-      "aap.protocol.proto.Service.NavigationSta" +
-      "tusService.ImageOptions\032G\n\014ImageOptions\022" +
-      "\r\n\005width\030\001 \002(\005\022\016\n\006height\030\002 \002(\005\022\030\n\020colour" +
-      "_deth_bits\030\003 \002(\005\";\n\013ClusterType\022\030\n\024Custo" +
-      "mImageSupported\020\001\022\022\n\016ImageCodesOnly\020\002\032\034\n" +
-      "\032MediaPlaybackStatusService\032\347\001\n\020PhoneSta" +
-      "tus_Call\022[\n\005state\030\001 \001(\0162L.com.andrerinas" +
-      ".headunitrevived.aap.protocol.proto.Serv" +
-      "ice.PhoneStatus_State\022\035\n\025call_duration_s" +
-      "econds\030\002 \001(\r\022\025\n\rcaller_number\030\003 \001(\t\022\021\n\tc" +
-      "aller_id\030\004 \001(\t\022\032\n\022caller_number_type\030\005 \001" +
-      "(\t\022\021\n\tthumbnail\030\006 \001(\014\032=\n\021PhoneStatus_Inp" +
-      "ut\022\025\n\rcaller_number\030\001 \001(\t\022\021\n\tcaller_id\030\002" +
-      " \001(\t\032\211\001\n\022PhoneStatusService\022Z\n\005calls\030\001 \003" +
-      "(\0132K.com.andrerinas.headunitrevived.aap." +
-      "protocol.proto.Service.PhoneStatus_Call\022" +
-      "\027\n\017signal_strength\030\002 \001(\r\032P\n\026VendorExtens" +
-      "ionService\022\014\n\004name\030\001 \001(\t\022\032\n\022package_whit" +
-      "e_list\030\002 \003(\t\022\014\n\004data\030\003 \001(\014\032\034\n\032GenericNot" +
-      "ificationService\"d\n\021PhoneStatus_State\022\n\n" +
-      "\006InCall\020\001\022\n\n\006OnHold\020\002\022\r\n\tHangingUp\020\003\022\014\n\010" +
-      "Incoming\020\004\022\t\n\005Muted\020\005\022\017\n\013Conferenced\020\006\"B" +
-      "\n\027ServiceDiscoveryRequest\022\022\n\nphone_name\030" +
-      "\004 \002(\t\022\023\n\013phone_brand\030\005 \002(\t\"\376\002\n\030ServiceDi" +
-      "scoveryResponse\022L\n\010services\030\001 \003(\0132:.com." +
+      "\001(\r\"\246\001\n\030VideoCodecResolutionType\022\014\n\010_800" +
+      "x480\020\001\022\r\n\t_1280x720\020\002\022\016\n\n_1920x1080\020\003\022\016\n" +
+      "\n_2560x1440\020\004\022\016\n\n_3840x2160\020\005\022\r\n\t_720x12" +
+      "80\020\006\022\016\n\n_1080x1920\020\007\022\016\n\n_1440x2560\020\010\022\016\n\n" +
+      "_2160x3840\020\t\"&\n\022VideoFrameRateType\022\007\n\003_3" +
+      "0\020\001\022\007\n\003_60\020\002\032\273\002\n\022InputSourceService\022\032\n\022k" +
+      "eycodes_supported\030\001 \003(\r\022n\n\013touchscreen\030\002" +
+      " \001(\0132Y.com.andrerinas.headunitrevived.aa" +
+      "p.protocol.proto.Service.InputSourceServ" +
+      "ice.TouchConfig\022k\n\010touchpad\030\003 \001(\0132Y.com." +
       "andrerinas.headunitrevived.aap.protocol." +
-      "proto.Service\022\014\n\004make\030\002 \002(\t\022\r\n\005model\030\003 \002" +
-      "(\t\022\014\n\004year\030\004 \002(\t\022\022\n\nvehicle_id\030\005 \002(\t\022\027\n\017" +
-      "driver_position\030\006 \002(\010\022\026\n\016head_unit_make\030" +
-      "\007 \002(\t\022\027\n\017head_unit_model\030\010 \002(\t\022 \n\030head_u" +
-      "nit_software_build\030\t \002(\t\022\"\n\032head_unit_so" +
-      "ftware_version\030\n \002(\t\022\'\n\037can_play_native_" +
-      "media_during_vr\030\013 \002(\010\022\034\n\024hide_projected_" +
-      "clock\030\014 \001(\010\":\n\022ChannelOpenRequest\022\020\n\010pri" +
-      "ority\030\001 \002(\005\022\022\n\nservice_id\030\002 \002(\005\"g\n\023Chann" +
-      "elOpenResponse\022P\n\006status\030\001 \002(\0162@.com.and" +
-      "rerinas.headunitrevived.aap.protocol.pro" +
-      "to.MessageStatus\"4\n\013PingRequest\022\021\n\ttimes" +
-      "tamp\030\001 \002(\003\022\022\n\nbug_report\030\002 \001(\005\"!\n\014PingRe" +
-      "sponse\022\021\n\ttimestamp\030\001 \002(\003\"\210\001\n\rByeByeRequ" +
-      "est\022]\n\006reason\030\001 \002(\0162M.com.andrerinas.hea" +
-      "dunitrevived.aap.protocol.proto.ByeByeRe" +
-      "quest.ByeByeReason\"\030\n\014ByeByeReason\022\010\n\004QU" +
-      "IT\020\001\"\020\n\016ByeByeResponse\"\317\001\n\030VoiceSessionN" +
-      "otification\022n\n\006status\030\001 \002(\0162^.com.andrer" +
+      "proto.Service.InputSourceService.TouchCo" +
+      "nfig\032,\n\013TouchConfig\022\r\n\005width\030\001 \002(\r\022\016\n\006he" +
+      "ight\030\002 \002(\r\032\343\001\n\022MediaSourceService\022O\n\004typ" +
+      "e\030\001 \002(\0162A.com.andrerinas.headunitrevived" +
+      ".aap.protocol.proto.MediaCodecType\022[\n\014au" +
+      "dio_config\030\002 \002(\0132E.com.andrerinas.headun" +
+      "itrevived.aap.protocol.proto.AudioConfig" +
+      "uration\022\037\n\027available_while_in_call\030\003 \001(\010" +
+      "\032\225\001\n\020BluetoothService\022\023\n\013car_address\030\001 \002" +
+      "(\t\022l\n\031supported_pairing_methods\030\002 \003(\0162I." +
+      "com.andrerinas.headunitrevived.aap.proto" +
+      "col.proto.BluetoothPairingMethod\032\242\003\n\027Nav" +
+      "igationStatusService\022\033\n\023minimum_interval" +
+      "_ms\030\001 \002(\r\022l\n\004type\030\002 \002(\0162^.com.andrerinas" +
+      ".headunitrevived.aap.protocol.proto.Serv" +
+      "ice.NavigationStatusService.ClusterType\022" +
+      "v\n\rimage_options\030\003 \001(\0132_.com.andrerinas." +
+      "headunitrevived.aap.protocol.proto.Servi" +
+      "ce.NavigationStatusService.ImageOptions\032" +
+      "G\n\014ImageOptions\022\r\n\005width\030\001 \002(\005\022\016\n\006height" +
+      "\030\002 \002(\005\022\030\n\020colour_deth_bits\030\003 \002(\005\";\n\013Clus" +
+      "terType\022\030\n\024CustomImageSupported\020\001\022\022\n\016Ima" +
+      "geCodesOnly\020\002\032\034\n\032MediaPlaybackStatusServ" +
+      "ice\032\347\001\n\020PhoneStatus_Call\022[\n\005state\030\001 \001(\0162" +
+      "L.com.andrerinas.headunitrevived.aap.pro" +
+      "tocol.proto.Service.PhoneStatus_State\022\035\n" +
+      "\025call_duration_seconds\030\002 \001(\r\022\025\n\rcaller_n" +
+      "umber\030\003 \001(\t\022\021\n\tcaller_id\030\004 \001(\t\022\032\n\022caller" +
+      "_number_type\030\005 \001(\t\022\021\n\tthumbnail\030\006 \001(\014\032=\n" +
+      "\021PhoneStatus_Input\022\025\n\rcaller_number\030\001 \001(" +
+      "\t\022\021\n\tcaller_id\030\002 \001(\t\032\211\001\n\022PhoneStatusServ" +
+      "ice\022Z\n\005calls\030\001 \003(\0132K.com.andrerinas.head" +
+      "unitrevived.aap.protocol.proto.Service.P" +
+      "honeStatus_Call\022\027\n\017signal_strength\030\002 \001(\r" +
+      "\032P\n\026VendorExtensionService\022\014\n\004name\030\001 \001(\t" +
+      "\022\032\n\022package_white_list\030\002 \003(\t\022\014\n\004data\030\003 \001" +
+      "(\014\032\034\n\032GenericNotificationService\"d\n\021Phon" +
+      "eStatus_State\022\n\n\006InCall\020\001\022\n\n\006OnHold\020\002\022\r\n" +
+      "\tHangingUp\020\003\022\014\n\010Incoming\020\004\022\t\n\005Muted\020\005\022\017\n" +
+      "\013Conferenced\020\006\"B\n\027ServiceDiscoveryReques" +
+      "t\022\022\n\nphone_name\030\004 \002(\t\022\023\n\013phone_brand\030\005 \002" +
+      "(\t\"\376\002\n\030ServiceDiscoveryResponse\022L\n\010servi" +
+      "ces\030\001 \003(\0132:.com.andrerinas.headunitreviv" +
+      "ed.aap.protocol.proto.Service\022\014\n\004make\030\002 " +
+      "\002(\t\022\r\n\005model\030\003 \002(\t\022\014\n\004year\030\004 \002(\t\022\022\n\nvehi" +
+      "cle_id\030\005 \002(\t\022\027\n\017driver_position\030\006 \002(\010\022\026\n" +
+      "\016head_unit_make\030\007 \002(\t\022\027\n\017head_unit_model" +
+      "\030\010 \002(\t\022 \n\030head_unit_software_build\030\t \002(\t" +
+      "\022\"\n\032head_unit_software_version\030\n \002(\t\022\'\n\037" +
+      "can_play_native_media_during_vr\030\013 \002(\010\022\034\n" +
+      "\024hide_projected_clock\030\014 \001(\010\":\n\022ChannelOp" +
+      "enRequest\022\020\n\010priority\030\001 \002(\005\022\022\n\nservice_i" +
+      "d\030\002 \002(\005\"g\n\023ChannelOpenResponse\022P\n\006status" +
+      "\030\001 \002(\0162@.com.andrerinas.headunitrevived." +
+      "aap.protocol.proto.MessageStatus\"4\n\013Ping" +
+      "Request\022\021\n\ttimestamp\030\001 \002(\003\022\022\n\nbug_report" +
+      "\030\002 \001(\005\"!\n\014PingResponse\022\021\n\ttimestamp\030\001 \002(" +
+      "\003\"\210\001\n\rByeByeRequest\022]\n\006reason\030\001 \002(\0162M.co" +
+      "m.andrerinas.headunitrevived.aap.protoco" +
+      "l.proto.ByeByeRequest.ByeByeReason\"\030\n\014By" +
+      "eByeReason\022\010\n\004QUIT\020\001\"\020\n\016ByeByeResponse\"\317" +
+      "\001\n\030VoiceSessionNotification\022n\n\006status\030\001 " +
+      "\002(\0162^.com.andrerinas.headunitrevived.aap" +
+      ".protocol.proto.VoiceSessionNotification" +
+      ".VoiceSessionStatus\"C\n\022VoiceSessionStatu" +
+      "s\022\026\n\022VOICE_STATUS_START\020\001\022\025\n\021VOICE_STATU" +
+      "S_STOP\020\002\"\203\002\n\035AudioFocusRequestNotificati" +
+      "on\022w\n\007request\030\001 \001(\0162f.com.andrerinas.hea" +
+      "dunitrevived.aap.protocol.proto.AudioFoc" +
+      "usRequestNotification.AudioFocusRequestT" +
+      "ype\"i\n\025AudioFocusRequestType\022\010\n\004NONE\020\000\022\010" +
+      "\n\004GAIN\020\001\022\022\n\016GAIN_TRANSIENT\020\002\022\033\n\027GAIN_TRA" +
+      "NSIENT_MAY_DUCK\020\003\022\013\n\007RELEASE\020\004\"\363\002\n\026Audio" +
+      "FocusNotification\022r\n\013focus_state\030\001 \002(\0162]" +
+      ".com.andrerinas.headunitrevived.aap.prot" +
+      "ocol.proto.AudioFocusNotification.AudioF" +
+      "ocusStateType\022\023\n\013unsolicited\030\002 \001(\010\"\317\001\n\023A" +
+      "udioFocusStateType\022\016\n\nSTATE_GAIN\020\001\022\030\n\024ST" +
+      "ATE_GAIN_TRANSIENT\020\002\022\016\n\nSTATE_LOSS\020\003\022!\n\035" +
+      "STATE_LOSS_TRANSIENT_CAN_DUCK\020\004\022\030\n\024STATE" +
+      "_LOSS_TRANSIENT\020\005\022\031\n\025STATE_GAIN_MEDIA_ON" +
+      "LY\020\006\022&\n\"STATE_GAIN_TRANSIENT_GUIDANCE_ON" +
+      "LY\020\007\"r\n\033NavFocusRequestNotification\022S\n\nf" +
+      "ocus_type\030\001 \001(\0162?.com.andrerinas.headuni" +
+      "trevived.aap.protocol.proto.NavFocusType" +
+      "\"k\n\024NavFocusNotification\022S\n\nfocus_type\030\001" +
+      " \002(\0162?.com.andrerinas.headunitrevived.aa" +
+      "p.protocol.proto.NavFocusType\"D\n\032Generic" +
+      "NotificationRequest\022\n\n\002id\030\001 \002(\t\022\014\n\004text\030" +
+      "\002 \001(\t\022\014\n\004icon\030\003 \001(\t\"2\n\023GenericNotificati" +
+      "on\022\n\n\002id\030\001 \002(\t\022\017\n\007handled\030\002 \002(\010\"\033\n\031Gener" +
+      "icNotificationsStart\"\032\n\030GenericNotificat" +
+      "ionsStop\"\223\001\n\027BluetoothPairingRequest\022\025\n\r" +
+      "phone_address\030\001 \002(\t\022a\n\016pairing_method\030\002 " +
+      "\002(\0162I.com.andrerinas.headunitrevived.aap" +
+      ".protocol.proto.BluetoothPairingMethod\"\334" +
+      "\001\n\030BluetoothPairingResponse\022\026\n\016already_p" +
+      "aired\030\001 \001(\010\022r\n\006status\030\002 \001(\0162b.com.andrer" +
       "inas.headunitrevived.aap.protocol.proto." +
-      "VoiceSessionNotification.VoiceSessionSta" +
-      "tus\"C\n\022VoiceSessionStatus\022\026\n\022VOICE_STATU" +
-      "S_START\020\001\022\025\n\021VOICE_STATUS_STOP\020\002\"\203\002\n\035Aud" +
-      "ioFocusRequestNotification\022w\n\007request\030\001 " +
-      "\001(\0162f.com.andrerinas.headunitrevived.aap" +
-      ".protocol.proto.AudioFocusRequestNotific" +
-      "ation.AudioFocusRequestType\"i\n\025AudioFocu" +
-      "sRequestType\022\010\n\004NONE\020\000\022\010\n\004GAIN\020\001\022\022\n\016GAIN" +
-      "_TRANSIENT\020\002\022\033\n\027GAIN_TRANSIENT_MAY_DUCK\020" +
-      "\003\022\013\n\007RELEASE\020\004\"\363\002\n\026AudioFocusNotificatio" +
-      "n\022r\n\013focus_state\030\001 \002(\0162].com.andrerinas." +
-      "headunitrevived.aap.protocol.proto.Audio" +
-      "FocusNotification.AudioFocusStateType\022\023\n" +
-      "\013unsolicited\030\002 \001(\010\"\317\001\n\023AudioFocusStateTy" +
-      "pe\022\016\n\nSTATE_GAIN\020\001\022\030\n\024STATE_GAIN_TRANSIE" +
-      "NT\020\002\022\016\n\nSTATE_LOSS\020\003\022!\n\035STATE_LOSS_TRANS" +
-      "IENT_CAN_DUCK\020\004\022\030\n\024STATE_LOSS_TRANSIENT\020" +
-      "\005\022\031\n\025STATE_GAIN_MEDIA_ONLY\020\006\022&\n\"STATE_GA" +
-      "IN_TRANSIENT_GUIDANCE_ONLY\020\007\"r\n\033NavFocus" +
-      "RequestNotification\022S\n\nfocus_type\030\001 \001(\0162" +
-      "?.com.andrerinas.headunitrevived.aap.pro" +
-      "tocol.proto.NavFocusType\"k\n\024NavFocusNoti" +
-      "fication\022S\n\nfocus_type\030\001 \002(\0162?.com.andre" +
-      "rinas.headunitrevived.aap.protocol.proto" +
-      ".NavFocusType\"D\n\032GenericNotificationRequ" +
-      "est\022\n\n\002id\030\001 \002(\t\022\014\n\004text\030\002 \001(\t\022\014\n\004icon\030\003 " +
-      "\001(\t\"2\n\023GenericNotification\022\n\n\002id\030\001 \002(\t\022\017" +
-      "\n\007handled\030\002 \002(\010\"\033\n\031GenericNotificationsS" +
-      "tart\"\032\n\030GenericNotificationsStop\"\223\001\n\027Blu" +
-      "etoothPairingRequest\022\025\n\rphone_address\030\001 " +
-      "\002(\t\022a\n\016pairing_method\030\002 \002(\0162I.com.andrer" +
-      "inas.headunitrevived.aap.protocol.proto." +
-      "BluetoothPairingMethod\"\334\001\n\030BluetoothPair" +
-      "ingResponse\022\026\n\016already_paired\030\001 \001(\010\022r\n\006s" +
-      "tatus\030\002 \001(\0162b.com.andrerinas.headunitrev" +
-      "ived.aap.protocol.proto.BluetoothPairing" +
-      "Response.BluetoothPairingStatus\"4\n\026Bluet" +
-      "oothPairingStatus\022\010\n\004NONE\020\000\022\006\n\002OK\020\001\022\010\n\004F" +
-      "AIL\020\002\"!\n\021BluetoothAuthData\022\014\n\004data\030\001 \001(\t" +
-      "*\235\003\n\016ControlMsgType\022\r\n\tMEDIADATA\020\000\022\r\n\tCO" +
-      "DECDATA\020\001\022\023\n\017VERSIONRESPONSE\020\002\022\r\n\tHANDSH" +
-      "AKE\020\003\022\033\n\027SERVICEDISCOVERYREQUEST\020\005\022\034\n\030SE" +
-      "RVICEDISCOVERYRESPONSE\020\006\022\026\n\022CHANNELOPENR" +
-      "EQUEST\020\007\022\027\n\023CHANNELOPENRESPONSE\020\010\022\017\n\013PIN" +
-      "GREQUEST\020\013\022\020\n\014PINGRESPONSE\020\014\022\037\n\033NAVFOCUS" +
-      "REQUESTNOTIFICATION\020\r\022\031\n\025NAVFOCUSRNOTIFI" +
-      "CATION\020\016\022\020\n\014BYEYEREQUEST\020\017\022\021\n\rBYEYERESPO" +
-      "NSE\020\020\022\034\n\030VOICESESSIONNOTIFICATION\020\021\022 \n\034A" +
-      "UDIOFOCUSREQUESTNOTFICATION\020\022\022\031\n\025AUDIOFO" +
-      "CUSNOTFICATION\020\023*G\n\026BluetoothPairingMeth" +
-      "od\022\014\n\010METHOD_1\020\001\022\010\n\004A2DP\020\002\022\014\n\010METHOD_3\020\003" +
-      "\022\007\n\003HFP\020\004*0\n\014NavFocusType\022\017\n\013NAV_FOCUS_1" +
-      "\020\001\022\017\n\013NAV_FOCUS_2\020\002B\tB\007Control"
+      "BluetoothPairingResponse.BluetoothPairin" +
+      "gStatus\"4\n\026BluetoothPairingStatus\022\010\n\004NON" +
+      "E\020\000\022\006\n\002OK\020\001\022\010\n\004FAIL\020\002\"!\n\021BluetoothAuthDa" +
+      "ta\022\014\n\004data\030\001 \001(\t*\235\003\n\016ControlMsgType\022\r\n\tM" +
+      "EDIADATA\020\000\022\r\n\tCODECDATA\020\001\022\023\n\017VERSIONRESP" +
+      "ONSE\020\002\022\r\n\tHANDSHAKE\020\003\022\033\n\027SERVICEDISCOVER" +
+      "YREQUEST\020\005\022\034\n\030SERVICEDISCOVERYRESPONSE\020\006" +
+      "\022\026\n\022CHANNELOPENREQUEST\020\007\022\027\n\023CHANNELOPENR" +
+      "ESPONSE\020\010\022\017\n\013PINGREQUEST\020\013\022\020\n\014PINGRESPON" +
+      "SE\020\014\022\037\n\033NAVFOCUSREQUESTNOTIFICATION\020\r\022\031\n" +
+      "\025NAVFOCUSRNOTIFICATION\020\016\022\020\n\014BYEYEREQUEST" +
+      "\020\017\022\021\n\rBYEYERESPONSE\020\020\022\034\n\030VOICESESSIONNOT" +
+      "IFICATION\020\021\022 \n\034AUDIOFOCUSREQUESTNOTFICAT" +
+      "ION\020\022\022\031\n\025AUDIOFOCUSNOTFICATION\020\023*G\n\026Blue" +
+      "toothPairingMethod\022\014\n\010METHOD_1\020\001\022\010\n\004A2DP" +
+      "\020\002\022\014\n\010METHOD_3\020\003\022\007\n\003HFP\020\004*0\n\014NavFocusTyp" +
+      "e\022\017\n\013NAV_FOCUS_1\020\001\022\017\n\013NAV_FOCUS_2\020\002B\tB\007C" +
+      "ontrol"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
