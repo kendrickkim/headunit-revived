@@ -93,6 +93,30 @@ class SettingsFragment : Fragment() {
                     .show()
             }
         ))
+
+        items.add(SettingItem.SettingEntry(
+            stableId = "keymap",
+            nameResId = R.string.keymap,
+            value = getString(R.string.keymap_description), // Use new string resource
+            onClick = { _ ->
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.main_content, KeymapFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
+        ))
+
+        items.add(SettingItem.ToggleSettingEntry(
+            stableId = "gpsNavigation",
+            nameResId = R.string.gps_for_navigation,
+            descriptionResId = R.string.gps_for_navigation_description,
+            isChecked = settings.useGpsForNavigation,
+            onCheckedChanged = { isChecked ->
+                settings.useGpsForNavigation = isChecked
+                updateSettingsList() // Refresh the list to show the change
+            }
+        ))
+
         items.add(SettingItem.Divider) // Divider after General category
 
         // --- Graphic Settings ---
@@ -257,31 +281,6 @@ class SettingsFragment : Fragment() {
                     .show()
             }
         ))
-
-        items.add(SettingItem.SettingEntry(
-            stableId = "keymap",
-            nameResId = R.string.keymap,
-            value = getString(R.string.keymap_description), // Use new string resource
-            onClick = { _ ->
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.main_content, KeymapFragment())
-                    .addToBackStack(null)
-                    .commit()
-            }
-        ))
-
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "gpsNavigation",
-            nameResId = R.string.gps_for_navigation,
-            descriptionResId = R.string.gps_for_navigation_description,
-            isChecked = settings.useGpsForNavigation,
-            onCheckedChanged = { isChecked ->
-                settings.useGpsForNavigation = isChecked
-                updateSettingsList() // Refresh the list to show the change
-            }
-        ))
-
-        items.add(SettingItem.Divider) // Divider after Debug category
 
         settingsAdapter.submitList(items) // Submit the new list to ListAdapter
     }

@@ -46,7 +46,7 @@ android {
         targetSdk = 34
 
         versionCode = 22
-        versionName = "1.2.1"
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" // Added for multidex
 

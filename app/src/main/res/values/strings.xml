@@ -43,7 +43,7 @@
     <string name="margin_bottom">Bottom</string>
 
     <string name="start_in_fullscreen_mode">Start in full screen mode</string>
-    <string name="start_in_fullscreen_mode_description">Toggle to enable or disable the full screen mode</string>
+    <string name="start_in_fullscreen_mode_description">Toggle full screen mode. You need to restart the app to apply the changes.</string>
 
     <string name="usb_status">USB Status: %s</string>
     <string name="projection_status">Projection Status: %s</string>

@@ -157,7 +157,7 @@ class ServiceDiscoveryResponse(private val context: Context)
                 headUnitModel = "Generic Headunit"
                 headUnitMake = "Generic Make"
                 headUnitSoftwareBuild = "1.0"
-                headUnitSoftwareVersion = "1.2"
+                headUnitSoftwareVersion = "1.3.0"
                 driverPosition = true
                 canPlayNativeMediaDuringVr = false
                 hideProjectedClock = false
