@@ -57,21 +57,10 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
 
-        // Handle fullscreen mode based on settings
-        val appSettings = Settings(this)
-        if (appSettings.startInFullscreenMode) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                window.insetsController?.hide(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
-            } else {
-                @Suppress("DEPRECATION")
-                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-            }
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        }
-
         setContentView(R.layout.activity_main)
+
+        // Call setFullscreen immediately after setting content view
+        setFullscreen()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -188,6 +177,30 @@ class MainActivity : FragmentActivity() {
         updateBackButtonVisibility()
     }
 
+    private fun setFullscreen() {
+        val appSettings = Settings(this)
+        if (appSettings.startInFullscreenMode) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.insetsController?.hide(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            }
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            // If not in fullscreen, ensure system UI is visible
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.insetsController?.show(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
+            } else {
+                @Suppress("DEPRECATION")
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            }
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
     private fun updateBackButtonVisibility() {
         val isFragmentOnStack = supportFragmentManager.backStackEntryCount > 0
         backButton.visibility = if (isFragmentOnStack) View.VISIBLE else View.GONE
@@ -199,6 +212,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
+        setFullscreen() // Call setFullscreen here as well
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val request = NetworkRequest.Builder()
@@ -209,6 +223,13 @@ class MainActivity : FragmentActivity() {
             }
         }
         updateIpAddressView()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            setFullscreen() // Reapply fullscreen mode if window gains focus
+        }
     }
 
     override fun onPause() {
