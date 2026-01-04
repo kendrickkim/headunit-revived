@@ -37,11 +37,15 @@ https://github.com/mikereidis/headunit
 - Handshake failed sometimes and the devices won't connect. You need to try again, restart phone or clear caches
 
 ## Next Steps:
-- Adding self mode
+- Fixing Touch not working
 - Add higher resolutions
 - Change the whole ssl engine and working, because this often keeps the device from connecting
 
 ## Changelog
+### v.1.4.0
+- Added Selfmode
+- Better Close App
+
 ### v.1.3.0
 - Changed the Settings Layout Look and feel
 - Added DPI Option
