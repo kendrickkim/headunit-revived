@@ -81,6 +81,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
     override fun onDestroy() {
         super.onDestroy()
+        stopForeground(true) // Stop the foreground notification
         serviceJob.cancel()
         onDisconnect()
         unregisterReceiver(nightModeReceiver)
@@ -298,7 +299,7 @@ class AapService : Service(), UsbReceiver.Listener {
         const val ACTION_START_SELF_MODE = "com.andrerinas.headunitrevived.ACTION_START_SELF_MODE"
         const val ACTION_START_FROM_PROXY = "com.andrerinas.headunitrevived.ACTION_START_FROM_PROXY"
         const val EXTRA_LOCAL_PROXY_PORT = "local_proxy_port"
-        private const val ACTION_STOP_SERVICE = "com.andrerinas.headunitrevived.ACTION_STOP_SERVICE"
+        const val ACTION_STOP_SERVICE = "com.andrerinas.headunitrevived.ACTION_STOP_SERVICE"
         private const val TYPE_USB = 1
         private const val TYPE_WIFI = 2
         private const val EXTRA_CONNECTION_TYPE = "extra_connection_type"
