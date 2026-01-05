@@ -38,26 +38,15 @@ android {
     compileSdk = 34
     namespace = "com.andrerinas.headunitrevived"
 
-
-
     defaultConfig {
         applicationId = "com.andrerinas.headunitrevived"
         minSdk = 19
         targetSdk = 34
-
         versionCode = 22
         versionName = "1.5.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" // Added for multidex
-
-
-
-
-
         multiDexEnabled = true // Enabled Multidex
     }
-
-
 
     signingConfigs {
         getByName("debug") {
