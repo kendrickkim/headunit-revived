@@ -42,6 +42,9 @@ https://github.com/mikereidis/headunit
 - Change the whole ssl engine and working, because this often keeps the device from connecting
 
 ## Changelog
+### v.1.5.0-beta
+- removed old open ssl 1.1.1 and all C-Code to native Android SSL functions for hopefully better connections.
+
 ### v.1.4.0
 - Added Selfmode
 - Better Close App
