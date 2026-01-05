@@ -189,6 +189,7 @@ class AapTransport(
         val MAX_HANDSHAKE_ATTEMPTS = 20 // Prevent infinite loops
 
         AppLog.d("Handshake: Starting SSL negotiation loop.")
+        AppLog.d("Initial Handshake Status: ${ssl.getHandshakeStatus()}")
         while (ssl.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED &&
                ssl.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING &&
                handshakeAttempts < MAX_HANDSHAKE_ATTEMPTS) {

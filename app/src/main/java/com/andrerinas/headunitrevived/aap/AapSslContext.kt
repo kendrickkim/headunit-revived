@@ -27,6 +27,7 @@ class AapSslContext(keyManger: SingleKeyKeyManager): AapSsl {
                 rxBuffer = ByteBuffer.allocateDirect(Messages.DEF_BUFFER_LENGTH.coerceAtLeast(appBufferMax + 50))
             }
         }
+        sslEngine.beginHandshake()
         return 0
     }
 
@@ -71,8 +72,10 @@ class AapSslContext(keyManger: SingleKeyKeyManager): AapSsl {
         System.arraycopy(buffer, start, receivedHandshakeData, 0, length)
 
         val data = ByteBuffer.wrap(receivedHandshakeData)
-        val result = sslEngine.unwrap(data, rxBuffer)
-        runDelegatedTasks(result, sslEngine)
+        while (data.hasRemaining()) {
+            val result = sslEngine.unwrap(data, rxBuffer)
+            runDelegatedTasks(result, sslEngine)
+        }
         return receivedHandshakeData.size
     }
 
