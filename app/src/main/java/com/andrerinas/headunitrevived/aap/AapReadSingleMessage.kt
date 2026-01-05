@@ -20,7 +20,7 @@ internal class AapReadSingleMessage(connection: AccessoryConnection, ssl: AapSsl
 
         recvHeader.decode()
 
-        // This logic seems specific and might be part of a fragmentation protocol. Let's log it.
+        // This logic seems specific and might be part of a fragmentation protocol.
         if (recvHeader.flags == 0x09) {
             val sizeBuf = ByteArray(4)
             val readSize = connection.recvBlocking(sizeBuf, sizeBuf.size, 150, true)
