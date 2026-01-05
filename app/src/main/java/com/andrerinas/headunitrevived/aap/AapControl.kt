@@ -77,7 +77,7 @@ internal class AapControlMedia(
         }.build()
         AppLog.i("Config response: %s", configResponse)
         val msg = AapMessage(channel, Media.MsgType.CONFIGRESPONSE_VALUE, configResponse)
-        AppLog.i(AapDump.logHex(msg))
+        // AppLog.i(AapDump.logHex(msg)) // AapDump might be removed or changed
         aapTransport.send(msg)
 
         if (channel == Channel.ID_VID) {
@@ -209,7 +209,7 @@ internal class AapControlService(
         AppLog.i("Service Discovery Request: %s", request.phoneName)                               // S 0 CTR b src: HU  lft:   113  msg_type:     6 Service Discovery Response    S 0 CTR b 00000000 0a 08 08 01 12 04 0a 02 08 0b 0a 13 08 02 1a 0f
 
         val msg = ServiceDiscoveryResponse(context)
-        AppLog.i(msg.toString())
+        AppLog.i("Service Discovery Response: ${msg.toString()}") // Log the standard toString()
 
         aapTransport.send(msg)
         return 0
@@ -352,7 +352,7 @@ internal class AapControlGateway(
         aapTransport.send(msg)
 
         if (channel == Channel.ID_SEN) {
-            Utils.ms_sleep(2)
+            //Utils.ms_sleep(2) // Removed unnecessary sleep
             AppLog.i("Send driving status")
             aapTransport.send(DrivingStatusEvent(Sensors.SensorBatch.DrivingStatusData.Status.UNRESTRICTED))
         }

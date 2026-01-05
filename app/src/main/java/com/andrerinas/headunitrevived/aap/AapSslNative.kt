@@ -2,6 +2,7 @@ package com.andrerinas.headunitrevived.aap
 
 import com.andrerinas.headunitrevived.aap.protocol.messages.Messages
 import com.andrerinas.headunitrevived.utils.AppLog
+import javax.net.ssl.SSLEngineResult
 
 /**
  * @author algavris
@@ -38,6 +39,18 @@ internal class AapSslNative : AapSsl {
         return ret
     }
 
+    override fun getHandshakeStatus(): SSLEngineResult.HandshakeStatus {
+        return SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING
+    }
+
+    override fun runDelegatedTasks() {
+        // No-op for native implementation
+    }
+
+    override fun postHandshakeReset() {
+        // No-op for native implementation, as it manages its own buffers
+    }
+
     override fun handshakeRead(): ByteArray? {
         native_ssl_do_handshake()
         val size = native_ssl_bio_read(0, Messages.DEF_BUFFER_LENGTH, bio_read)
@@ -56,14 +69,12 @@ internal class AapSslNative : AapSsl {
 
     override fun decrypt(start: Int, length: Int, buffer: ByteArray): ByteArrayWithLimit? {
         val bytes_written = native_ssl_bio_write(start, length, buffer)
-        // Write encrypted to SSL input BIO
         if (bytes_written <= 0) {
             AppLog.e("BIO_write() bytes_written: %d", bytes_written)
             return null
         }
 
         val bytes_read = native_ssl_read(0, Messages.DEF_BUFFER_LENGTH, dec_buf)
-        // Read decrypted to decrypted rx buf
         if (bytes_read <= 0) {
             AppLog.e("SSL_read bytes_read: %d", bytes_read)
             return null
@@ -73,9 +84,7 @@ internal class AapSslNative : AapSsl {
     }
 
     override fun encrypt(offset: Int, length: Int, buffer: ByteArray): ByteArrayWithLimit? {
-
         val bytes_written = native_ssl_write(offset, length, buffer)
-        // Write plaintext to SSL
         if (bytes_written <= 0) {
             AppLog.e("SSL_write() bytes_written: %d", bytes_written)
             return null

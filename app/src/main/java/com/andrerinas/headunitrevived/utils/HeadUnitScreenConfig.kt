@@ -19,7 +19,7 @@ object HeadUnitScreenConfig {
 
     fun init(displayMetrics: DisplayMetrics, settings: Settings) {
         if (isInitialized) {
-            AppLog.i("HeadUnitScreenConfig already initialized. Skipping subsequent calls.")
+            //AppLog.i("HeadUnitScreenConfig already initialized. Skipping subsequent calls.")
             return
         }
         isInitialized = true
@@ -35,7 +35,7 @@ object HeadUnitScreenConfig {
         if (screenWidthPx == 0 || screenHeightPx == 0) {
             return
         }
-        AppLog.i("CarScreen: width: $screenWidthPx height: $screenHeightPx")
+        //AppLog.i("CarScreen: width: $screenWidthPx height: $screenHeightPx")
 
         // check if small screen
         if (screenHeightPx > screenWidthPx) { // Portrait mode
@@ -80,8 +80,8 @@ object HeadUnitScreenConfig {
                 scaleFactor = (sWidth * 1.0f) / getNegotiatedWidth().toFloat()
             }
         }
-        AppLog.i("CarScreen isSmallScreen: $isSmallScreen, scaleFactor: ${scaleFactor}")
-        AppLog.i("CarScreen using: $negotiatedResolutionType, number: ${negotiatedResolutionType?.number}, scales: scaleX: ${getScaleX()}, scaleY: ${getScaleY()}")
+        //AppLog.i("CarScreen isSmallScreen: $isSmallScreen, scaleFactor: ${scaleFactor}")
+        //AppLog.i("CarScreen using: $negotiatedResolutionType, number: ${negotiatedResolutionType?.number}, scales: scaleX: ${getScaleX()}, scaleY: ${getScaleY()}")
     }
 
     fun getAdjustedHeight(): Int {
@@ -107,14 +107,14 @@ object HeadUnitScreenConfig {
     }
 
     fun getHeightMargin(): Int {
-        AppLog.i("CarScreen: Zoom is: $scaleFactor, adjusted height: ${getAdjustedHeight()}")
+        //AppLog.i("CarScreen: Zoom is: $scaleFactor, adjusted height: ${getAdjustedHeight()}")
         val margin = ((getAdjustedHeight() - screenHeightPx) / scaleFactor).roundToInt()
         return margin.coerceAtLeast(0)
     }
 
     fun getWidthMargin(): Int {
         val margin = ((getAdjustedWidth() - screenWidthPx) / scaleFactor).roundToInt()
-        AppLog.i("CarScreen: Zoom is: $scaleFactor, adjusted width: ${getAdjustedWidth()}")
+        //AppLog.i("CarScreen: Zoom is: $scaleFactor, adjusted width: ${getAdjustedWidth()}")
         return margin.coerceAtLeast(0)
     }
 
@@ -123,7 +123,7 @@ object HeadUnitScreenConfig {
     }
 
     fun getScaleX(): Float {
-        AppLog.i("GetScaleX: getNegotiatedWidth: ${getNegotiatedWidth()}, screenWidthPx: $screenWidthPx")
+        //AppLog.i("GetScaleX: getNegotiatedWidth: ${getNegotiatedWidth()}, screenWidthPx: $screenWidthPx")
         if (getNegotiatedWidth() > screenWidthPx) {
             return divideOrOne(getNegotiatedWidth().toFloat(), screenWidthPx.toFloat())
         }

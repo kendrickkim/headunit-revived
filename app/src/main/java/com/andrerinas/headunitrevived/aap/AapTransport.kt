@@ -27,8 +27,10 @@ import com.andrerinas.headunitrevived.decoder.AudioDecoder
 import com.andrerinas.headunitrevived.decoder.MicRecorder
 import com.andrerinas.headunitrevived.decoder.VideoDecoder
 import com.andrerinas.headunitrevived.main.BackgroundNotification
+import com.andrerinas.headunitrevived.ssl.SingleKeyKeyManager
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
+import javax.net.ssl.SSLEngineResult
 
 class AapTransport(
         audioDecoder: AudioDecoder,
@@ -39,7 +41,7 @@ class AapTransport(
         private val context: Context)
     : MicRecorder.Listener {
 
-    val ssl: AapSsl = AapSslNative() //AapSslContext(SingleKeyKeyManager(context))
+    val ssl: AapSsl = AapSslContext(SingleKeyKeyManager(context))
 
     private val aapAudio: AapAudio
     private val aapVideo: AapVideo
@@ -109,7 +111,7 @@ class AapTransport(
 
         if (AppLog.LOG_VERBOSE) {
             AppLog.v("Sent size: %d", size)
-            AapDump.logvHex("US", 0, ba.data, ba.limit)
+            // AapDump.logvHex("US", 0, ba.data, ba.limit) // AapDump might be removed or changed
         }
         return 0
     }
@@ -139,8 +141,7 @@ class AapTransport(
         pollThread!!.start()
         pollHandler = Handler(pollThread!!.looper, pollHandlerCallback)
 
-        // Add a small delay before starting the handshake to give the phone time to initialize
-        SystemClock.sleep(200) // 200ms delay
+        SystemClock.sleep(200)
 
         if (!handshake(connection)) {
             quit()
@@ -151,7 +152,6 @@ class AapTransport(
         aapRead = AapRead.Factory.create(connection, this, micRecorder, aapAudio, aapVideo, settings, notification, context)
         pollHandler!!.sendEmptyMessage(MSG_POLL)
 
-        // Create and start Transport Thread
         return true
     }
 
@@ -159,7 +159,6 @@ class AapTransport(
         val buffer = ByteArray(Messages.DEF_BUFFER_LENGTH)
 
         AppLog.d("Handshake: Starting version request. TS: ${SystemClock.elapsedRealtime()}")
-        // Version request
         val version = Messages.versionRequest
         var ret = connection.sendBlocking(version, version.size, 5000)
         AppLog.d("Handshake: Version request sent. ret: $ret. TS: ${SystemClock.elapsedRealtime()}")
@@ -178,7 +177,6 @@ class AapTransport(
         AppLog.i("Handshake: Version response recv ret: %d", ret)
 
         AppLog.d("Handshake: Starting SSL prepare. TS: ${SystemClock.elapsedRealtime()}")
-        // SSL
         ret = ssl.prepare()
         AppLog.d("Handshake: SSL prepare finished. ret: $ret. TS: ${SystemClock.elapsedRealtime()}")
         if (ret < 0) {
@@ -186,29 +184,64 @@ class AapTransport(
             return false
         }
 
-        var hs_ctr = 0
-        while (hs_ctr++ < 2) {
-            AppLog.d("Handshake: SSL loop %d. TS: ${SystemClock.elapsedRealtime()}", hs_ctr)
-            val handshakeData = ssl.handshakeRead() ?: run {
-                AppLog.e("Handshake: SSL handshakeRead failed. TS: ${SystemClock.elapsedRealtime()}")
-                return false
+        // --- NEW SSL HANDSHAKE LOGIC using AapSslContext ---
+        var handshakeAttempts = 0
+        val MAX_HANDSHAKE_ATTEMPTS = 20 // Prevent infinite loops
+
+        AppLog.d("Handshake: Starting SSL negotiation loop.")
+        while (ssl.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.FINISHED &&
+               ssl.getHandshakeStatus() != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING &&
+               handshakeAttempts < MAX_HANDSHAKE_ATTEMPTS) {
+            handshakeAttempts++
+
+            when (ssl.getHandshakeStatus()) {
+                SSLEngineResult.HandshakeStatus.NEED_WRAP -> {
+                    val handshakeData = ssl.handshakeRead()!! // Non-null assertion, as AapSslContext returns ByteArray
+                    if (handshakeData.isNotEmpty()) {
+                        val bio = Messages.createRawMessage(Channel.ID_CTR, 3, 3, handshakeData)
+                        val size = connection.sendBlocking(bio, bio.size, 5000)
+                        if (size < 0) {
+                            AppLog.e("Handshake: Failed to send wrapped handshake data.")
+                            return false
+                        }
+                        AppLog.d("Handshake: Sent wrapped handshake data. Size: $size")
+                    } else {
+                        AppLog.d("Handshake: NEED_WRAP but no data produced, will try receiving.")
+                    }
+                }
+                SSLEngineResult.HandshakeStatus.NEED_UNWRAP -> {
+                    AppLog.d("Handshake: NEED_UNWRAP, attempting to receive data.")
+                    val size = connection.recvBlocking(buffer, buffer.size, 5000, false)
+                    if (size <= 0) {
+                        AppLog.e("Handshake: Failed to receive data for unwrap. Size: $size")
+                        return false
+                    }
+                    val bytesWritten = ssl.handshakeWrite(6, size - 6, buffer)
+                    if (bytesWritten < 0) {
+                        AppLog.e("Handshake: Failed to write received handshake data.")
+                        return false
+                    }
+                    AppLog.d("Handshake: Received and processed unwrapped handshake data. Consumed: $bytesWritten")
+                }
+                SSLEngineResult.HandshakeStatus.NEED_TASK -> {
+                    AppLog.d("Handshake: NEED_TASK, running delegated tasks.")
+                    ssl.runDelegatedTasks()
+                }
+                SSLEngineResult.HandshakeStatus.FINISHED,
+                SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING -> {
+                    AppLog.d("Handshake: SSL negotiation finished or not handshaking.")
+                    break
+                }
             }
-            AppLog.d("Handshake: SSL BIO read: %d. TS: ${SystemClock.elapsedRealtime()}", handshakeData.size)
-
-            val bio = Messages.createRawMessage(Channel.ID_CTR, 3, 3, handshakeData)
-            var size = connection.sendBlocking(bio, bio.size, 5000)
-            AppLog.d("Handshake: SSL BIO sent: %d. TS: ${SystemClock.elapsedRealtime()}", size)
-
-            size = connection.recvBlocking(buffer, buffer.size, 5000, false)
-            AppLog.d("Handshake: SSL received: %d. TS: ${SystemClock.elapsedRealtime()}", size)
-            if (size <= 0) {
-                AppLog.e("Handshake: SSL receive error. TS: ${SystemClock.elapsedRealtime()}")
-                return false
-            }
-
-            ret = ssl.handshakeWrite(6, size - 6, buffer)
-            AppLog.d("Handshake: SSL BIO write: %d. TS: ${SystemClock.elapsedRealtime()}", ret)
         }
+        if (handshakeAttempts >= MAX_HANDSHAKE_ATTEMPTS) {
+            AppLog.e("Handshake: Exceeded max handshake attempts.")
+            return false
+        }
+        // --- END NEW SSL HANDSHAKE LOGIC ---
+
+        ssl.postHandshakeReset()
+        AppLog.d("Handshake: SSL buffers reset after handshake.")
 
         AppLog.d("Handshake: SSL handshake complete. TS: ${SystemClock.elapsedRealtime()}")
         // Status = OK
@@ -224,7 +257,6 @@ class AapTransport(
         AppLog.d("Handshake: Handshake successful. TS: ${SystemClock.elapsedRealtime()}")
         return true
     }
-
     fun send(keyCode: Int, isPress: Boolean) {
         val mapped = keyCodes[keyCode] ?: keyCode
         val aapKeyCode = KeyCode.convert(mapped)
@@ -316,4 +348,3 @@ class AapTransport(
     }
 
 }
-
