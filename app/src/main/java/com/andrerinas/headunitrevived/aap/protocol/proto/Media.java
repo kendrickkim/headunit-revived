@@ -21,79 +21,119 @@ public final class Media {
   public enum MsgType
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
-     * <code>SETUPREQUEST = 32768;</code>
+     * <code>MEDIA_MESSAGE_DATA = 0;</code>
      */
-    SETUPREQUEST(32768),
+    MEDIA_MESSAGE_DATA(0),
     /**
-     * <code>STARTREQUEST = 32769;</code>
+     * <code>MEDIA_MESSAGE_CODEC_CONFIG = 1;</code>
      */
-    STARTREQUEST(32769),
+    MEDIA_MESSAGE_CODEC_CONFIG(1),
     /**
-     * <code>STOPREQUEST = 32770;</code>
+     * <code>MEDIA_MESSAGE_SETUP = 32768;</code>
      */
-    STOPREQUEST(32770),
+    MEDIA_MESSAGE_SETUP(32768),
     /**
-     * <code>CONFIGRESPONSE = 32771;</code>
+     * <code>MEDIA_MESSAGE_START = 32769;</code>
      */
-    CONFIGRESPONSE(32771),
+    MEDIA_MESSAGE_START(32769),
     /**
-     * <code>ACK = 32772;</code>
+     * <code>MEDIA_MESSAGE_STOP = 32770;</code>
      */
-    ACK(32772),
+    MEDIA_MESSAGE_STOP(32770),
     /**
-     * <code>MICREQUEST = 32773;</code>
+     * <code>MEDIA_MESSAGE_CONFIG = 32771;</code>
      */
-    MICREQUEST(32773),
+    MEDIA_MESSAGE_CONFIG(32771),
     /**
-     * <code>MICRESPONSE = 32774;</code>
+     * <code>MEDIA_MESSAGE_ACK = 32772;</code>
      */
-    MICRESPONSE(32774),
+    MEDIA_MESSAGE_ACK(32772),
     /**
-     * <code>VIDEOFOCUSREQUESTNOTIFICATION = 32775;</code>
+     * <code>MEDIA_MESSAGE_MICROPHONE_REQUEST = 32773;</code>
      */
-    VIDEOFOCUSREQUESTNOTIFICATION(32775),
+    MEDIA_MESSAGE_MICROPHONE_REQUEST(32773),
     /**
-     * <code>VIDEOFOCUSNOTIFICATION = 32776;</code>
+     * <code>MEDIA_MESSAGE_MICROPHONE_RESPONSE = 32774;</code>
      */
-    VIDEOFOCUSNOTIFICATION(32776),
+    MEDIA_MESSAGE_MICROPHONE_RESPONSE(32774),
+    /**
+     * <code>MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST = 32775;</code>
+     */
+    MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST(32775),
+    /**
+     * <code>MEDIA_MESSAGE_VIDEO_FOCUS_NOTIFICATION = 32776;</code>
+     */
+    MEDIA_MESSAGE_VIDEO_FOCUS_NOTIFICATION(32776),
+    /**
+     * <code>MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST = 32777;</code>
+     */
+    MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST(32777),
+    /**
+     * <code>MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY = 32778;</code>
+     */
+    MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY(32778),
+    /**
+     * <code>MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION = 32779;</code>
+     */
+    MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION(32779),
     ;
 
     /**
-     * <code>SETUPREQUEST = 32768;</code>
+     * <code>MEDIA_MESSAGE_DATA = 0;</code>
      */
-    public static final int SETUPREQUEST_VALUE = 32768;
+    public static final int MEDIA_MESSAGE_DATA_VALUE = 0;
     /**
-     * <code>STARTREQUEST = 32769;</code>
+     * <code>MEDIA_MESSAGE_CODEC_CONFIG = 1;</code>
      */
-    public static final int STARTREQUEST_VALUE = 32769;
+    public static final int MEDIA_MESSAGE_CODEC_CONFIG_VALUE = 1;
     /**
-     * <code>STOPREQUEST = 32770;</code>
+     * <code>MEDIA_MESSAGE_SETUP = 32768;</code>
      */
-    public static final int STOPREQUEST_VALUE = 32770;
+    public static final int MEDIA_MESSAGE_SETUP_VALUE = 32768;
     /**
-     * <code>CONFIGRESPONSE = 32771;</code>
+     * <code>MEDIA_MESSAGE_START = 32769;</code>
      */
-    public static final int CONFIGRESPONSE_VALUE = 32771;
+    public static final int MEDIA_MESSAGE_START_VALUE = 32769;
     /**
-     * <code>ACK = 32772;</code>
+     * <code>MEDIA_MESSAGE_STOP = 32770;</code>
      */
-    public static final int ACK_VALUE = 32772;
+    public static final int MEDIA_MESSAGE_STOP_VALUE = 32770;
     /**
-     * <code>MICREQUEST = 32773;</code>
+     * <code>MEDIA_MESSAGE_CONFIG = 32771;</code>
      */
-    public static final int MICREQUEST_VALUE = 32773;
+    public static final int MEDIA_MESSAGE_CONFIG_VALUE = 32771;
     /**
-     * <code>MICRESPONSE = 32774;</code>
+     * <code>MEDIA_MESSAGE_ACK = 32772;</code>
      */
-    public static final int MICRESPONSE_VALUE = 32774;
+    public static final int MEDIA_MESSAGE_ACK_VALUE = 32772;
     /**
-     * <code>VIDEOFOCUSREQUESTNOTIFICATION = 32775;</code>
+     * <code>MEDIA_MESSAGE_MICROPHONE_REQUEST = 32773;</code>
      */
-    public static final int VIDEOFOCUSREQUESTNOTIFICATION_VALUE = 32775;
+    public static final int MEDIA_MESSAGE_MICROPHONE_REQUEST_VALUE = 32773;
     /**
-     * <code>VIDEOFOCUSNOTIFICATION = 32776;</code>
+     * <code>MEDIA_MESSAGE_MICROPHONE_RESPONSE = 32774;</code>
      */
-    public static final int VIDEOFOCUSNOTIFICATION_VALUE = 32776;
+    public static final int MEDIA_MESSAGE_MICROPHONE_RESPONSE_VALUE = 32774;
+    /**
+     * <code>MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST = 32775;</code>
+     */
+    public static final int MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST_VALUE = 32775;
+    /**
+     * <code>MEDIA_MESSAGE_VIDEO_FOCUS_NOTIFICATION = 32776;</code>
+     */
+    public static final int MEDIA_MESSAGE_VIDEO_FOCUS_NOTIFICATION_VALUE = 32776;
+    /**
+     * <code>MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST = 32777;</code>
+     */
+    public static final int MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST_VALUE = 32777;
+    /**
+     * <code>MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY = 32778;</code>
+     */
+    public static final int MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY_VALUE = 32778;
+    /**
+     * <code>MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION = 32779;</code>
+     */
+    public static final int MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION_VALUE = 32779;
 
 
     public final int getNumber() {
@@ -116,15 +156,20 @@ public final class Media {
      */
     public static MsgType forNumber(int value) {
       switch (value) {
-        case 32768: return SETUPREQUEST;
-        case 32769: return STARTREQUEST;
-        case 32770: return STOPREQUEST;
-        case 32771: return CONFIGRESPONSE;
-        case 32772: return ACK;
-        case 32773: return MICREQUEST;
-        case 32774: return MICRESPONSE;
-        case 32775: return VIDEOFOCUSREQUESTNOTIFICATION;
-        case 32776: return VIDEOFOCUSNOTIFICATION;
+        case 0: return MEDIA_MESSAGE_DATA;
+        case 1: return MEDIA_MESSAGE_CODEC_CONFIG;
+        case 32768: return MEDIA_MESSAGE_SETUP;
+        case 32769: return MEDIA_MESSAGE_START;
+        case 32770: return MEDIA_MESSAGE_STOP;
+        case 32771: return MEDIA_MESSAGE_CONFIG;
+        case 32772: return MEDIA_MESSAGE_ACK;
+        case 32773: return MEDIA_MESSAGE_MICROPHONE_REQUEST;
+        case 32774: return MEDIA_MESSAGE_MICROPHONE_RESPONSE;
+        case 32775: return MEDIA_MESSAGE_VIDEO_FOCUS_REQUEST;
+        case 32776: return MEDIA_MESSAGE_VIDEO_FOCUS_NOTIFICATION;
+        case 32777: return MEDIA_MESSAGE_UPDATE_UI_CONFIG_REQUEST;
+        case 32778: return MEDIA_MESSAGE_UPDATE_UI_CONFIG_REPLY;
+        case 32779: return MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATION;
         default: return null;
       }
     }
@@ -444,23 +489,39 @@ public final class Media {
   public enum VideoFocusMode
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
-     * <code>FOCUSED = 1;</code>
+     * <code>VIDEO_FOCUS_PROJECTED = 1;</code>
      */
-    FOCUSED(1),
+    VIDEO_FOCUS_PROJECTED(1),
     /**
-     * <code>UNFOCUSED = 2;</code>
+     * <code>VIDEO_FOCUS_NATIVE = 2;</code>
      */
-    UNFOCUSED(2),
+    VIDEO_FOCUS_NATIVE(2),
+    /**
+     * <code>VIDEO_FOCUS_NATIVE_TRANSIENT = 3;</code>
+     */
+    VIDEO_FOCUS_NATIVE_TRANSIENT(3),
+    /**
+     * <code>VIDEO_FOCUS_PROJECTED_NO_INPUT_FOCUS = 4;</code>
+     */
+    VIDEO_FOCUS_PROJECTED_NO_INPUT_FOCUS(4),
     ;
 
     /**
-     * <code>FOCUSED = 1;</code>
+     * <code>VIDEO_FOCUS_PROJECTED = 1;</code>
      */
-    public static final int FOCUSED_VALUE = 1;
+    public static final int VIDEO_FOCUS_PROJECTED_VALUE = 1;
     /**
-     * <code>UNFOCUSED = 2;</code>
+     * <code>VIDEO_FOCUS_NATIVE = 2;</code>
      */
-    public static final int UNFOCUSED_VALUE = 2;
+    public static final int VIDEO_FOCUS_NATIVE_VALUE = 2;
+    /**
+     * <code>VIDEO_FOCUS_NATIVE_TRANSIENT = 3;</code>
+     */
+    public static final int VIDEO_FOCUS_NATIVE_TRANSIENT_VALUE = 3;
+    /**
+     * <code>VIDEO_FOCUS_PROJECTED_NO_INPUT_FOCUS = 4;</code>
+     */
+    public static final int VIDEO_FOCUS_PROJECTED_NO_INPUT_FOCUS_VALUE = 4;
 
 
     public final int getNumber() {
@@ -483,8 +544,10 @@ public final class Media {
      */
     public static VideoFocusMode forNumber(int value) {
       switch (value) {
-        case 1: return FOCUSED;
-        case 2: return UNFOCUSED;
+        case 1: return VIDEO_FOCUS_PROJECTED;
+        case 2: return VIDEO_FOCUS_NATIVE;
+        case 3: return VIDEO_FOCUS_NATIVE_TRANSIENT;
+        case 4: return VIDEO_FOCUS_PROJECTED_NO_INPUT_FOCUS;
         default: return null;
       }
     }
@@ -3980,7 +4043,7 @@ public final class Media {
     }
     private VideoFocusRequestNotification() {
       mode_ = 1;
-      reason_ = 1;
+      reason_ = 0;
     }
 
     @java.lang.Override
@@ -4009,23 +4072,31 @@ public final class Media {
     public enum VideoFocusReason
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
-       * <code>REASON_1 = 1;</code>
+       * <code>UNKNOWN = 0;</code>
        */
-      REASON_1(1),
+      UNKNOWN(0),
       /**
-       * <code>REASON_2 = 2;</code>
+       * <code>PHONE_SCREEN_OFF = 1;</code>
        */
-      REASON_2(2),
+      PHONE_SCREEN_OFF(1),
+      /**
+       * <code>LAUNCH_NATIVE = 2;</code>
+       */
+      LAUNCH_NATIVE(2),
       ;
 
       /**
-       * <code>REASON_1 = 1;</code>
+       * <code>UNKNOWN = 0;</code>
        */
-      public static final int REASON_1_VALUE = 1;
+      public static final int UNKNOWN_VALUE = 0;
       /**
-       * <code>REASON_2 = 2;</code>
+       * <code>PHONE_SCREEN_OFF = 1;</code>
        */
-      public static final int REASON_2_VALUE = 2;
+      public static final int PHONE_SCREEN_OFF_VALUE = 1;
+      /**
+       * <code>LAUNCH_NATIVE = 2;</code>
+       */
+      public static final int LAUNCH_NATIVE_VALUE = 2;
 
 
       public final int getNumber() {
@@ -4048,8 +4119,9 @@ public final class Media {
        */
       public static VideoFocusReason forNumber(int value) {
         switch (value) {
-          case 1: return REASON_1;
-          case 2: return REASON_2;
+          case 0: return UNKNOWN;
+          case 1: return PHONE_SCREEN_OFF;
+          case 2: return LAUNCH_NATIVE;
           default: return null;
         }
       }
@@ -4134,11 +4206,11 @@ public final class Media {
      */
     @java.lang.Override public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode getMode() {
       com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.forNumber(mode_);
-      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.FOCUSED : result;
+      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.VIDEO_FOCUS_PROJECTED : result;
     }
 
     public static final int REASON_FIELD_NUMBER = 3;
-    private int reason_ = 1;
+    private int reason_ = 0;
     /**
      * <code>optional .com.andrerinas.headunitrevived.aap.protocol.proto.VideoFocusRequestNotification.VideoFocusReason reason = 3;</code>
      * @return Whether the reason field is set.
@@ -4152,7 +4224,7 @@ public final class Media {
      */
     @java.lang.Override public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason getReason() {
       com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.forNumber(reason_);
-      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.REASON_1 : result;
+      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.UNKNOWN : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -4387,7 +4459,7 @@ public final class Media {
         bitField0_ = 0;
         dispChannelId_ = 0;
         mode_ = 1;
-        reason_ = 1;
+        reason_ = 0;
         return this;
       }
 
@@ -4620,7 +4692,7 @@ public final class Media {
       @java.lang.Override
       public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode getMode() {
         com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.forNumber(mode_);
-        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.FOCUSED : result;
+        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.VIDEO_FOCUS_PROJECTED : result;
       }
       /**
        * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.VideoFocusMode mode = 2;</code>
@@ -4647,7 +4719,7 @@ public final class Media {
         return this;
       }
 
-      private int reason_ = 1;
+      private int reason_ = 0;
       /**
        * <code>optional .com.andrerinas.headunitrevived.aap.protocol.proto.VideoFocusRequestNotification.VideoFocusReason reason = 3;</code>
        * @return Whether the reason field is set.
@@ -4662,7 +4734,7 @@ public final class Media {
       @java.lang.Override
       public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason getReason() {
         com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.forNumber(reason_);
-        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.REASON_1 : result;
+        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusRequestNotification.VideoFocusReason.UNKNOWN : result;
       }
       /**
        * <code>optional .com.andrerinas.headunitrevived.aap.protocol.proto.VideoFocusRequestNotification.VideoFocusReason reason = 3;</code>
@@ -4684,7 +4756,7 @@ public final class Media {
        */
       public Builder clearReason() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        reason_ = 1;
+        reason_ = 0;
         onChanged();
         return this;
       }
@@ -4830,7 +4902,7 @@ public final class Media {
      */
     @java.lang.Override public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode getMode() {
       com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.forNumber(mode_);
-      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.FOCUSED : result;
+      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.VIDEO_FOCUS_PROJECTED : result;
     }
 
     public static final int UNSOLICITED_FIELD_NUMBER = 2;
@@ -5250,7 +5322,7 @@ public final class Media {
       @java.lang.Override
       public com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode getMode() {
         com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode result = com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.forNumber(mode_);
-        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.FOCUSED : result;
+        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Media.VideoFocusMode.VIDEO_FOCUS_PROJECTED : result;
       }
       /**
        * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.VideoFocusMode mode = 1;</code>
@@ -6861,37 +6933,48 @@ public final class Media {
       "\n\004open\030\001 \002(\010\022\023\n\013anc_enabled\030\002 \001(\010\022\022\n\nec_" +
       "enabled\030\003 \001(\010\022\023\n\013max_unacked\030\004 \001(\005\"8\n\022Mi" +
       "crophoneResponse\022\016\n\006status\030\001 \002(\005\022\022\n\nsess" +
-      "ion_id\030\002 \002(\r\"\254\002\n\035VideoFocusRequestNotifi" +
+      "ion_id\030\002 \002(\r\"\306\002\n\035VideoFocusRequestNotifi" +
       "cation\022\027\n\017disp_channel_id\030\001 \001(\005\022O\n\004mode\030" +
       "\002 \002(\0162A.com.andrerinas.headunitrevived.a" +
       "ap.protocol.proto.VideoFocusMode\022q\n\006reas" +
       "on\030\003 \001(\0162a.com.andrerinas.headunitrevive" +
       "d.aap.protocol.proto.VideoFocusRequestNo" +
-      "tification.VideoFocusReason\".\n\020VideoFocu" +
-      "sReason\022\014\n\010REASON_1\020\001\022\014\n\010REASON_2\020\002\"~\n\026V" +
-      "ideoFocusNotification\022O\n\004mode\030\001 \002(\0162A.co" +
-      "m.andrerinas.headunitrevived.aap.protoco" +
-      "l.proto.VideoFocusMode\022\023\n\013unsolicited\030\002 " +
-      "\002(\010\"!\n\021MediaSetupRequest\022\014\n\004type\030\001 \002(\r\"\276" +
-      "\001\n\006Config\022V\n\006status\030\001 \002(\0162F.com.andrerin" +
-      "as.headunitrevived.aap.protocol.proto.Co" +
-      "nfig.ConfigStatus\022\023\n\013max_unacked\030\002 \002(\r\022\035" +
-      "\n\025configuration_indices\030\003 \003(\r\"(\n\014ConfigS" +
-      "tatus\022\n\n\006DEVICE\020\001\022\014\n\010HEADUNIT\020\002*\315\001\n\007MsgT" +
-      "ype\022\022\n\014SETUPREQUEST\020\200\200\002\022\022\n\014STARTREQUEST\020" +
-      "\201\200\002\022\021\n\013STOPREQUEST\020\202\200\002\022\024\n\016CONFIGRESPONSE" +
-      "\020\203\200\002\022\t\n\003ACK\020\204\200\002\022\020\n\nMICREQUEST\020\205\200\002\022\021\n\013MIC" +
-      "RESPONSE\020\206\200\002\022#\n\035VIDEOFOCUSREQUESTNOTIFIC" +
-      "ATION\020\207\200\002\022\034\n\026VIDEOFOCUSNOTIFICATION\020\210\200\002*" +
-      "\335\001\n\016MediaCodecType\022\031\n\025MEDIA_CODEC_AUDIO_" +
-      "PCM\020\001\022\034\n\030MEDIA_CODEC_AUDIO_AAC_LC\020\002\022\035\n\031M" +
-      "EDIA_CODEC_VIDEO_H264_BP\020\003\022!\n\035MEDIA_CODE" +
-      "C_AUDIO_AAC_LC_ADTS\020\004\022\031\n\025MEDIA_CODEC_VID" +
-      "EO_VP9\020\005\022\031\n\025MEDIA_CODEC_VIDEO_AV1\020\006\022\032\n\026M" +
-      "EDIA_CODEC_VIDEO_H265\020\007*I\n\017AudioStreamTy" +
-      "pe\022\010\n\004NONE\020\000\022\n\n\006SPEECH\020\001\022\n\n\006SYSTEM\020\002\022\t\n\005" +
-      "MEDIA\020\003\022\t\n\005ALARM\020\004*,\n\016VideoFocusMode\022\013\n\007" +
-      "FOCUSED\020\001\022\r\n\tUNFOCUSED\020\002B\007B\005Media"
+      "tification.VideoFocusReason\"H\n\020VideoFocu" +
+      "sReason\022\013\n\007UNKNOWN\020\000\022\024\n\020PHONE_SCREEN_OFF" +
+      "\020\001\022\021\n\rLAUNCH_NATIVE\020\002\"~\n\026VideoFocusNotif" +
+      "ication\022O\n\004mode\030\001 \002(\0162A.com.andrerinas.h" +
+      "eadunitrevived.aap.protocol.proto.VideoF" +
+      "ocusMode\022\023\n\013unsolicited\030\002 \002(\010\"!\n\021MediaSe" +
+      "tupRequest\022\014\n\004type\030\001 \002(\r\"\276\001\n\006Config\022V\n\006s" +
+      "tatus\030\001 \002(\0162F.com.andrerinas.headunitrev" +
+      "ived.aap.protocol.proto.Config.ConfigSta" +
+      "tus\022\023\n\013max_unacked\030\002 \002(\r\022\035\n\025configuratio" +
+      "n_indices\030\003 \003(\r\"(\n\014ConfigStatus\022\n\n\006DEVIC" +
+      "E\020\001\022\014\n\010HEADUNIT\020\002*\372\003\n\007MsgType\022\026\n\022MEDIA_M" +
+      "ESSAGE_DATA\020\000\022\036\n\032MEDIA_MESSAGE_CODEC_CON" +
+      "FIG\020\001\022\031\n\023MEDIA_MESSAGE_SETUP\020\200\200\002\022\031\n\023MEDI" +
+      "A_MESSAGE_START\020\201\200\002\022\030\n\022MEDIA_MESSAGE_STO" +
+      "P\020\202\200\002\022\032\n\024MEDIA_MESSAGE_CONFIG\020\203\200\002\022\027\n\021MED" +
+      "IA_MESSAGE_ACK\020\204\200\002\022&\n MEDIA_MESSAGE_MICR" +
+      "OPHONE_REQUEST\020\205\200\002\022\'\n!MEDIA_MESSAGE_MICR" +
+      "OPHONE_RESPONSE\020\206\200\002\022\'\n!MEDIA_MESSAGE_VID" +
+      "EO_FOCUS_REQUEST\020\207\200\002\022,\n&MEDIA_MESSAGE_VI" +
+      "DEO_FOCUS_NOTIFICATION\020\210\200\002\022,\n&MEDIA_MESS" +
+      "AGE_UPDATE_UI_CONFIG_REQUEST\020\211\200\002\022*\n$MEDI" +
+      "A_MESSAGE_UPDATE_UI_CONFIG_REPLY\020\212\200\002\0220\n*" +
+      "MEDIA_MESSAGE_AUDIO_UNDERFLOW_NOTIFICATI" +
+      "ON\020\213\200\002*\335\001\n\016MediaCodecType\022\031\n\025MEDIA_CODEC" +
+      "_AUDIO_PCM\020\001\022\034\n\030MEDIA_CODEC_AUDIO_AAC_LC" +
+      "\020\002\022\035\n\031MEDIA_CODEC_VIDEO_H264_BP\020\003\022!\n\035MED" +
+      "IA_CODEC_AUDIO_AAC_LC_ADTS\020\004\022\031\n\025MEDIA_CO" +
+      "DEC_VIDEO_VP9\020\005\022\031\n\025MEDIA_CODEC_VIDEO_AV1" +
+      "\020\006\022\032\n\026MEDIA_CODEC_VIDEO_H265\020\007*I\n\017AudioS" +
+      "treamType\022\010\n\004NONE\020\000\022\n\n\006SPEECH\020\001\022\n\n\006SYSTE" +
+      "M\020\002\022\t\n\005MEDIA\020\003\022\t\n\005ALARM\020\004*\217\001\n\016VideoFocus" +
+      "Mode\022\031\n\025VIDEO_FOCUS_PROJECTED\020\001\022\026\n\022VIDEO" +
+      "_FOCUS_NATIVE\020\002\022 \n\034VIDEO_FOCUS_NATIVE_TR" +
+      "ANSIENT\020\003\022(\n$VIDEO_FOCUS_PROJECTED_NO_IN" +
+      "PUT_FOCUS\020\004B\007B\005Media"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

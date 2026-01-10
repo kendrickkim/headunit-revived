@@ -9,23 +9,33 @@ import "sensors.proto";
 
 enum ControlMsgType
 {
-    MEDIADATA = 0x00;
-    CODECDATA = 0x01;
-    VERSIONRESPONSE = 0x02;
-    HANDSHAKE = 0x03;
-    SERVICEDISCOVERYREQUEST = 0x05;
-    SERVICEDISCOVERYRESPONSE = 0x06;
-    CHANNELOPENREQUEST = 0x07;
-    CHANNELOPENRESPONSE = 0x08;
-    PINGREQUEST = 0x0B;
-    PINGRESPONSE = 0x0C;
-    NAVFOCUSREQUESTNOTIFICATION = 0x0D;
-    NAVFOCUSRNOTIFICATION = 0x0E;
-    BYEYEREQUEST = 0x0F;
-    BYEYERESPONSE = 0x10;
-    VOICESESSIONNOTIFICATION = 0x11;
-    AUDIOFOCUSREQUESTNOTFICATION = 0x12;
-    AUDIOFOCUSNOTFICATION = 0x13;
+    MESSAGE_VERSION_REQUEST = 1;
+    MESSAGE_VERSION_RESPONSE = 2;
+    MESSAGE_ENCAPSULATED_SSL = 3;
+    MESSAGE_AUTH_COMPLETE = 4;
+    MESSAGE_SERVICE_DISCOVERY_REQUEST = 5;
+    MESSAGE_SERVICE_DISCOVERY_RESPONSE = 6;
+    MESSAGE_CHANNEL_OPEN_REQUEST = 7;
+    MESSAGE_CHANNEL_OPEN_RESPONSE = 8;
+    MESSAGE_CHANNEL_CLOSE_NOTIFICATION = 9;
+    MESSAGE_PING_REQUEST = 11;
+    MESSAGE_PING_RESPONSE = 12;
+    MESSAGE_NAV_FOCUS_REQUEST = 13;
+    MESSAGE_NAV_FOCUS_NOTIFICATION = 14;
+    MESSAGE_BYEBYE_REQUEST = 15;
+    MESSAGE_BYEBYE_RESPONSE = 16;
+    MESSAGE_VOICE_SESSION_NOTIFICATION = 17;
+    MESSAGE_AUDIO_FOCUS_REQUEST = 18;
+    MESSAGE_AUDIO_FOCUS_NOTIFICATION = 19;
+    MESSAGE_CAR_CONNECTED_DEVICES_REQUEST = 20;
+    MESSAGE_CAR_CONNECTED_DEVICES_RESPONSE = 21;
+    MESSAGE_USER_SWITCH_REQUEST = 22;
+    MESSAGE_BATTERY_STATUS_NOTIFICATION = 23;
+    MESSAGE_CALL_AVAILABILITY_STATUS = 24;
+    MESSAGE_USER_SWITCH_RESPONSE = 25;
+    MESSAGE_SERVICE_DISCOVERY_UPDATE = 26;
+    MESSAGE_UNEXPECTED_MESSAGE = 255;
+    MESSAGE_FRAMING_ERROR = 65535;
 }
 
 enum BluetoothPairingMethod
@@ -34,6 +44,15 @@ enum BluetoothPairingMethod
     A2DP = 2;
     METHOD_3 = 3;
     HFP = 4;
+}
+
+enum ByeByeReason
+{
+    USER_SELECTION = 1;
+    DEVICE_SWITCH = 2;
+    NOT_SUPPORTED = 3;
+    NOT_CURRENTLY_SUPPORTED = 4;
+    PROBE_SUPPORTED = 5;
 }
 
 message Service
@@ -150,13 +169,6 @@ message Service
         optional string caller_id = 4;
         optional string caller_number_type = 5;
         optional bytes thumbnail = 6;
-
-        // caller_number
-        // required uint32 caller_id
-        // caller_number_type
-        // optional bytes caller_thumbnail
-        // required PhoneStatus_State phone_state
-        // required int32 call_duration_seconds
     }
 
     message PhoneStatus_Input
@@ -200,8 +212,6 @@ message Service
     optional VendorExtensionService vendor_extension_service = 12;
     optional GenericNotificationService generic_notification_service = 13;
     optional WifiProjectionService wifi_projection_service = 14;
-    //radio_service = 7
-    //media_browser_service=11
 }
 
 message ServiceDiscoveryRequest
@@ -250,16 +260,11 @@ message PingResponse
 
 message ByeByeRequest
 {
-    enum ByeByeReason
-    {
-        QUIT = 1;
-    }
     required ByeByeReason reason = 1;
 }
 
 message ByeByeResponse
 {
-
 }
 
 message VoiceSessionNotification
@@ -301,7 +306,6 @@ message AudioFocusNotification
     optional bool unsolicited = 2;
 }
 
-
 enum NavFocusType
 {
     NAV_FOCUS_1 = 1;
@@ -318,46 +322,37 @@ message NavFocusNotification
     required NavFocusType focus_type = 1;
 }
 
-message GenericNotificationRequest
+message BatteryStatusNotification
 {
-    required string id = 1;
-    optional string text = 2;
-    optional string icon = 3;
+    required uint32 battery_level = 1;
+    optional uint32 time_remaining_s = 2;
+    optional bool critical_battery = 3;
 }
 
-message GenericNotification
+message ConnectedDevice
 {
-    required string id = 1;
-    required bool handled = 2;
+    optional string device_name = 1;
+    optional int32 device_id = 2;
 }
 
-message GenericNotificationsStart
+message CarConnectedDevices
 {
+    repeated ConnectedDevice connected_devices = 1;
+    optional bool unsolicited = 2;
+    optional bool final_list = 3 [default = true];
 }
 
-message GenericNotificationsStop
+message UserSwitchResponse
 {
-}
-
-message BluetoothPairingRequest
-{
-    required string phone_address = 1;
-    required BluetoothPairingMethod pairing_method = 2;
-}
-
-message BluetoothPairingResponse
-{
-    enum BluetoothPairingStatus
+    enum UserSwitchStatus
     {
-        NONE = 0;
-        OK = 1;
-        FAIL = 2;
+        STATUS_OK = 0;
     }
-    optional bool already_paired = 1;
-    optional BluetoothPairingStatus status = 2;
+    optional UserSwitchStatus status = 1;
+    optional ConnectedDevice selected_device = 2;
 }
 
-message BluetoothAuthData
+message CallAvailabilityStatus
 {
-    optional string data = 1;
+    optional bool call_available = 1;
 }

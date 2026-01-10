@@ -22,6 +22,9 @@ class ConnectedIntent: Intent(action) {
 }
 
 class DisconnectIntent : Intent(action) {
+    init {
+        setPackage(HeadUnit.packageName)
+    }
 
     companion object {
         const val action = "${HeadUnit.packageName}.ACTION_DISCONNECT"

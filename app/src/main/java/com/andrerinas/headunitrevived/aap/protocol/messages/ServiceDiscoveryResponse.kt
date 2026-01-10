@@ -16,7 +16,7 @@ import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import com.google.protobuf.Message
 
 class ServiceDiscoveryResponse(private val context: Context)
-    : AapMessage(Channel.ID_CTR, Control.ControlMsgType.SERVICEDISCOVERYRESPONSE_VALUE, makeProto(context)) {
+    : AapMessage(Channel.ID_CTR, Control.ControlMsgType.MESSAGE_SERVICE_DISCOVERY_RESPONSE_VALUE, makeProto(context)) {
 
     companion object {
         private fun makeProto(context: Context): Message {

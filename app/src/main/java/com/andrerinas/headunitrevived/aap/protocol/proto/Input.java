@@ -8764,7 +8764,7 @@ public final class Input {
      */
     @java.lang.Override public com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus getStatus() {
       com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus result = com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.forNumber(status_);
-      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.STATUS_OK : result;
+      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.STATUS_SUCCESS : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -9128,7 +9128,7 @@ public final class Input {
       @java.lang.Override
       public com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus getStatus() {
         com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus result = com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.forNumber(status_);
-        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.STATUS_OK : result;
+        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Common.MessageStatus.STATUS_SUCCESS : result;
       }
       /**
        * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.MessageStatus status = 1;</code>

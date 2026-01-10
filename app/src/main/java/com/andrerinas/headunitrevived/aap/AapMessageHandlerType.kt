@@ -25,6 +25,11 @@ internal class AapMessageHandlerType(
         val msgType = message.type
         val flags = message.flags
 
+        // Debug logging for non-media messages
+        if (message.channel != Channel.ID_VID && !Channel.isAudio(message.channel) && message.channel != Channel.ID_MIC) {
+             AppLog.i("RX: chan=${message.channel} (${Channel.name(message.channel)}) type=$msgType flags=$flags")
+        }
+
         if (message.isAudio && (msgType == 0 || msgType == 1)) {
             transport.sendMediaAck(message.channel)
             aapAudio.process(message)

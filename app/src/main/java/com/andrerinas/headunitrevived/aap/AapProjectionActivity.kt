@@ -34,6 +34,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     private val disconnectReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            AppLog.i("AapProjectionActivity received disconnect signal, finishing.")
             finish()
         }
     }
@@ -55,6 +56,13 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_headunit)
+
+        // Register disconnect receiver here to stay active even if activity is paused
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(disconnectReceiver, IntentFilters.disconnect, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(disconnectReceiver, IntentFilters.disconnect)
+        }
 
         videoDecoder.dimensionsListener = this
 
@@ -101,17 +109,15 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onPause() {
         super.onPause()
-        unregisterReceiver(disconnectReceiver)
         unregisterReceiver(keyCodeReceiver)
+        // Disconnect receiver is unregistered in onDestroy
     }
 
     override fun onResume() {
         super.onResume()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
-            registerReceiver(disconnectReceiver, IntentFilters.disconnect, RECEIVER_NOT_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(keyCodeReceiver, IntentFilters.keyEvent, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(disconnectReceiver, IntentFilters.disconnect)
             registerReceiver(keyCodeReceiver, IntentFilters.keyEvent)
         }
         setFullscreen() // Call setFullscreen here as well
@@ -227,6 +233,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(disconnectReceiver)
         videoDecoder.dimensionsListener = null
     }
 

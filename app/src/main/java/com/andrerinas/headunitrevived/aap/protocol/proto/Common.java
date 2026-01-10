@@ -21,15 +21,263 @@ public final class Common {
   public enum MessageStatus
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
-     * <code>STATUS_OK = 0;</code>
+     * <code>STATUS_SUCCESS = 0;</code>
      */
-    STATUS_OK(0),
+    STATUS_SUCCESS(0),
+    /**
+     * <code>STATUS_UNSOLICITED_MESSAGE = 1;</code>
+     */
+    STATUS_UNSOLICITED_MESSAGE(1),
+    /**
+     * <code>STATUS_NO_COMPATIBLE_VERSION = -1;</code>
+     */
+    STATUS_NO_COMPATIBLE_VERSION(-1),
+    /**
+     * <code>STATUS_CERTIFICATE_ERROR = -2;</code>
+     */
+    STATUS_CERTIFICATE_ERROR(-2),
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE = -3;</code>
+     */
+    STATUS_AUTHENTICATION_FAILURE(-3),
+    /**
+     * <code>STATUS_INVALID_SERVICE = -4;</code>
+     */
+    STATUS_INVALID_SERVICE(-4),
+    /**
+     * <code>STATUS_INVALID_CHANNEL = -5;</code>
+     */
+    STATUS_INVALID_CHANNEL(-5),
+    /**
+     * <code>STATUS_INVALID_PRIORITY = -6;</code>
+     */
+    STATUS_INVALID_PRIORITY(-6),
+    /**
+     * <code>STATUS_INTERNAL_ERROR = -7;</code>
+     */
+    STATUS_INTERNAL_ERROR(-7),
+    /**
+     * <code>STATUS_MEDIA_CONFIG_MISMATCH = -8;</code>
+     */
+    STATUS_MEDIA_CONFIG_MISMATCH(-8),
+    /**
+     * <code>STATUS_INVALID_SENSOR = -9;</code>
+     */
+    STATUS_INVALID_SENSOR(-9),
+    /**
+     * <code>STATUS_BLUETOOTH_PAIRING_DELAYED = -10;</code>
+     */
+    STATUS_BLUETOOTH_PAIRING_DELAYED(-10),
+    /**
+     * <code>STATUS_BLUETOOTH_UNAVAILABLE = -11;</code>
+     */
+    STATUS_BLUETOOTH_UNAVAILABLE(-11),
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_ADDRESS = -12;</code>
+     */
+    STATUS_BLUETOOTH_INVALID_ADDRESS(-12),
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_PAIRING_METHOD = -13;</code>
+     */
+    STATUS_BLUETOOTH_INVALID_PAIRING_METHOD(-13),
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_AUTH_DATA = -14;</code>
+     */
+    STATUS_BLUETOOTH_INVALID_AUTH_DATA(-14),
+    /**
+     * <code>STATUS_BLUETOOTH_AUTH_DATA_MISMATCH = -15;</code>
+     */
+    STATUS_BLUETOOTH_AUTH_DATA_MISMATCH(-15),
+    /**
+     * <code>STATUS_BLUETOOTH_HFP_ANOTHER_CONNECTION = -16;</code>
+     */
+    STATUS_BLUETOOTH_HFP_ANOTHER_CONNECTION(-16),
+    /**
+     * <code>STATUS_BLUETOOTH_HFP_CONNECTION_FAILURE = -17;</code>
+     */
+    STATUS_BLUETOOTH_HFP_CONNECTION_FAILURE(-17),
+    /**
+     * <code>STATUS_KEYCODE_NOT_BOUND = -18;</code>
+     */
+    STATUS_KEYCODE_NOT_BOUND(-18),
+    /**
+     * <code>STATUS_RADIO_INVALID_STATION = -19;</code>
+     */
+    STATUS_RADIO_INVALID_STATION(-19),
+    /**
+     * <code>STATUS_INVALID_INPUT = -20;</code>
+     */
+    STATUS_INVALID_INPUT(-20),
+    /**
+     * <code>STATUS_RADIO_STATION_PRESETS_NOT_SUPPORTED = -21;</code>
+     */
+    STATUS_RADIO_STATION_PRESETS_NOT_SUPPORTED(-21),
+    /**
+     * <code>STATUS_RADIO_COMM_ERROR = -22;</code>
+     */
+    STATUS_RADIO_COMM_ERROR(-22),
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE_CERT_NOT_YET_VALID = -23;</code>
+     */
+    STATUS_AUTHENTICATION_FAILURE_CERT_NOT_YET_VALID(-23),
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE_CERT_EXPIRED = -24;</code>
+     */
+    STATUS_AUTHENTICATION_FAILURE_CERT_EXPIRED(-24),
+    /**
+     * <code>STATUS_PING_TIMEOUT = -25;</code>
+     */
+    STATUS_PING_TIMEOUT(-25),
+    /**
+     * <code>STATUS_COMMAND_NOT_SUPPORTED = -250;</code>
+     */
+    STATUS_COMMAND_NOT_SUPPORTED(-250),
+    /**
+     * <code>STATUS_FRAMING_ERROR = -251;</code>
+     */
+    STATUS_FRAMING_ERROR(-251),
+    /**
+     * <code>STATUS_UNEXPECTED_MESSAGE = -253;</code>
+     */
+    STATUS_UNEXPECTED_MESSAGE(-253),
+    /**
+     * <code>STATUS_BUSY = -254;</code>
+     */
+    STATUS_BUSY(-254),
+    /**
+     * <code>STATUS_OUT_OF_MEMORY = -255;</code>
+     */
+    STATUS_OUT_OF_MEMORY(-255),
     ;
 
     /**
-     * <code>STATUS_OK = 0;</code>
+     * <code>STATUS_SUCCESS = 0;</code>
      */
-    public static final int STATUS_OK_VALUE = 0;
+    public static final int STATUS_SUCCESS_VALUE = 0;
+    /**
+     * <code>STATUS_UNSOLICITED_MESSAGE = 1;</code>
+     */
+    public static final int STATUS_UNSOLICITED_MESSAGE_VALUE = 1;
+    /**
+     * <code>STATUS_NO_COMPATIBLE_VERSION = -1;</code>
+     */
+    public static final int STATUS_NO_COMPATIBLE_VERSION_VALUE = -1;
+    /**
+     * <code>STATUS_CERTIFICATE_ERROR = -2;</code>
+     */
+    public static final int STATUS_CERTIFICATE_ERROR_VALUE = -2;
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE = -3;</code>
+     */
+    public static final int STATUS_AUTHENTICATION_FAILURE_VALUE = -3;
+    /**
+     * <code>STATUS_INVALID_SERVICE = -4;</code>
+     */
+    public static final int STATUS_INVALID_SERVICE_VALUE = -4;
+    /**
+     * <code>STATUS_INVALID_CHANNEL = -5;</code>
+     */
+    public static final int STATUS_INVALID_CHANNEL_VALUE = -5;
+    /**
+     * <code>STATUS_INVALID_PRIORITY = -6;</code>
+     */
+    public static final int STATUS_INVALID_PRIORITY_VALUE = -6;
+    /**
+     * <code>STATUS_INTERNAL_ERROR = -7;</code>
+     */
+    public static final int STATUS_INTERNAL_ERROR_VALUE = -7;
+    /**
+     * <code>STATUS_MEDIA_CONFIG_MISMATCH = -8;</code>
+     */
+    public static final int STATUS_MEDIA_CONFIG_MISMATCH_VALUE = -8;
+    /**
+     * <code>STATUS_INVALID_SENSOR = -9;</code>
+     */
+    public static final int STATUS_INVALID_SENSOR_VALUE = -9;
+    /**
+     * <code>STATUS_BLUETOOTH_PAIRING_DELAYED = -10;</code>
+     */
+    public static final int STATUS_BLUETOOTH_PAIRING_DELAYED_VALUE = -10;
+    /**
+     * <code>STATUS_BLUETOOTH_UNAVAILABLE = -11;</code>
+     */
+    public static final int STATUS_BLUETOOTH_UNAVAILABLE_VALUE = -11;
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_ADDRESS = -12;</code>
+     */
+    public static final int STATUS_BLUETOOTH_INVALID_ADDRESS_VALUE = -12;
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_PAIRING_METHOD = -13;</code>
+     */
+    public static final int STATUS_BLUETOOTH_INVALID_PAIRING_METHOD_VALUE = -13;
+    /**
+     * <code>STATUS_BLUETOOTH_INVALID_AUTH_DATA = -14;</code>
+     */
+    public static final int STATUS_BLUETOOTH_INVALID_AUTH_DATA_VALUE = -14;
+    /**
+     * <code>STATUS_BLUETOOTH_AUTH_DATA_MISMATCH = -15;</code>
+     */
+    public static final int STATUS_BLUETOOTH_AUTH_DATA_MISMATCH_VALUE = -15;
+    /**
+     * <code>STATUS_BLUETOOTH_HFP_ANOTHER_CONNECTION = -16;</code>
+     */
+    public static final int STATUS_BLUETOOTH_HFP_ANOTHER_CONNECTION_VALUE = -16;
+    /**
+     * <code>STATUS_BLUETOOTH_HFP_CONNECTION_FAILURE = -17;</code>
+     */
+    public static final int STATUS_BLUETOOTH_HFP_CONNECTION_FAILURE_VALUE = -17;
+    /**
+     * <code>STATUS_KEYCODE_NOT_BOUND = -18;</code>
+     */
+    public static final int STATUS_KEYCODE_NOT_BOUND_VALUE = -18;
+    /**
+     * <code>STATUS_RADIO_INVALID_STATION = -19;</code>
+     */
+    public static final int STATUS_RADIO_INVALID_STATION_VALUE = -19;
+    /**
+     * <code>STATUS_INVALID_INPUT = -20;</code>
+     */
+    public static final int STATUS_INVALID_INPUT_VALUE = -20;
+    /**
+     * <code>STATUS_RADIO_STATION_PRESETS_NOT_SUPPORTED = -21;</code>
+     */
+    public static final int STATUS_RADIO_STATION_PRESETS_NOT_SUPPORTED_VALUE = -21;
+    /**
+     * <code>STATUS_RADIO_COMM_ERROR = -22;</code>
+     */
+    public static final int STATUS_RADIO_COMM_ERROR_VALUE = -22;
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE_CERT_NOT_YET_VALID = -23;</code>
+     */
+    public static final int STATUS_AUTHENTICATION_FAILURE_CERT_NOT_YET_VALID_VALUE = -23;
+    /**
+     * <code>STATUS_AUTHENTICATION_FAILURE_CERT_EXPIRED = -24;</code>
+     */
+    public static final int STATUS_AUTHENTICATION_FAILURE_CERT_EXPIRED_VALUE = -24;
+    /**
+     * <code>STATUS_PING_TIMEOUT = -25;</code>
+     */
+    public static final int STATUS_PING_TIMEOUT_VALUE = -25;
+    /**
+     * <code>STATUS_COMMAND_NOT_SUPPORTED = -250;</code>
+     */
+    public static final int STATUS_COMMAND_NOT_SUPPORTED_VALUE = -250;
+    /**
+     * <code>STATUS_FRAMING_ERROR = -251;</code>
+     */
+    public static final int STATUS_FRAMING_ERROR_VALUE = -251;
+    /**
+     * <code>STATUS_UNEXPECTED_MESSAGE = -253;</code>
+     */
+    public static final int STATUS_UNEXPECTED_MESSAGE_VALUE = -253;
+    /**
+     * <code>STATUS_BUSY = -254;</code>
+     */
+    public static final int STATUS_BUSY_VALUE = -254;
+    /**
+     * <code>STATUS_OUT_OF_MEMORY = -255;</code>
+     */
+    public static final int STATUS_OUT_OF_MEMORY_VALUE = -255;
 
 
     public final int getNumber() {
@@ -52,7 +300,38 @@ public final class Common {
      */
     public static MessageStatus forNumber(int value) {
       switch (value) {
-        case 0: return STATUS_OK;
+        case 0: return STATUS_SUCCESS;
+        case 1: return STATUS_UNSOLICITED_MESSAGE;
+        case -1: return STATUS_NO_COMPATIBLE_VERSION;
+        case -2: return STATUS_CERTIFICATE_ERROR;
+        case -3: return STATUS_AUTHENTICATION_FAILURE;
+        case -4: return STATUS_INVALID_SERVICE;
+        case -5: return STATUS_INVALID_CHANNEL;
+        case -6: return STATUS_INVALID_PRIORITY;
+        case -7: return STATUS_INTERNAL_ERROR;
+        case -8: return STATUS_MEDIA_CONFIG_MISMATCH;
+        case -9: return STATUS_INVALID_SENSOR;
+        case -10: return STATUS_BLUETOOTH_PAIRING_DELAYED;
+        case -11: return STATUS_BLUETOOTH_UNAVAILABLE;
+        case -12: return STATUS_BLUETOOTH_INVALID_ADDRESS;
+        case -13: return STATUS_BLUETOOTH_INVALID_PAIRING_METHOD;
+        case -14: return STATUS_BLUETOOTH_INVALID_AUTH_DATA;
+        case -15: return STATUS_BLUETOOTH_AUTH_DATA_MISMATCH;
+        case -16: return STATUS_BLUETOOTH_HFP_ANOTHER_CONNECTION;
+        case -17: return STATUS_BLUETOOTH_HFP_CONNECTION_FAILURE;
+        case -18: return STATUS_KEYCODE_NOT_BOUND;
+        case -19: return STATUS_RADIO_INVALID_STATION;
+        case -20: return STATUS_INVALID_INPUT;
+        case -21: return STATUS_RADIO_STATION_PRESETS_NOT_SUPPORTED;
+        case -22: return STATUS_RADIO_COMM_ERROR;
+        case -23: return STATUS_AUTHENTICATION_FAILURE_CERT_NOT_YET_VALID;
+        case -24: return STATUS_AUTHENTICATION_FAILURE_CERT_EXPIRED;
+        case -25: return STATUS_PING_TIMEOUT;
+        case -250: return STATUS_COMMAND_NOT_SUPPORTED;
+        case -251: return STATUS_FRAMING_ERROR;
+        case -253: return STATUS_UNEXPECTED_MESSAGE;
+        case -254: return STATUS_BUSY;
+        case -255: return STATUS_OUT_OF_MEMORY;
         default: return null;
       }
     }
@@ -112,8 +391,41 @@ public final class Common {
   static {
     java.lang.String[] descriptorData = {
       "\n\014common.proto\0221com.andrerinas.headunitr" +
-      "evived.aap.protocol.proto*\036\n\rMessageStat" +
-      "us\022\r\n\tSTATUS_OK\020\000"
+      "evived.aap.protocol.proto*\323\n\n\rMessageSta" +
+      "tus\022\022\n\016STATUS_SUCCESS\020\000\022\036\n\032STATUS_UNSOLI" +
+      "CITED_MESSAGE\020\001\022)\n\034STATUS_NO_COMPATIBLE_" +
+      "VERSION\020\377\377\377\377\377\377\377\377\377\001\022%\n\030STATUS_CERTIFICATE" +
+      "_ERROR\020\376\377\377\377\377\377\377\377\377\001\022*\n\035STATUS_AUTHENTICATI" +
+      "ON_FAILURE\020\375\377\377\377\377\377\377\377\377\001\022#\n\026STATUS_INVALID_" +
+      "SERVICE\020\374\377\377\377\377\377\377\377\377\001\022#\n\026STATUS_INVALID_CHA" +
+      "NNEL\020\373\377\377\377\377\377\377\377\377\001\022$\n\027STATUS_INVALID_PRIORI" +
+      "TY\020\372\377\377\377\377\377\377\377\377\001\022\"\n\025STATUS_INTERNAL_ERROR\020\371" +
+      "\377\377\377\377\377\377\377\377\001\022)\n\034STATUS_MEDIA_CONFIG_MISMATC" +
+      "H\020\370\377\377\377\377\377\377\377\377\001\022\"\n\025STATUS_INVALID_SENSOR\020\367\377" +
+      "\377\377\377\377\377\377\377\001\022-\n STATUS_BLUETOOTH_PAIRING_DEL" +
+      "AYED\020\366\377\377\377\377\377\377\377\377\001\022)\n\034STATUS_BLUETOOTH_UNAV" +
+      "AILABLE\020\365\377\377\377\377\377\377\377\377\001\022-\n STATUS_BLUETOOTH_I" +
+      "NVALID_ADDRESS\020\364\377\377\377\377\377\377\377\377\001\0224\n\'STATUS_BLUE" +
+      "TOOTH_INVALID_PAIRING_METHOD\020\363\377\377\377\377\377\377\377\377\001\022" +
+      "/\n\"STATUS_BLUETOOTH_INVALID_AUTH_DATA\020\362\377" +
+      "\377\377\377\377\377\377\377\001\0220\n#STATUS_BLUETOOTH_AUTH_DATA_M" +
+      "ISMATCH\020\361\377\377\377\377\377\377\377\377\001\0224\n\'STATUS_BLUETOOTH_H" +
+      "FP_ANOTHER_CONNECTION\020\360\377\377\377\377\377\377\377\377\001\0224\n\'STAT" +
+      "US_BLUETOOTH_HFP_CONNECTION_FAILURE\020\357\377\377\377" +
+      "\377\377\377\377\377\001\022%\n\030STATUS_KEYCODE_NOT_BOUND\020\356\377\377\377\377" +
+      "\377\377\377\377\001\022)\n\034STATUS_RADIO_INVALID_STATION\020\355\377" +
+      "\377\377\377\377\377\377\377\001\022!\n\024STATUS_INVALID_INPUT\020\354\377\377\377\377\377\377" +
+      "\377\377\001\0227\n*STATUS_RADIO_STATION_PRESETS_NOT_" +
+      "SUPPORTED\020\353\377\377\377\377\377\377\377\377\001\022$\n\027STATUS_RADIO_COM" +
+      "M_ERROR\020\352\377\377\377\377\377\377\377\377\001\022=\n0STATUS_AUTHENTICAT" +
+      "ION_FAILURE_CERT_NOT_YET_VALID\020\351\377\377\377\377\377\377\377\377" +
+      "\001\0227\n*STATUS_AUTHENTICATION_FAILURE_CERT_" +
+      "EXPIRED\020\350\377\377\377\377\377\377\377\377\001\022 \n\023STATUS_PING_TIMEOU" +
+      "T\020\347\377\377\377\377\377\377\377\377\001\022)\n\034STATUS_COMMAND_NOT_SUPPO" +
+      "RTED\020\206\376\377\377\377\377\377\377\377\001\022!\n\024STATUS_FRAMING_ERROR\020" +
+      "\205\376\377\377\377\377\377\377\377\001\022&\n\031STATUS_UNEXPECTED_MESSAGE\020" +
+      "\203\376\377\377\377\377\377\377\377\001\022\030\n\013STATUS_BUSY\020\202\376\377\377\377\377\377\377\377\001\022!\n\024" +
+      "STATUS_OUT_OF_MEMORY\020\201\376\377\377\377\377\377\377\377\001"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

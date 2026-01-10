@@ -30,6 +30,7 @@ import com.andrerinas.headunitrevived.main.BackgroundNotification
 import com.andrerinas.headunitrevived.ssl.SingleKeyKeyManager
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
+import com.andrerinas.headunitrevived.aap.AapService
 import javax.net.ssl.SSLEngineResult
 
 class AapTransport(
@@ -118,6 +119,7 @@ class AapTransport(
 
     internal fun quit() {
         AppLog.i("AapTransport quitting")
+        AapService.isConnected = false
         context.sendBroadcast(DisconnectIntent())
         micRecorder.listener = null
         pollThread?.quit()

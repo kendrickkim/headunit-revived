@@ -46,10 +46,12 @@ https://github.com/mikereidis/headunit
   - Auto-Connect last session (if possible)
 
 ## Changelog
-### v.1.6.0-alpha
+### v.1.6.0
 - Fixed the selfmode not working outside the wifi bug
 - Redesign of App, Look and feel with modern Material 3
 - Better Settings
+- Huge Android Auto Protocol Updates
+- Clicking Exit in Android Auto now closes the projection
 
 ### v.1.5.0
 - Complete Rewrite of the Video decoder for better Video-Performance
