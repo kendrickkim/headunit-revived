@@ -87,6 +87,5 @@
     <string name="version">Version</string>
     <string name="about_title">About Headunit Revived</string>
     <string name="copyright">© 2025-%d André Rinas</string>
-    <string name="about_text_placeholder">This is a placeholder for the about text. You can add credits, licenses, or special thanks here.</string>
 </resources>
 
