@@ -48,7 +48,7 @@ android {
     defaultConfig {
         applicationId = "com.andrerinas.headunitrevived"
         minSdk = 21 // only for google play console. App should work in minSDK 19 or maybe 17
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 25
         versionName = "1.7.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -48,8 +48,6 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
 
 ## Next Steps:
 - Bugfixing
-- Better Wifi Mode (Autodetection, Scan for device) (https://github.com/andreknieriem/headunit-revived/issues/26)
-- Intent for tasker apps (https://github.com/andreknieriem/headunit-revived/issues/25)
 - Portrait Mode (https://github.com/andreknieriem/headunit-revived/issues/38)
 - Maybe:
   - Android SKD 17
@@ -57,6 +55,10 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
   - Auto-Connect last session (if possible)
 
 ## Changelog
+### v.1.7.0
+- Added WiFi Network Discovery (Port Scan) with Auto-Connect
+- Added Intent Support (`headunit://connect?ip=...`) for automation
+
 ### v.1.6.3
 - Added mandatory Safety Disclaimer on first start
 - Improved audio stability and fixed stuttering issues

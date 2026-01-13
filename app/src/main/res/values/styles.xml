@@ -23,7 +23,9 @@
 
     <style name="DarkAlertDialog" parent="Theme.Material3.DayNight.Dialog.Alert">
         <item name="colorPrimary">@color/brand_teal</item>
+        <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorSecondary">@color/brand_teal</item>
+        <item name="colorOnSecondary">@android:color/white</item>
         <item name="android:colorAccent">@color/brand_teal</item>
         <item name="colorSurface">@color/setting_background_color</item>
         <item name="android:background">@color/setting_background_color</item>
@@ -39,6 +41,7 @@
 
     <style name="DialogButton.Negative" parent="Widget.Material3.Button.TextButton">
         <item name="android:textColor">@color/brand_teal</item>
+        <item name="colorSecondary">@color/brand_teal</item>
     </style>
     <style name="DialogWindowTitle" parent="android:Widget.TextView">
         <item name="android:textColor">@color/text_primary</item>

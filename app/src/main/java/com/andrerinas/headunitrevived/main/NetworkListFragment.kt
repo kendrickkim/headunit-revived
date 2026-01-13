@@ -1,6 +1,6 @@
 package com.andrerinas.headunitrevived.main
 
-import android.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -41,7 +41,7 @@ class NetworkListFragment : Fragment(), NetworkDiscovery.Listener {
     private var networkCallback: ConnectivityManager.NetworkCallback? = null 
     private val ADD_ITEM_ID = 1002
     private val SCAN_ITEM_ID = 1003
-    private var scanDialog: AlertDialog? = null
+    private var scanDialog: androidx.appcompat.app.AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,13 +121,13 @@ class NetworkListFragment : Fragment(), NetworkDiscovery.Listener {
     }
 
     private fun showScanDialog() {
-        val builder = AlertDialog.Builder(requireContext(), R.style.DarkAlertDialog)
+        val builder = MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
         val progressBar = ProgressBar(requireContext())
         progressBar.setPadding(32, 32, 32, 32)
         builder.setView(progressBar)
         builder.setTitle("Scanning Network...")
         builder.setNegativeButton(R.string.cancel) { _, _ -> 
-            // networkDiscovery.stop()
+             networkDiscovery.stop()
         }
         builder.setCancelable(false)
         scanDialog = builder.show()

@@ -1,5 +1,9 @@
 # Changelog
 
+### v.1.7.0
+- Added WiFi Network Discovery (Port Scan) with Auto-Connect
+- Added Intent Support (`headunit://connect?ip=...`) for automation
+
 ### v.1.6.3
 - Added mandatory Safety Disclaimer on first start
 - Improved audio stability and fixed stuttering issues

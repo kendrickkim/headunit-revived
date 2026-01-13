@@ -170,6 +170,7 @@ class AapTransport(
 
     private fun handshake(connection: AccessoryConnection): Boolean {
         try {
+            SystemClock.sleep(100)
             val buffer = ByteArray(Messages.DEF_BUFFER_LENGTH)
 
             AppLog.d("Handshake: Starting version request. TS: ${SystemClock.elapsedRealtime()}")
