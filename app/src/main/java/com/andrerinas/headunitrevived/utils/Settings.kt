@@ -139,6 +139,10 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("force-legacy-decoder", false)
         set(value) { prefs.edit().putBoolean("force-legacy-decoder", value).apply() }
 
+    var wifiLauncherMode: Boolean
+        get() = prefs.getBoolean("wifi-launcher-mode", false)
+        set(value) { prefs.edit().putBoolean("wifi-launcher-mode", value).apply() }
+
     var videoCodec: String
         get() = prefs.getString("video-codec", "Auto")!!
         set(value) { prefs.edit().putString("video-codec", value).apply() }

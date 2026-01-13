@@ -73,6 +73,8 @@
     <string name="force_software_decoding_description">May fix issues on some devices, but is less performant</string>
     <string name="force_legacy_decoder">Use Synchronous Decoding</string>
     <string name="force_legacy_decoder_description">Use legacy decoding method. Try this if video freezes or stutters.</string>
+    <string name="wifi_launcher_mode">Wireless Headunit Server</string>
+    <string name="wifi_launcher_mode_description">Let the phone connect to this tablet (requires Wireless Launcher app on phone)</string>
     <string name="video_codec">Video Codec</string>
     <string name="fps_limit">FPS Limit</string>
     <string name="save">Save</string>
