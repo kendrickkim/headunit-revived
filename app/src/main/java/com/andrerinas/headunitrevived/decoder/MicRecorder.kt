@@ -13,8 +13,26 @@ class MicRecorder(private val micSampleRate: Int, private val context: Context) 
 
     private var audioRecord: AudioRecord? = null
 
-    private val micBufferSize = AudioRecord.getMinBufferSize(micSampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
-    private var micAudioBuf = ByteArray(micBufferSize)
+    private val micBufferSize: Int
+    private var micAudioBuf: ByteArray
+
+    // Indicates whether mic recording is available on this device
+    val isAvailable: Boolean
+
+    init {
+        val minSize = AudioRecord.getMinBufferSize(micSampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+        if (minSize <= 0) {
+            // Device doesn't support the requested audio config (common on API 16)
+            AppLog.w("MicRecorder: getMinBufferSize returned $minSize, mic recording unavailable")
+            micBufferSize = 0
+            micAudioBuf = ByteArray(0)
+            isAvailable = false
+        } else {
+            micBufferSize = minSize
+            micAudioBuf = ByteArray(minSize)
+            isAvailable = true
+        }
+    }
 
     private var threadMicAudioActive = false
     private var threadMicAudio: Thread? = null
@@ -59,6 +77,10 @@ class MicRecorder(private val micSampleRate: Int, private val context: Context) 
     }
 
     fun start(): Int {
+        if (!isAvailable) {
+            AppLog.w("MicRecorder: Cannot start, mic not available on this device")
+            return -4
+        }
         try {
             if (PermissionChecker.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 AppLog.e("No permission")

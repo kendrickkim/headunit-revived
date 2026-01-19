@@ -47,7 +47,7 @@ android {
 
     defaultConfig {
         applicationId = "com.andrerinas.headunitrevived"
-        minSdk = 17
+        minSdk = 16
         //minSdk = 21 // 21 only for google play console. App should work in minSDK 19 or maybe 17
         targetSdk = 36
         versionCode = 28

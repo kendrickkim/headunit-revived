@@ -6,6 +6,8 @@ import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 object SystemUI {
 
@@ -45,34 +47,18 @@ object SystemUI {
             }
         }
 
-        // Manual Inset Handling for Edge-to-Edge (Android 15+)
-        root.setOnApplyWindowInsetsListener { v, insets ->
+        // Manual Inset Handling using compat APIs (safe on API < 21)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insetsCompat ->
             if (fullscreen) {
                 v.setPadding(0, 0, 0, 0)
             } else {
-                val left: Int
-                val top: Int
-                val right: Int
-                val bottom: Int
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val bars = insets.getInsets(WindowInsets.Type.systemBars())
-                    left = bars.left
-                    top = bars.top
-                    right = bars.right
-                    bottom = bars.bottom
-                } else {
-                    left = insets.systemWindowInsetLeft
-                    top = insets.systemWindowInsetTop
-                    right = insets.systemWindowInsetRight
-                    bottom = insets.systemWindowInsetBottom
-                }
-                v.setPadding(left, top, right, bottom)
+                val bars = insetsCompat.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
             }
-            insets
+            insetsCompat
         }
-        
-        root.requestApplyInsets()
+
+        ViewCompat.requestApplyInsets(root)
     }
     
     // Compatibility method for SurfaceActivity (if we keep it calling hide)
