@@ -34,6 +34,7 @@ class VideoDecoder(private val settings: Settings) {
     private var mCodecConfigured: Boolean = false
     private var sps: ByteArray? = null
     private var pps: ByteArray? = null
+    private var timeoutCounter = 0
 
     // For asynchronous decoding (API >= 21)
     private val freeInputBuffers: BlockingQueue<Int> = ArrayBlockingQueue(1024)
@@ -136,7 +137,7 @@ class VideoDecoder(private val settings: Settings) {
                     currentOffset += nalUnitSize
                 }
             }
-    
+
             // 4. Initialize if not running (or stopped above)
             if (mCodec == null) {
                 if (mSurface == null || !mSurface!!.isValid) {
@@ -161,8 +162,6 @@ class VideoDecoder(private val settings: Settings) {
                             try {
                                 if (!configureDecoder("video/avc")) return
                                 mCodecConfigured = true
-                                onFirstFrameListener?.invoke()
-                                onFirstFrameListener = null
                             } catch (e: Exception) {
                                 AppLog.e("Failed to configure decoder", e)
                                 codec_stop("Configuration failed")
@@ -177,8 +176,6 @@ class VideoDecoder(private val settings: Settings) {
                         try {
                             if (!configureDecoder("video/hevc")) return
                             mCodecConfigured = true
-                            onFirstFrameListener?.invoke()
-                            onFirstFrameListener = null
                         } catch (e: Exception) {
                             AppLog.e("Failed to configure decoder", e)
                             codec_stop("Configuration failed")
@@ -314,6 +311,7 @@ class VideoDecoder(private val settings: Settings) {
             try {
                 val inputBufIndex = freeInputBuffers.poll(100, TimeUnit.MILLISECONDS) ?: -1
                 if (inputBufIndex >= 0) {
+                    timeoutCounter = 0
                     val buffer = mCodec!!.getInputBuffer(inputBufIndex) ?: return false
                     buffer.clear()
                     try {
@@ -326,6 +324,12 @@ class VideoDecoder(private val settings: Settings) {
                     return true
                 } else {
                     AppLog.e("dequeueInputBuffer timed out (queue empty). Frame will be dropped.")
+                    timeoutCounter++
+                    if (timeoutCounter > 20) {
+                        AppLog.w("Too many timeouts! Restarting codec...")
+                        codec_stop("Timeout limit reached")
+                        timeoutCounter = 0
+                    }
                     return false
                 }
             } catch (t: Throwable) {

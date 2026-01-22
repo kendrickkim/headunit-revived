@@ -34,6 +34,15 @@ class HomeFragment : Fragment() {
         override fun onReceive(context: Context?, intent: Intent?) {
             AppLog.i("HomeFragment received ${intent?.action}")
             updateProjectionButtonText()
+
+            if (intent?.action == com.andrerinas.headunitrevived.contract.ConnectedIntent.action) {
+                AppLog.i("HomeFragment: Connected broadcast received, launching projection")
+                val aapIntent = AapProjectionActivity.intent(requireContext()).apply {
+                    putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                startActivity(aapIntent)
+            }
         }
     }
 
@@ -107,6 +116,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        AppLog.i("HomeFragment: onResume. isConnected=${AapService.isConnected}")
         val filter = IntentFilter().apply {
             addAction(ConnectedIntent.action)
             addAction(DisconnectIntent.action)
@@ -117,6 +127,15 @@ class HomeFragment : Fragment() {
             requireContext().registerReceiver(connectionStatusReceiver, filter)
         }
         updateProjectionButtonText()
+
+        if (AapService.isConnected) {
+            AppLog.i("HomeFragment onResume: Connected, launching projection")
+            val aapIntent = AapProjectionActivity.intent(requireContext()).apply {
+                putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+            startActivity(aapIntent)
+        }
     }
 
     override fun onPause() {

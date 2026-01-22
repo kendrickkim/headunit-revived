@@ -227,6 +227,7 @@ class AapTransport(
 
             AppLog.i("Handshake: Status OK sent: %d", ret)
             AppLog.d("Handshake: Handshake successful. TS: ${SystemClock.elapsedRealtime()}")
+
             return true
         } catch (e: Exception) {
             AppLog.e("Handshake failed with exception", e)

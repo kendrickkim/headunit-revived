@@ -170,12 +170,14 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onSurfaceChanged(surface: android.view.Surface, width: Int, height: Int) {
         AppLog.i("[AapProjectionActivity] onSurfaceChanged. Actual surface dimensions: width=$width, height=$height")
-        videoDecoder.setSurface(surface)
+        
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            AppLog.i("Delayed setting surface to decoder")
+            videoDecoder.setSurface(surface)
 
-        // Force keyframe by toggling focus, prevent quit on resulting stop request
-        transport.ignoreNextStopRequest = true
-        transport.send(VideoFocusEvent(gain = false, unsolicited = true))
-        transport.send(VideoFocusEvent(gain = true, unsolicited = true))
+            // Simply request focus to ensure stream is active
+            transport.send(VideoFocusEvent(gain = true, unsolicited = true))
+        }, 750)
 
         // Explicitly check and set video dimensions if already known by the decoder
         // This handles cases where the activity is recreated but the decoder already has dimensions
@@ -248,10 +250,12 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onDestroy() {
         super.onDestroy()
+        AppLog.i("AapProjectionActivity.onDestroy called. isFinishing=$isFinishing")
         unregisterReceiver(disconnectReceiver)
         videoDecoder.dimensionsListener = null
 
         if (isFinishing && AapService.isConnected) {
+            AppLog.i("Stopping transport because activity is finishing")
             transport.stop()
         }
     }

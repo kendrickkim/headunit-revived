@@ -281,17 +281,9 @@ class AapService : Service(), UsbReceiver.Listener {
 
             if (transportStarted) {
                 isConnected = true
-                sendBroadcast(ConnectedIntent())
-
-                val decoder = App.provide(this).videoDecoder
-                decoder.onFirstFrameListener = {
-                    AppLog.i("Video ready, launching AapProjectionActivity")
-                    val aapIntent = AapProjectionActivity.intent(this@AapService).apply {
-                        putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                    }
-                    startActivity(aapIntent)
-                }
+                val intent = ConnectedIntent()
+                intent.setPackage(packageName)
+                sendBroadcast(intent)
             } else {
                 stopSelf()
             }
@@ -300,7 +292,9 @@ class AapService : Service(), UsbReceiver.Listener {
 
     private fun onDisconnect() {
         isConnected = false
-        sendBroadcast(DisconnectIntent())
+        val intent = DisconnectIntent()
+        intent.setPackage(packageName)
+        sendBroadcast(intent)
         reset()
         accessoryConnection?.disconnect()
         accessoryConnection = null
@@ -345,6 +339,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
     companion object {
         var isConnected = false
+        var isVideoReady = false
         var selfMode = false
         const val ACTION_START_SELF_MODE = "com.andrerinas.headunitrevived.ACTION_START_SELF_MODE"
         const val ACTION_START_WIRELESS = "com.andrerinas.headunitrevived.ACTION_START_WIRELESS"
