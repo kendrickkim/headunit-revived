@@ -37,6 +37,7 @@ import com.andrerinas.headunitrevived.utils.NightMode
 import com.andrerinas.headunitrevived.utils.Settings
 import kotlinx.coroutines.*
 import java.net.ServerSocket
+import java.util.concurrent.atomic.AtomicInteger
 
 class AapService : Service(), UsbReceiver.Listener {
     private val serviceJob = Job()
@@ -51,6 +52,7 @@ class AapService : Service(), UsbReceiver.Listener {
     private var pendingConnectionType: String = ""
     private var pendingConnectionIp: String = ""
     private var pendingConnectionUsbDevice: String = ""
+    private val connectionAttemptId = AtomicInteger(0)
 
     private val transport: AapTransport
         get() = App.provide(this).transport
@@ -162,11 +164,12 @@ class AapService : Service(), UsbReceiver.Listener {
         }
 
         serviceScope.launch {
+            val attemptId = connectionAttemptId.incrementAndGet()
             var connectionResult = false
             withContext(Dispatchers.IO) {
                 connectionResult = accessoryConnection!!.connect()
             }
-            onConnectionResult(connectionResult)
+            onConnectionResult(connectionResult, attemptId, accessoryConnection)
         }
     }
 
@@ -210,7 +213,8 @@ class AapService : Service(), UsbReceiver.Listener {
 
                                 accessoryConnection = SocketAccessoryConnection(clientSocket)
                                 val success = accessoryConnection!!.connect()
-                                onConnectionResult(success)
+                                val attemptId = connectionAttemptId.incrementAndGet()
+                                onConnectionResult(success, attemptId, accessoryConnection)
                             }
                         }
                     }
@@ -295,15 +299,19 @@ class AapService : Service(), UsbReceiver.Listener {
         } catch (e: Exception) { null }
     }
 
-    private suspend fun onConnectionResult(success: Boolean) {
-        val connection = accessoryConnection ?: run {
-            AppLog.w("onConnectionResult: accessoryConnection cleared before transport start")
+    private suspend fun onConnectionResult(success: Boolean, attemptId: Int, connection: AccessoryConnection?) {
+        if (attemptId != connectionAttemptId.get()) {
+            AppLog.w("onConnectionResult: stale attempt $attemptId, current ${connectionAttemptId.get()}")
+            return
+        }
+        val activeConnection = connection ?: run {
+            AppLog.w("onConnectionResult: accessoryConnection cleared before transport start (attempt $attemptId)")
             return
         }
         if (success) {
             reset()
             val transportStarted = withContext(Dispatchers.IO) {
-                transport.start(connection)
+                transport.start(activeConnection)
             }
 
             if (transportStarted) {
@@ -340,6 +348,7 @@ class AapService : Service(), UsbReceiver.Listener {
         reset()
         accessoryConnection?.disconnect()
         accessoryConnection = null
+        connectionAttemptId.incrementAndGet()
     }
 
     private fun reset() {

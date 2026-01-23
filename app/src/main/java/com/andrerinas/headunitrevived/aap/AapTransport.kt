@@ -188,18 +188,32 @@ class AapTransport(
 
             AppLog.d("Handshake: Starting version request. TS: ${SystemClock.elapsedRealtime()}")
             val version = Messages.versionRequest
-            var ret = connection.sendBlocking(version, version.size, 5000)
-            AppLog.d("Handshake: Version request sent. ret: $ret. TS: ${SystemClock.elapsedRealtime()}")
-            if (ret < 0) {
-                AppLog.e("Handshake: Version request sendEncrypted ret: $ret")
-                return false
+            var ret = -1
+            var attempt = 0
+            var received = false
+            while (attempt < 3 && connection.isConnected) {
+                attempt++
+                ret = connection.sendBlocking(version, version.size, 5000)
+                AppLog.d("Handshake: Version request sent. ret: $ret. attempt: $attempt. TS: ${SystemClock.elapsedRealtime()}")
+                if (ret < 0) {
+                    AppLog.w("Handshake: Version request send failed (ret=$ret), attempt $attempt")
+                    SystemClock.sleep(200)
+                    continue
+                }
+
+                AppLog.d("Handshake: Waiting for version response. TS: ${SystemClock.elapsedRealtime()}")
+                ret = connection.recvBlocking(buffer, buffer.size, 5000, false)
+                AppLog.d("Handshake: Version response received. ret: $ret. TS: ${SystemClock.elapsedRealtime()}")
+                if (ret > 0) {
+                    received = true
+                    break
+                }
+                AppLog.w("Handshake: Version response recv failed (ret=$ret), attempt $attempt")
+                SystemClock.sleep(200)
             }
 
-            AppLog.d("Handshake: Waiting for version response. TS: ${SystemClock.elapsedRealtime()}")
-            ret = connection.recvBlocking(buffer, buffer.size, 5000, false)
-            AppLog.d("Handshake: Version response received. ret: $ret. TS: ${SystemClock.elapsedRealtime()}")
-            if (ret <= 0) {
-                AppLog.e("Handshake: Version request recv ret: $ret")
+            if (!received) {
+                AppLog.e("Handshake: Version request/response failed after $attempt attempt(s). last ret: $ret")
                 return false
             }
             AppLog.i("Handshake: Version response recv ret: %d", ret)
