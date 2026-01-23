@@ -4,8 +4,8 @@ import android.os.Build
 import java.security.Security
 
 object ConscryptInitializer {
-    private var initialized = false
-    private var conscryptAvailable = false
+    @Volatile private var initialized = false
+    @Volatile private var conscryptAvailable = false
 
     @Synchronized
     fun initialize(): Boolean {

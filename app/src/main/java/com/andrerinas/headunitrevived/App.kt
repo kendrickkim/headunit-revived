@@ -26,7 +26,9 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        ConscryptInitializer.initialize()
+        if (ConscryptInitializer.isNeededForTls12()) {
+            ConscryptInitializer.initialize()
+        }
 
         val settings = Settings(this) // Create a Settings instance
         AppLog.init(settings) // Initialize AppLog with settings for conditional logging
