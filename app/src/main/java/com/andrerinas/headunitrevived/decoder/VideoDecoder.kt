@@ -119,7 +119,6 @@ class VideoDecoder(private val settings: Settings) {
                 if (typeToUse == CodecType.H264) {
                     scanForSpsPpsH264(frameData)
                 } else if (typeToUse == CodecType.H265) {
-                    // H.265 dimensions are hard to parse, use negotiated fallback if needed
                     if (mWidth == 0) {
                          mWidth = HeadUnitScreenConfig.getNegotiatedWidth()
                          mHeight = HeadUnitScreenConfig.getNegotiatedHeight()
@@ -198,21 +197,30 @@ class VideoDecoder(private val settings: Settings) {
         while (offset < buffer.size - 4) {
             val limit = buffer.size
             var nextNal = -1
+            var nalStartLen = 0
             var i = offset
+            
             while (i < limit - 3) {
                  if (buffer[i].toInt() == 0 && buffer[i+1].toInt() == 0 && buffer[i+2].toInt() == 0 && buffer[i+3].toInt() == 1) {
                      nextNal = i
+                     nalStartLen = 4
+                     break
+                 }
+                 if (buffer[i].toInt() == 0 && buffer[i+1].toInt() == 0 && buffer[i+2].toInt() == 1) {
+                     nextNal = i
+                     nalStartLen = 3
                      break
                  }
                  i++
             }
             
             if (nextNal != -1) {
-                val nalType = buffer[nextNal + 4].toInt() and 0x1F
+                val nalType = buffer[nextNal + nalStartLen].toInt() and 0x1F
                 var endNal = limit
-                var j = nextNal + 4
+                var j = nextNal + nalStartLen
                 while (j < limit - 3) {
-                    if (buffer[j].toInt() == 0 && buffer[j+1].toInt() == 0 && buffer[j+2].toInt() == 0 && buffer[j+3].toInt() == 1) {
+                    if ((buffer[j].toInt() == 0 && buffer[j+1].toInt() == 0 && buffer[j+2].toInt() == 0 && buffer[j+3].toInt() == 1) ||
+                        (buffer[j].toInt() == 0 && buffer[j+1].toInt() == 0 && buffer[j+2].toInt() == 1)) {
                         endNal = j
                         break
                     }

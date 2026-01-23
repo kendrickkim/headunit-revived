@@ -45,7 +45,17 @@ class ServiceDiscoveryResponse(private val context: Context)
             val video = Control.Service.newBuilder().also { service ->
                 service.id = Channel.ID_VID
                 service.mediaSinkService = Control.Service.MediaSinkService.newBuilder().also { mediaSinkServiceBuilder ->
-                    mediaSinkServiceBuilder.availableType = Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
+                    val codecToRequest = when (settings.videoCodec) {
+                        "H.265" -> Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265
+                        "Auto" -> if (com.andrerinas.headunitrevived.decoder.VideoDecoder.isHevcSupported()) {
+                            Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265
+                        } else {
+                            Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
+                        }
+                        else -> Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
+                    }
+
+                    mediaSinkServiceBuilder.availableType = codecToRequest
                     mediaSinkServiceBuilder.audioType = Media.AudioStreamType.NONE
                     mediaSinkServiceBuilder.availableWhileInCall = true
 
@@ -66,16 +76,6 @@ class ServiceDiscoveryResponse(private val context: Context)
                         setDensity(HeadUnitScreenConfig.getDensityDpi()) // Use actual densityDpi
                         setMarginWidth(phoneWidthMargin)
                         setMarginHeight(phoneHeightMargin)
-
-                        val codecToRequest = when (settings.videoCodec) {
-                            "H.265" -> Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265
-                            "Auto" -> if (com.andrerinas.headunitrevived.decoder.VideoDecoder.isHevcSupported()) {
-                                Media.MediaCodecType.MEDIA_CODEC_VIDEO_H265
-                            } else {
-                                Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
-                            }
-                            else -> Media.MediaCodecType.MEDIA_CODEC_VIDEO_H264_BP
-                        }
                         setVideoCodecType(codecToRequest)
                     }.build())
                 }.build()
