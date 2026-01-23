@@ -93,7 +93,8 @@ class HomeFragment : Fragment() {
         val intent = Intent(requireContext(), AapService::class.java)
         intent.action = AapService.ACTION_START_SELF_MODE
         requireContext().startService(intent)
-        Toast.makeText(requireContext(), "Starting Self Mode...", Toast.LENGTH_SHORT).show()
+        AppLog.i("Auto start selfmode")
+        //Toast.makeText(requireContext(), "Starting Self Mode...", Toast.LENGTH_SHORT).show()
     }
 
     private fun attemptAutoConnect() {
@@ -201,5 +202,8 @@ class HomeFragment : Fragment() {
 
     companion object {
         private var hasAutoStarted = false
+        fun resetAutoStart() {
+            hasAutoStarted = false
+        }
     }
 }

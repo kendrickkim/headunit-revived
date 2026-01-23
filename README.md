@@ -85,6 +85,7 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
 - New Feature: Redesigned Keymap Screen (easier configuration)
 - New Feature: Right Hand side driving setting (#63)
 - New Feature: Auto-Connect last session (Thanks to @JanRi3D) (#21)
+- New Feature: Auto-Selfmode if enabled in settings
 - New Feature: Allow sideloaded apps (#57)
 - Localization: Added German Translation 🇩🇪 Other translations are highly appreciated
 - Improvement: TextureView is now the default renderer (better compatibility for most devices)

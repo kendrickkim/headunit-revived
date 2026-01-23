@@ -38,11 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         // Start main service immediately to handle connections and wireless server
         val serviceIntent = Intent(this, AapService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
+        startService(serviceIntent)
 
         setFullscreen()
 
@@ -134,6 +130,14 @@ class MainActivity : AppCompatActivity() {
             return super.onKeyUp(keyCode, event)
         }
         return keyListener?.onKeyEvent(event) ?: super.onKeyUp(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            AppLog.i("MainActivity finishing, resetting auto-start flag.")
+            com.andrerinas.headunitrevived.main.HomeFragment.resetAutoStart()
+        }
     }
 
     companion object {
