@@ -574,6 +574,120 @@ public final class Control {
   }
 
   /**
+   * Protobuf enum {@code com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition}
+   */
+  public enum DriverPosition
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>DRIVER_POSITION_LEFT = 0;</code>
+     */
+    DRIVER_POSITION_LEFT(0),
+    /**
+     * <code>DRIVER_POSITION_RIGHT = 1;</code>
+     */
+    DRIVER_POSITION_RIGHT(1),
+    /**
+     * <code>DRIVER_POSITION_CENTER = 2;</code>
+     */
+    DRIVER_POSITION_CENTER(2),
+    /**
+     * <code>DRIVER_POSITION_UNKNOWN = 3;</code>
+     */
+    DRIVER_POSITION_UNKNOWN(3),
+    ;
+
+    /**
+     * <code>DRIVER_POSITION_LEFT = 0;</code>
+     */
+    public static final int DRIVER_POSITION_LEFT_VALUE = 0;
+    /**
+     * <code>DRIVER_POSITION_RIGHT = 1;</code>
+     */
+    public static final int DRIVER_POSITION_RIGHT_VALUE = 1;
+    /**
+     * <code>DRIVER_POSITION_CENTER = 2;</code>
+     */
+    public static final int DRIVER_POSITION_CENTER_VALUE = 2;
+    /**
+     * <code>DRIVER_POSITION_UNKNOWN = 3;</code>
+     */
+    public static final int DRIVER_POSITION_UNKNOWN_VALUE = 3;
+
+
+    public final int getNumber() {
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static DriverPosition valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static DriverPosition forNumber(int value) {
+      switch (value) {
+        case 0: return DRIVER_POSITION_LEFT;
+        case 1: return DRIVER_POSITION_RIGHT;
+        case 2: return DRIVER_POSITION_CENTER;
+        case 3: return DRIVER_POSITION_UNKNOWN;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<DriverPosition>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        DriverPosition> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<DriverPosition>() {
+            public DriverPosition findValueByNumber(int number) {
+              return DriverPosition.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.andrerinas.headunitrevived.aap.protocol.proto.Control.getDescriptor().getEnumTypes().get(3);
+    }
+
+    private static final DriverPosition[] VALUES = values();
+
+    public static DriverPosition valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private DriverPosition(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition)
+  }
+
+  /**
    * Protobuf enum {@code com.andrerinas.headunitrevived.aap.protocol.proto.NavFocusType}
    */
   public enum NavFocusType
@@ -646,7 +760,7 @@ public final class Control {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return com.andrerinas.headunitrevived.aap.protocol.proto.Control.getDescriptor().getEnumTypes().get(3);
+      return com.andrerinas.headunitrevived.aap.protocol.proto.Control.getDescriptor().getEnumTypes().get(4);
     }
 
     private static final NavFocusType[] VALUES = values();
@@ -18822,15 +18936,15 @@ public final class Control {
         getVehicleIdBytes();
 
     /**
-     * <code>required bool driver_position = 6;</code>
+     * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
      * @return Whether the driverPosition field is set.
      */
     boolean hasDriverPosition();
     /**
-     * <code>required bool driver_position = 6;</code>
+     * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
      * @return The driverPosition.
      */
-    boolean getDriverPosition();
+    com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition getDriverPosition();
 
     /**
      * <code>required string head_unit_make = 7;</code>
@@ -18994,6 +19108,7 @@ public final class Control {
       model_ = "";
       year_ = "";
       vehicleId_ = "";
+      driverPosition_ = 0;
       headUnitMake_ = "";
       headUnitModel_ = "";
       headUnitSoftwareBuild_ = "";
@@ -19260,22 +19375,21 @@ public final class Control {
     }
 
     public static final int DRIVER_POSITION_FIELD_NUMBER = 6;
-    private boolean driverPosition_ = false;
+    private int driverPosition_ = 0;
     /**
-     * <code>required bool driver_position = 6;</code>
+     * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
      * @return Whether the driverPosition field is set.
      */
-    @java.lang.Override
-    public boolean hasDriverPosition() {
+    @java.lang.Override public boolean hasDriverPosition() {
       return ((bitField0_ & 0x00000010) != 0);
     }
     /**
-     * <code>required bool driver_position = 6;</code>
+     * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
      * @return The driverPosition.
      */
-    @java.lang.Override
-    public boolean getDriverPosition() {
-      return driverPosition_;
+    @java.lang.Override public com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition getDriverPosition() {
+      com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition result = com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition.forNumber(driverPosition_);
+      return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition.DRIVER_POSITION_LEFT : result;
     }
 
     public static final int HEAD_UNIT_MAKE_FIELD_NUMBER = 7;
@@ -19701,7 +19815,7 @@ public final class Control {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, vehicleId_);
       }
       if (((bitField0_ & 0x00000010) != 0)) {
-        output.writeBool(6, driverPosition_);
+        output.writeEnum(6, driverPosition_);
       }
       if (((bitField0_ & 0x00000020) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 7, headUnitMake_);
@@ -19760,7 +19874,7 @@ public final class Control {
       }
       if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(6, driverPosition_);
+          .computeEnumSize(6, driverPosition_);
       }
       if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, headUnitMake_);
@@ -19836,8 +19950,7 @@ public final class Control {
       }
       if (hasDriverPosition() != other.hasDriverPosition()) return false;
       if (hasDriverPosition()) {
-        if (getDriverPosition()
-            != other.getDriverPosition()) return false;
+        if (driverPosition_ != other.driverPosition_) return false;
       }
       if (hasHeadUnitMake() != other.hasHeadUnitMake()) return false;
       if (hasHeadUnitMake()) {
@@ -19922,8 +20035,7 @@ public final class Control {
       }
       if (hasDriverPosition()) {
         hash = (37 * hash) + DRIVER_POSITION_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getDriverPosition());
+        hash = (53 * hash) + driverPosition_;
       }
       if (hasHeadUnitMake()) {
         hash = (37 * hash) + HEAD_UNIT_MAKE_FIELD_NUMBER;
@@ -20117,7 +20229,7 @@ public final class Control {
         model_ = "";
         year_ = "";
         vehicleId_ = "";
-        driverPosition_ = false;
+        driverPosition_ = 0;
         headUnitMake_ = "";
         headUnitModel_ = "";
         headUnitSoftwareBuild_ = "";
@@ -20472,8 +20584,15 @@ public final class Control {
                 break;
               } // case 42
               case 48: {
-                driverPosition_ = input.readBool();
-                bitField0_ |= 0x00000020;
+                int tmpRaw = input.readEnum();
+                com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition tmpValue =
+                    com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition.forNumber(tmpRaw);
+                if (tmpValue == null) {
+                  mergeUnknownVarintField(6, tmpRaw);
+                } else {
+                  driverPosition_ = tmpRaw;
+                  bitField0_ |= 0x00000020;
+                }
                 break;
               } // case 48
               case 58: {
@@ -21105,42 +21224,44 @@ public final class Control {
         return this;
       }
 
-      private boolean driverPosition_ ;
+      private int driverPosition_ = 0;
       /**
-       * <code>required bool driver_position = 6;</code>
+       * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
        * @return Whether the driverPosition field is set.
        */
-      @java.lang.Override
-      public boolean hasDriverPosition() {
+      @java.lang.Override public boolean hasDriverPosition() {
         return ((bitField0_ & 0x00000020) != 0);
       }
       /**
-       * <code>required bool driver_position = 6;</code>
+       * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
        * @return The driverPosition.
        */
       @java.lang.Override
-      public boolean getDriverPosition() {
-        return driverPosition_;
+      public com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition getDriverPosition() {
+        com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition result = com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition.forNumber(driverPosition_);
+        return result == null ? com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition.DRIVER_POSITION_LEFT : result;
       }
       /**
-       * <code>required bool driver_position = 6;</code>
+       * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
        * @param value The driverPosition to set.
        * @return This builder for chaining.
        */
-      public Builder setDriverPosition(boolean value) {
-
-        driverPosition_ = value;
+      public Builder setDriverPosition(com.andrerinas.headunitrevived.aap.protocol.proto.Control.DriverPosition value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         bitField0_ |= 0x00000020;
+        driverPosition_ = value.getNumber();
         onChanged();
         return this;
       }
       /**
-       * <code>required bool driver_position = 6;</code>
+       * <code>required .com.andrerinas.headunitrevived.aap.protocol.proto.DriverPosition driver_position = 6;</code>
        * @return This builder for chaining.
        */
       public Builder clearDriverPosition() {
         bitField0_ = (bitField0_ & ~0x00000020);
-        driverPosition_ = false;
+        driverPosition_ = 0;
         onChanged();
         return this;
       }
@@ -32124,103 +32245,108 @@ public final class Control {
       "\020\001\022\n\n\006OnHold\020\002\022\r\n\tHangingUp\020\003\022\014\n\010Incomin" +
       "g\020\004\022\t\n\005Muted\020\005\022\017\n\013Conferenced\020\006\"B\n\027Servi" +
       "ceDiscoveryRequest\022\022\n\nphone_name\030\004 \002(\t\022\023" +
-      "\n\013phone_brand\030\005 \002(\t\"\246\004\n\030ServiceDiscovery" +
+      "\n\013phone_brand\030\005 \002(\t\"\351\004\n\030ServiceDiscovery" +
       "Response\022L\n\010services\030\001 \003(\0132:.com.andreri" +
       "nas.headunitrevived.aap.protocol.proto.S" +
       "ervice\022\014\n\004make\030\002 \002(\t\022\r\n\005model\030\003 \002(\t\022\014\n\004y" +
-      "ear\030\004 \002(\t\022\022\n\nvehicle_id\030\005 \002(\t\022\027\n\017driver_" +
-      "position\030\006 \002(\010\022\026\n\016head_unit_make\030\007 \002(\t\022\027" +
-      "\n\017head_unit_model\030\010 \002(\t\022 \n\030head_unit_sof" +
-      "tware_build\030\t \002(\t\022\"\n\032head_unit_software_" +
-      "version\030\n \002(\t\022\'\n\037can_play_native_media_d" +
-      "uring_vr\030\013 \002(\010\022\034\n\024hide_projected_clock\030\014" +
-      " \001(\010\022\035\n\025session_configuration\030\r \001(\005\022\024\n\014d" +
-      "isplay_name\030\016 \001(\t\022\031\n\021probe_for_support\030\017" +
-      " \001(\010\022V\n\rheadunit_info\030\021 \001(\0132?.com.andrer" +
-      "inas.headunitrevived.aap.protocol.proto." +
-      "HeadUnitInfo\":\n\022ChannelOpenRequest\022\020\n\010pr" +
-      "iority\030\001 \002(\005\022\022\n\nservice_id\030\002 \002(\005\"g\n\023Chan" +
-      "nelOpenResponse\022P\n\006status\030\001 \002(\0162@.com.an" +
-      "drerinas.headunitrevived.aap.protocol.pr" +
-      "oto.MessageStatus\"4\n\013PingRequest\022\021\n\ttime" +
-      "stamp\030\001 \002(\003\022\022\n\nbug_report\030\002 \001(\005\"!\n\014PingR" +
-      "esponse\022\021\n\ttimestamp\030\001 \002(\003\"`\n\rByeByeRequ" +
-      "est\022O\n\006reason\030\001 \002(\0162?.com.andrerinas.hea" +
-      "dunitrevived.aap.protocol.proto.ByeByeRe" +
-      "ason\"\020\n\016ByeByeResponse\"\317\001\n\030VoiceSessionN" +
-      "otification\022n\n\006status\030\001 \002(\0162^.com.andrer" +
-      "inas.headunitrevived.aap.protocol.proto." +
-      "VoiceSessionNotification.VoiceSessionSta" +
-      "tus\"C\n\022VoiceSessionStatus\022\026\n\022VOICE_STATU" +
-      "S_START\020\001\022\025\n\021VOICE_STATUS_STOP\020\002\"\203\002\n\035Aud" +
-      "ioFocusRequestNotification\022w\n\007request\030\001 " +
-      "\001(\0162f.com.andrerinas.headunitrevived.aap" +
-      ".protocol.proto.AudioFocusRequestNotific" +
-      "ation.AudioFocusRequestType\"i\n\025AudioFocu" +
-      "sRequestType\022\010\n\004NONE\020\000\022\010\n\004GAIN\020\001\022\022\n\016GAIN" +
-      "_TRANSIENT\020\002\022\033\n\027GAIN_TRANSIENT_MAY_DUCK\020" +
-      "\003\022\013\n\007RELEASE\020\004\"\363\002\n\026AudioFocusNotificatio" +
-      "n\022r\n\013focus_state\030\001 \002(\0162].com.andrerinas." +
-      "headunitrevived.aap.protocol.proto.Audio" +
-      "FocusNotification.AudioFocusStateType\022\023\n" +
-      "\013unsolicited\030\002 \001(\010\"\317\001\n\023AudioFocusStateTy" +
-      "pe\022\016\n\nSTATE_GAIN\020\001\022\030\n\024STATE_GAIN_TRANSIE" +
-      "NT\020\002\022\016\n\nSTATE_LOSS\020\003\022!\n\035STATE_LOSS_TRANS" +
-      "IENT_CAN_DUCK\020\004\022\030\n\024STATE_LOSS_TRANSIENT\020" +
-      "\005\022\031\n\025STATE_GAIN_MEDIA_ONLY\020\006\022&\n\"STATE_GA" +
-      "IN_TRANSIENT_GUIDANCE_ONLY\020\007\"r\n\033NavFocus" +
-      "RequestNotification\022S\n\nfocus_type\030\001 \001(\0162" +
-      "?.com.andrerinas.headunitrevived.aap.pro" +
-      "tocol.proto.NavFocusType\"k\n\024NavFocusNoti" +
-      "fication\022S\n\nfocus_type\030\001 \002(\0162?.com.andre" +
-      "rinas.headunitrevived.aap.protocol.proto" +
-      ".NavFocusType\"f\n\031BatteryStatusNotificati" +
-      "on\022\025\n\rbattery_level\030\001 \002(\r\022\030\n\020time_remain" +
-      "ing_s\030\002 \001(\r\022\030\n\020critical_battery\030\003 \001(\010\"9\n" +
-      "\017ConnectedDevice\022\023\n\013device_name\030\001 \001(\t\022\021\n" +
-      "\tdevice_id\030\002 \001(\005\"\243\001\n\023CarConnectedDevices" +
-      "\022]\n\021connected_devices\030\001 \003(\0132B.com.andrer" +
-      "inas.headunitrevived.aap.protocol.proto." +
-      "ConnectedDevice\022\023\n\013unsolicited\030\002 \001(\010\022\030\n\n" +
-      "final_list\030\003 \001(\010:\004true\"\374\001\n\022UserSwitchRes" +
-      "ponse\022f\n\006status\030\001 \001(\0162V.com.andrerinas.h" +
-      "eadunitrevived.aap.protocol.proto.UserSw" +
-      "itchResponse.UserSwitchStatus\022[\n\017selecte" +
-      "d_device\030\002 \001(\0132B.com.andrerinas.headunit" +
+      "ear\030\004 \002(\t\022\022\n\nvehicle_id\030\005 \002(\t\022Z\n\017driver_" +
+      "position\030\006 \002(\0162A.com.andrerinas.headunit" +
+      "revived.aap.protocol.proto.DriverPositio" +
+      "n\022\026\n\016head_unit_make\030\007 \002(\t\022\027\n\017head_unit_m" +
+      "odel\030\010 \002(\t\022 \n\030head_unit_software_build\030\t" +
+      " \002(\t\022\"\n\032head_unit_software_version\030\n \002(\t" +
+      "\022\'\n\037can_play_native_media_during_vr\030\013 \002(" +
+      "\010\022\034\n\024hide_projected_clock\030\014 \001(\010\022\035\n\025sessi" +
+      "on_configuration\030\r \001(\005\022\024\n\014display_name\030\016" +
+      " \001(\t\022\031\n\021probe_for_support\030\017 \001(\010\022V\n\rheadu" +
+      "nit_info\030\021 \001(\0132?.com.andrerinas.headunit" +
+      "revived.aap.protocol.proto.HeadUnitInfo\"" +
+      ":\n\022ChannelOpenRequest\022\020\n\010priority\030\001 \002(\005\022" +
+      "\022\n\nservice_id\030\002 \002(\005\"g\n\023ChannelOpenRespon" +
+      "se\022P\n\006status\030\001 \002(\0162@.com.andrerinas.head" +
+      "unitrevived.aap.protocol.proto.MessageSt" +
+      "atus\"4\n\013PingRequest\022\021\n\ttimestamp\030\001 \002(\003\022\022" +
+      "\n\nbug_report\030\002 \001(\005\"!\n\014PingResponse\022\021\n\tti" +
+      "mestamp\030\001 \002(\003\"`\n\rByeByeRequest\022O\n\006reason" +
+      "\030\001 \002(\0162?.com.andrerinas.headunitrevived." +
+      "aap.protocol.proto.ByeByeReason\"\020\n\016ByeBy" +
+      "eResponse\"\317\001\n\030VoiceSessionNotification\022n" +
+      "\n\006status\030\001 \002(\0162^.com.andrerinas.headunit" +
+      "revived.aap.protocol.proto.VoiceSessionN" +
+      "otification.VoiceSessionStatus\"C\n\022VoiceS" +
+      "essionStatus\022\026\n\022VOICE_STATUS_START\020\001\022\025\n\021" +
+      "VOICE_STATUS_STOP\020\002\"\203\002\n\035AudioFocusReques" +
+      "tNotification\022w\n\007request\030\001 \001(\0162f.com.and" +
+      "rerinas.headunitrevived.aap.protocol.pro" +
+      "to.AudioFocusRequestNotification.AudioFo" +
+      "cusRequestType\"i\n\025AudioFocusRequestType\022" +
+      "\010\n\004NONE\020\000\022\010\n\004GAIN\020\001\022\022\n\016GAIN_TRANSIENT\020\002\022" +
+      "\033\n\027GAIN_TRANSIENT_MAY_DUCK\020\003\022\013\n\007RELEASE\020" +
+      "\004\"\363\002\n\026AudioFocusNotification\022r\n\013focus_st" +
+      "ate\030\001 \002(\0162].com.andrerinas.headunitreviv" +
+      "ed.aap.protocol.proto.AudioFocusNotifica" +
+      "tion.AudioFocusStateType\022\023\n\013unsolicited\030" +
+      "\002 \001(\010\"\317\001\n\023AudioFocusStateType\022\016\n\nSTATE_G" +
+      "AIN\020\001\022\030\n\024STATE_GAIN_TRANSIENT\020\002\022\016\n\nSTATE" +
+      "_LOSS\020\003\022!\n\035STATE_LOSS_TRANSIENT_CAN_DUCK" +
+      "\020\004\022\030\n\024STATE_LOSS_TRANSIENT\020\005\022\031\n\025STATE_GA" +
+      "IN_MEDIA_ONLY\020\006\022&\n\"STATE_GAIN_TRANSIENT_" +
+      "GUIDANCE_ONLY\020\007\"r\n\033NavFocusRequestNotifi" +
+      "cation\022S\n\nfocus_type\030\001 \001(\0162?.com.andreri" +
+      "nas.headunitrevived.aap.protocol.proto.N" +
+      "avFocusType\"k\n\024NavFocusNotification\022S\n\nf" +
+      "ocus_type\030\001 \002(\0162?.com.andrerinas.headuni" +
+      "trevived.aap.protocol.proto.NavFocusType" +
+      "\"f\n\031BatteryStatusNotification\022\025\n\rbattery" +
+      "_level\030\001 \002(\r\022\030\n\020time_remaining_s\030\002 \001(\r\022\030" +
+      "\n\020critical_battery\030\003 \001(\010\"9\n\017ConnectedDev" +
+      "ice\022\023\n\013device_name\030\001 \001(\t\022\021\n\tdevice_id\030\002 " +
+      "\001(\005\"\243\001\n\023CarConnectedDevices\022]\n\021connected" +
+      "_devices\030\001 \003(\0132B.com.andrerinas.headunit" +
       "revived.aap.protocol.proto.ConnectedDevi" +
-      "ce\"!\n\020UserSwitchStatus\022\r\n\tSTATUS_OK\020\000\"0\n" +
-      "\026CallAvailabilityStatus\022\026\n\016call_availabl" +
-      "e\030\001 \001(\010*\255\007\n\016ControlMsgType\022\033\n\027MESSAGE_VE" +
-      "RSION_REQUEST\020\001\022\034\n\030MESSAGE_VERSION_RESPO" +
-      "NSE\020\002\022\034\n\030MESSAGE_ENCAPSULATED_SSL\020\003\022\031\n\025M" +
-      "ESSAGE_AUTH_COMPLETE\020\004\022%\n!MESSAGE_SERVIC" +
-      "E_DISCOVERY_REQUEST\020\005\022&\n\"MESSAGE_SERVICE" +
-      "_DISCOVERY_RESPONSE\020\006\022 \n\034MESSAGE_CHANNEL" +
-      "_OPEN_REQUEST\020\007\022!\n\035MESSAGE_CHANNEL_OPEN_" +
-      "RESPONSE\020\010\022&\n\"MESSAGE_CHANNEL_CLOSE_NOTI" +
-      "FICATION\020\t\022\030\n\024MESSAGE_PING_REQUEST\020\013\022\031\n\025" +
-      "MESSAGE_PING_RESPONSE\020\014\022\035\n\031MESSAGE_NAV_F" +
-      "OCUS_REQUEST\020\r\022\"\n\036MESSAGE_NAV_FOCUS_NOTI" +
-      "FICATION\020\016\022\032\n\026MESSAGE_BYEBYE_REQUEST\020\017\022\033" +
-      "\n\027MESSAGE_BYEBYE_RESPONSE\020\020\022&\n\"MESSAGE_V" +
-      "OICE_SESSION_NOTIFICATION\020\021\022\037\n\033MESSAGE_A" +
-      "UDIO_FOCUS_REQUEST\020\022\022$\n MESSAGE_AUDIO_FO" +
-      "CUS_NOTIFICATION\020\023\022)\n%MESSAGE_CAR_CONNEC" +
-      "TED_DEVICES_REQUEST\020\024\022*\n&MESSAGE_CAR_CON" +
-      "NECTED_DEVICES_RESPONSE\020\025\022\037\n\033MESSAGE_USE" +
-      "R_SWITCH_REQUEST\020\026\022\'\n#MESSAGE_BATTERY_ST" +
-      "ATUS_NOTIFICATION\020\027\022$\n MESSAGE_CALL_AVAI" +
-      "LABILITY_STATUS\020\030\022 \n\034MESSAGE_USER_SWITCH" +
-      "_RESPONSE\020\031\022$\n MESSAGE_SERVICE_DISCOVERY" +
-      "_UPDATE\020\032\022\037\n\032MESSAGE_UNEXPECTED_MESSAGE\020" +
-      "\377\001\022\033\n\025MESSAGE_FRAMING_ERROR\020\377\377\003*G\n\026Bluet" +
-      "oothPairingMethod\022\014\n\010METHOD_1\020\001\022\010\n\004A2DP\020" +
-      "\002\022\014\n\010METHOD_3\020\003\022\007\n\003HFP\020\004*z\n\014ByeByeReason" +
-      "\022\022\n\016USER_SELECTION\020\001\022\021\n\rDEVICE_SWITCH\020\002\022" +
-      "\021\n\rNOT_SUPPORTED\020\003\022\033\n\027NOT_CURRENTLY_SUPP" +
-      "ORTED\020\004\022\023\n\017PROBE_SUPPORTED\020\005*0\n\014NavFocus" +
-      "Type\022\017\n\013NAV_FOCUS_1\020\001\022\017\n\013NAV_FOCUS_2\020\002B\t" +
-      "B\007Control"
+      "ce\022\023\n\013unsolicited\030\002 \001(\010\022\030\n\nfinal_list\030\003 " +
+      "\001(\010:\004true\"\374\001\n\022UserSwitchResponse\022f\n\006stat" +
+      "us\030\001 \001(\0162V.com.andrerinas.headunitrevive" +
+      "d.aap.protocol.proto.UserSwitchResponse." +
+      "UserSwitchStatus\022[\n\017selected_device\030\002 \001(" +
+      "\0132B.com.andrerinas.headunitrevived.aap.p" +
+      "rotocol.proto.ConnectedDevice\"!\n\020UserSwi" +
+      "tchStatus\022\r\n\tSTATUS_OK\020\000\"0\n\026CallAvailabi" +
+      "lityStatus\022\026\n\016call_available\030\001 \001(\010*\255\007\n\016C" +
+      "ontrolMsgType\022\033\n\027MESSAGE_VERSION_REQUEST" +
+      "\020\001\022\034\n\030MESSAGE_VERSION_RESPONSE\020\002\022\034\n\030MESS" +
+      "AGE_ENCAPSULATED_SSL\020\003\022\031\n\025MESSAGE_AUTH_C" +
+      "OMPLETE\020\004\022%\n!MESSAGE_SERVICE_DISCOVERY_R" +
+      "EQUEST\020\005\022&\n\"MESSAGE_SERVICE_DISCOVERY_RE" +
+      "SPONSE\020\006\022 \n\034MESSAGE_CHANNEL_OPEN_REQUEST" +
+      "\020\007\022!\n\035MESSAGE_CHANNEL_OPEN_RESPONSE\020\010\022&\n" +
+      "\"MESSAGE_CHANNEL_CLOSE_NOTIFICATION\020\t\022\030\n" +
+      "\024MESSAGE_PING_REQUEST\020\013\022\031\n\025MESSAGE_PING_" +
+      "RESPONSE\020\014\022\035\n\031MESSAGE_NAV_FOCUS_REQUEST\020" +
+      "\r\022\"\n\036MESSAGE_NAV_FOCUS_NOTIFICATION\020\016\022\032\n" +
+      "\026MESSAGE_BYEBYE_REQUEST\020\017\022\033\n\027MESSAGE_BYE" +
+      "BYE_RESPONSE\020\020\022&\n\"MESSAGE_VOICE_SESSION_" +
+      "NOTIFICATION\020\021\022\037\n\033MESSAGE_AUDIO_FOCUS_RE" +
+      "QUEST\020\022\022$\n MESSAGE_AUDIO_FOCUS_NOTIFICAT" +
+      "ION\020\023\022)\n%MESSAGE_CAR_CONNECTED_DEVICES_R" +
+      "EQUEST\020\024\022*\n&MESSAGE_CAR_CONNECTED_DEVICE" +
+      "S_RESPONSE\020\025\022\037\n\033MESSAGE_USER_SWITCH_REQU" +
+      "EST\020\026\022\'\n#MESSAGE_BATTERY_STATUS_NOTIFICA" +
+      "TION\020\027\022$\n MESSAGE_CALL_AVAILABILITY_STAT" +
+      "US\020\030\022 \n\034MESSAGE_USER_SWITCH_RESPONSE\020\031\022$" +
+      "\n MESSAGE_SERVICE_DISCOVERY_UPDATE\020\032\022\037\n\032" +
+      "MESSAGE_UNEXPECTED_MESSAGE\020\377\001\022\033\n\025MESSAGE" +
+      "_FRAMING_ERROR\020\377\377\003*G\n\026BluetoothPairingMe" +
+      "thod\022\014\n\010METHOD_1\020\001\022\010\n\004A2DP\020\002\022\014\n\010METHOD_3" +
+      "\020\003\022\007\n\003HFP\020\004*z\n\014ByeByeReason\022\022\n\016USER_SELE" +
+      "CTION\020\001\022\021\n\rDEVICE_SWITCH\020\002\022\021\n\rNOT_SUPPOR" +
+      "TED\020\003\022\033\n\027NOT_CURRENTLY_SUPPORTED\020\004\022\023\n\017PR" +
+      "OBE_SUPPORTED\020\005*~\n\016DriverPosition\022\030\n\024DRI" +
+      "VER_POSITION_LEFT\020\000\022\031\n\025DRIVER_POSITION_R" +
+      "IGHT\020\001\022\032\n\026DRIVER_POSITION_CENTER\020\002\022\033\n\027DR" +
+      "IVER_POSITION_UNKNOWN\020\003*0\n\014NavFocusType\022" +
+      "\017\n\013NAV_FOCUS_1\020\001\022\017\n\013NAV_FOCUS_2\020\002B\tB\007Con" +
+      "trol"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

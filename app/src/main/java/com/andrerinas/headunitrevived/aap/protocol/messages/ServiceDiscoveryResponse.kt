@@ -179,7 +179,7 @@ class ServiceDiscoveryResponse(private val context: Context)
                 headUnitMake = "Google"
                 headUnitSoftwareBuild = "1"
                 headUnitSoftwareVersion = "0.1.0"
-                driverPosition = !settings.rightHandDrive
+                driverPosition = if (settings.rightHandDrive) Control.DriverPosition.DRIVER_POSITION_RIGHT else Control.DriverPosition.DRIVER_POSITION_LEFT
                 canPlayNativeMediaDuringVr = false
                 hideProjectedClock = false
                 setDisplayName("Headunit Revived")

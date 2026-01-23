@@ -55,6 +55,14 @@ enum ByeByeReason
     PROBE_SUPPORTED = 5;
 }
 
+enum DriverPosition
+{
+    DRIVER_POSITION_LEFT = 0;
+    DRIVER_POSITION_RIGHT = 1;
+    DRIVER_POSITION_CENTER = 2;
+    DRIVER_POSITION_UNKNOWN = 3;
+}
+
 message Service
 {
     message SensorSourceService
@@ -227,7 +235,7 @@ message ServiceDiscoveryResponse
     required string model = 3;
     required string year = 4;
     required string vehicle_id = 5;
-    required bool driver_position = 6;
+    required DriverPosition driver_position = 6;
     required string head_unit_make = 7;
     required string head_unit_model = 8;
     required string head_unit_software_build = 9;
