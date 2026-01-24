@@ -80,6 +80,12 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
 - **Google Maps in Portrait Mode:** Touch interactions (searching, scrolling) within Google Maps may not work as expected when using Portrait Mode. While visual feedback (like ripple effects) might appear, the map itself may remain unresponsive. This appears to be an internal Android Auto / Google Maps limitation or bug in vertical orientations.
 
 ## Changelog
+### v.1.10.2
+- Bigfix - Button Mapping ignored #71
+- New Feature: Screen-Orientation Feature to lock to a certain orientation (Landscape/Portrait) #69 thanks to @JanRi3D
+- Enhancement: SSL will now attempt multiple times and not break instantly thanks to @MicaelJarniac
+- Added: Chinese(Tradionnal) translation 🇹🇼 thanks to @GazCore
+
 ### v.1.10.1
 - Bugfix: Added missing 3 Byte startcode which stops some devices to start the projection
 - Added PR #68 - Fix Wifi Direct detection thanks to @rakshan-kumr

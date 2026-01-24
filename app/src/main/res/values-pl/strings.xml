@@ -1,0 +1,142 @@
+<resources>
+    <string name="app_name">Headunit Revived</string>
+    <string name="menu">Menu</string>
+    <string name="settings">Ustawienia</string>
+
+    <string name="title_activity_settings">Ustawienia</string>
+    <string name="dummy_button">Przycisk testowy</string>
+    <string name="dummy_content">TREŚĆ\nTESTOWA</string>
+    <string name="allowed">Dozwolone</string>
+    <string name="ignored">Ignorowane</string>
+    <string name="exit">Wyjdź</string>
+    <string name="video">Android Auto</string>
+    <string name="self_mode">Tryb samodzielny</string>
+    <string name="to_android_auto">Do Android Auto</string>
+    <string name="title">Headunit Revived</string>
+    <string name="remove">Usuń</string>
+    <string name="usb">USB</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="dpi">Gęstość pikseli (DPI)</string>
+    <string name="mic_sample_rate">Próbkowanie mikrofonu</string>
+    <string name="keymap">Mapowanie klawiszy</string>
+    <string name="night_mode">Tryb nocny</string>
+    <string name="bluetooth_address_s">Adres Bluetooth</string>
+    <string name="enter_bluetooth_mac">Wprowadź adres MAC Bluetooth</string>
+    <string name="reset">Resetuj</string>
+    <string name="gps_for_navigation">GPS do nawigacji</string>
+    <string name="gps_for_navigation_description">Używaj GPS tego urządzenia do nawigacji</string>
+    <string name="enabled">Włączone</string>
+    <string name="disabled">Wyłączone</string>
+    <string name="resolution">Rozdzielczość</string>
+    <string name="change_resolution">Zmień rozdzielczość</string>
+    <string name="change_dpi">Zmień DPI</string>
+    <string name="change_view_mode">Zmień tryb widoku</string>
+    <string name="view_mode">Tryb widoku</string>
+    <string name="surface_view">SurfaceView</string>
+    <string name="texture_view">TextureView</string>
+    <string name="gles_view">GLES20</string>
+    <string name="auto">Auto</string>
+    <string name="screen_orientation">Orientacja ekranu</string>
+    <string name="change_screen_orientation">Zmień orientację ekranu</string>
+    <string name="orientation_system_default">Domyślne systemowe</string>
+    <string name="orientation_auto_sensor">Automatycznie (Czujnik)</string>
+    <string name="orientation_landscape">Poziomo (0°)</string>
+    <string name="orientation_landscape_reverse">Poziomo odwrócone (180°)</string>
+    <string name="orientation_portrait">Pionowo (90°)</string>
+    <string name="orientation_portrait_reverse">Pionowo odwrócone (270°)</string>
+    <string name="enter_dpi_value">Wprowadź wartość DPI (0 dla auto)</string>
+    <string name="custom_margin">Własne marginesy</string>
+    <string name="custom_margin_description">Ustaw własne marginesy ekranu (0 dla auto)</string>
+    <string name="enter_custom_margins">Wprowadź marginesy (0 dla auto)</string>
+    <string name="margin_left">Lewy</string>
+    <string name="margin_top">Górny</string>
+    <string name="margin_right">Prawy</string>
+    <string name="margin_bottom">Dolny</string>
+
+    <string name="start_in_fullscreen_mode">Uruchom na pełnym ekranie</string>
+    <string name="start_in_fullscreen_mode_description">Przełącz tryb pełnoekranowy. Wymagany restart aplikacji, aby zastosować zmiany.</string>
+
+    <string name="usb_status">Status USB: %s</string>
+    <string name="projection_status">Status projekcji: %s</string>
+    <string name="connected">Połączono</string>
+    <string name="disconnected">Rozłączono</string>
+    <string name="running">Działa</string>
+    <string name="not_running">Nie działa</string>
+    <string name="no_android_auto_device_connected">Brak połączonego urządzenia Android Auto. Sprawdź połączenie USB.</string>
+    <string name="no_usb_device_connected">Brak urządzenia USB podłączonego do tabletu/radia.</string>
+    <string name="press_back_again_to_exit">Naciśnij Wstecz ponownie, aby wyjść</string>
+    <string name="back">Wstecz</string>
+    <string name="debug_mode">Tryb debugowania</string>
+    <string name="debug_mode_description">Włącz bardziej szczegółowe logowanie</string>
+    <string name="export_logs">Eksportuj logi</string>
+    <string name="export_logs_description">Zapisz logi do debugowania</string>
+    <string name="use_native_ssl">Użyj natywnego SSL</string>
+    <string name="use_native_ssl_description">Użyj natywnej biblioteki OpenSSL (szybsze na starszych urządzeniach). Wymaga restartu.</string>
+    <string name="not_set">Nie ustawiono</string>
+    <string name="keymap_description">Zmień przypisanie klawiszy dla Twojej jednostki</string>
+
+    <string name="key_soft_left">Przycisk ekranowy lewy</string>
+    <string name="key_soft_right">Przycisk ekranowy prawy</string>
+    <string name="key_dpad_up">D-Pad Góra</string>
+    <string name="key_dpad_down">D-Pad Dół</string>
+    <string name="key_dpad_left">D-Pad Lewo</string>
+    <string name="key_dpad_right">D-Pad Prawo</string>
+    <string name="key_dpad_center">D-Pad Środek (OK)</string>
+    <string name="key_media_play">Multimedia: Odtwórz</string>
+    <string name="key_media_pause">Multimedia: Pauza</string>
+    <string name="key_media_play_pause">Multimedia: Odtwórz/Pauza</string>
+    <string name="key_media_next">Następny utwór</string>
+    <string name="key_media_prev">Poprzedni utwór</string>
+    <string name="key_search">Komenda głosowa</string>
+    <string name="key_call">Telefon</string>
+    <string name="key_music">Muzyka</string>
+    <string name="key_nav">Nawigacja</string>
+    <string name="key_night">Przełącz tryb nocny</string>
+
+    <string name="category_general">Ogólne</string>
+    <string name="auto_start_self_mode">Autostart trybu samodzielnego</string>
+    <string name="auto_start_self_mode_description">Automatycznie uruchom tryb samodzielny po otwarciu aplikacji.</string>
+    <string name="right_hand_drive">Kierownica po prawej stronie</string>
+    <string name="right_hand_drive_description">Dostosuj interfejs dla ruchu lewostronnego (RHD)</string>
+    <string name="category_graphic">Grafika</string>
+    <string name="category_debug">Debugowanie</string>
+
+    <string name="category_video">Wideo</string>
+    <string name="force_software_decoding">Wymuś dekodowanie programowe</string>
+    <string name="force_software_decoding_description">Może naprawić błędy na niektórych urządzeniach, ale jest mniej wydajne</string>
+    <string name="wifi_launcher_mode">Serwer bezprzewodowy</string>
+    <string name="wifi_launcher_mode_description">Pozwól telefonowi łączyć się z tym urządzeniem (wymaga aplikacji Wireless Launcher na telefonie)</string>
+    <string name="auto_connect_last_session">Auto-łączenie ostatniej sesji</string>
+    <string name="auto_connect_last_session_description">Automatycznie połącz z ostatnio używanym urządzeniem przy starcie aplikacji</string>
+    <string name="video_codec">Kodek wideo</string>
+    <string name="fps_limit">Limit FPS</string>
+    <string name="save">Zapisz</string>
+    <string name="save_and_restart">Zapisz (Wymagane ponowne połączenie)</string>
+    <string name="add_new">Dodaj nowy</string>
+    <string name="cancel">Anuluj</string>
+
+    <string name="category_audio">Dźwięk</string>
+    <string name="enable_audio_sink">Włącz wyjście dźwięku</string>
+    <string name="enable_audio_sink_description">Jeśli wyłączone, jednostka nie będzie działać jako wyjście dźwięku. Dźwięk będzie odtwarzany z telefonu.</string>
+    <string name="use_aac_audio">Użyj dźwięku AAC</string>
+    <string name="use_aac_audio_description">Użyj kodeka AAC dla dźwięku, aby oszczędzać przepustowość (Eksperymentalne).</string>
+
+    <string name="category_info">Informacje</string>
+    <string name="about">O aplikacji i Wsparcie</string>
+    <string name="about_description">Uzyskaj więcej informacji o Headunit Revived</string>
+    <string name="version">Wersja</string>
+    <string name="about_title">O Headunit Revived</string>
+    <string name="copyright">© 2025-%d André Rinas</string>
+
+    <string name="disclaimer_title">Bezpieczeństwo i Odpowiedzialność</string>
+    <string name="disclaimer_header">Ważne Ostrzeżenie</string>
+    <string name="disclaimer_accept">Rozumiem i Akceptuję</string>
+    <string name="disclaimer_text"><![CDATA[
+        <b>1. Skupienie na drodze</b><br/>
+        Korzystanie z tego oprogramowania podczas prowadzenia pojazdu może rozpraszać i być niebezpieczne. Zawsze traktuj bezpieczną jazdę priorytetowo i przestrzegaj lokalnych przepisów ruchu drogowego. Korzystaj z tej aplikacji tylko wtedy, gdy jest to bezpieczne.<br/><br/>
+        <b>2. Ograniczenie odpowiedzialności</b><br/>
+        Headunit Revived jest udostępniany w stanie "takim, jaki jest" (as is), bez jakiejkolwiek gwarancji. Deweloperzy nie ponoszą odpowiedzialności za jakiekolwiek wypadki, uszkodzenia pojazdu/urządzenia ani konsekwencje prawne wynikające z używania tego oprogramowania.<br/><br/>
+        <b>3. Brak powiązań</b><br/>
+        Ten projekt jest niezależną inicjatywą open-source i nie jest powiązany, wspierany ani połączony z firmą Google LLC ani marką Android Auto.
+    ]]></string>
+</resources>

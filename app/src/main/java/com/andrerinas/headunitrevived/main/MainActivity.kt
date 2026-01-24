@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_main)
 
+        val appSettings = Settings(this)
+        requestedOrientation = appSettings.screenOrientation.androidOrientation
+
         // Start main service immediately to handle connections and wireless server
         val serviceIntent = Intent(this, AapService::class.java)
         startService(serviceIntent)

@@ -105,6 +105,15 @@ class Settings(context: Context) {
             prefs.edit().putInt("view-mode", viewMode.value).apply()
         }
 
+    var screenOrientation: ScreenOrientation
+        get() {
+            val value = prefs.getInt("screen-orientation", 0)
+            return ScreenOrientation.fromInt(value) ?: ScreenOrientation.SYSTEM
+        }
+        set(orientation) {
+            prefs.edit().putInt("screen-orientation", orientation.value).apply()
+        }
+
     var dpiPixelDensity: Int
         get() = prefs.getInt("dpi-pixel-density", 0) // Default 0 for Auto
         set(value) {
@@ -266,6 +275,20 @@ class Settings(context: Context) {
 
         companion object {
             private val map = values().associateBy(ViewMode::value)
+            fun fromInt(value: Int) = map[value]
+        }
+    }
+
+    enum class ScreenOrientation(val value: Int, val androidOrientation: Int) {
+        SYSTEM(0, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER),
+        AUTO(1, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR),
+        LANDSCAPE(2, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE),
+        LANDSCAPE_REVERSE(3, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE),
+        PORTRAIT(4, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT),
+        PORTRAIT_REVERSE(5, android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+
+        companion object {
+            private val map = values().associateBy(ScreenOrientation::value)
             fun fromInt(value: Int) = map[value]
         }
     }

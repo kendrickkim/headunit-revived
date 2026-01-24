@@ -37,6 +37,14 @@ INHALT</string>
     <string name="texture_view">TextureView</string>
     <string name="gles_view">GLES20</string>
     <string name="auto">Automatisch</string>
+    <string name="screen_orientation">Bildschirmausrichtung</string>
+    <string name="change_screen_orientation">Bildschirmausrichtung ändern</string>
+    <string name="orientation_system_default">Systemstandard</string>
+    <string name="orientation_auto_sensor">Auto (Sensor)</string>
+    <string name="orientation_landscape">Querformat (0°)</string>
+    <string name="orientation_landscape_reverse">Querformat umgekehrt (180°)</string>
+    <string name="orientation_portrait">Hochformat (90°)</string>
+    <string name="orientation_portrait_reverse">Hochformat umgekehrt (270°)</string>
     <string name="enter_dpi_value">DPI eingeben (0 für Auto)</string>
     <string name="custom_margin">Benutzerdefinierte Ränder</string>
     <string name="custom_margin_description">Ränder manuell setzen (0 für Auto)</string>

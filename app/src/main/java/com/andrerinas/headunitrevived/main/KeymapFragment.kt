@@ -114,6 +114,11 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener {
                 assignDialog = null
             }
             .create()
+
+        assignDialog?.setOnKeyListener { _, _, event ->
+            onKeyEvent(event)
+        }
+
         assignDialog?.show()
     }
 
@@ -163,10 +168,12 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener {
         if (event == null) return false
 
         val keyCode = event.keyCode
+        if (keyCode == KeyEvent.KEYCODE_BACK) return false
+
         val keyName = KeyEvent.keyCodeToString(keyCode)
         keypressDebuggerTextView.text = "Last Key Press: $keyName ($keyCode)"
 
-        if (event.action == KeyEvent.ACTION_DOWN || keyCode == KeyEvent.KEYCODE_BACK) {
+        if (event.action == KeyEvent.ACTION_DOWN) {
             return true // Consume down events
         }
 

@@ -52,6 +52,7 @@ class SettingsFragment : Fragment() {
     private var pendingUseAacAudio: Boolean? = null
     private var pendingUseNativeSsl: Boolean? = null
     private var pendingAutoStartSelfMode: Boolean? = null
+    private var pendingScreenOrientation: Settings.ScreenOrientation? = null
 
     private var requiresRestart = false
     private var hasChanges = false
@@ -86,6 +87,7 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio = settings.useAacAudio
         pendingUseNativeSsl = settings.useNativeSsl
         pendingAutoStartSelfMode = settings.autoStartSelfMode
+        pendingScreenOrientation = settings.screenOrientation
 
         // Intercept system back button
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -161,6 +163,7 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio?.let { settings.useAacAudio = it }
         pendingUseNativeSsl?.let { settings.useNativeSsl = it }
         pendingAutoStartSelfMode?.let { settings.autoStartSelfMode = it }
+        pendingScreenOrientation?.let { settings.screenOrientation = it }
 
         pendingWifiLauncherMode?.let { enabled ->
             settings.wifiLauncherMode = enabled
@@ -210,7 +213,8 @@ class SettingsFragment : Fragment() {
                         pendingEnableAudioSink != settings.enableAudioSink ||
                         pendingUseAacAudio != settings.useAacAudio ||
                         pendingUseNativeSsl != settings.useNativeSsl ||
-                        pendingAutoStartSelfMode != settings.autoStartSelfMode
+                        pendingAutoStartSelfMode != settings.autoStartSelfMode ||
+                        pendingScreenOrientation != settings.screenOrientation
 
         hasChanges = anyChange
 
@@ -423,6 +427,25 @@ class SettingsFragment : Fragment() {
                     .setTitle(R.string.change_view_mode)
                     .setSingleChoiceItems(viewModes, currentIdx) { dialog, which ->
                         pendingViewMode = Settings.ViewMode.fromInt(which)!!
+                        checkChanges()
+                        dialog.dismiss()
+                        updateSettingsList()
+                    }
+                    .show()
+            }
+        ))
+
+        items.add(SettingItem.SettingEntry(
+            stableId = "screenOrientation",
+            nameResId = R.string.screen_orientation,
+            value = resources.getStringArray(R.array.screen_orientation)[pendingScreenOrientation!!.value],
+            onClick = { _ ->
+                val orientationOptions = resources.getStringArray(R.array.screen_orientation)
+                val currentIdx = pendingScreenOrientation!!.value
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.change_screen_orientation)
+                    .setSingleChoiceItems(orientationOptions, currentIdx) { dialog, which ->
+                        pendingScreenOrientation = Settings.ScreenOrientation.fromInt(which)
                         checkChanges()
                         dialog.dismiss()
                         updateSettingsList()
