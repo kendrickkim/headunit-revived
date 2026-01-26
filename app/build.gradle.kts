@@ -63,6 +63,12 @@ android {
         dependsOn(copyRootAssets)
     }
 
+    tasks.configureEach {
+        if (name.contains("lint", ignoreCase = true)) {
+            dependsOn(copyRootAssets)
+        }
+    }
+
     defaultConfig {
         applicationId = "com.andrerinas.headunitrevived"
         minSdk = 16
