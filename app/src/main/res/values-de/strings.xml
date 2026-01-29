@@ -98,6 +98,8 @@ INHALT</string>
     <string name="enter_threshold_value">Schwellenwert eingeben</string>
     <string name="threshold_lux_desc">Lux Wert (0-10000). Darunter = Nacht.</string>
     <string name="threshold_brightness_desc">Helligkeit (0-255). Darunter = Nacht.</string>
+    <string name="night_mode_start">Nachtmodus Startzeit</string>
+    <string name="night_mode_end">Nachtmodus Endzeit</string>
 
     <!-- Categories for SettingsFragment -->
     <string name="category_general">Allgemein</string>

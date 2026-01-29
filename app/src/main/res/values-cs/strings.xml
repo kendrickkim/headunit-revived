@@ -97,6 +97,8 @@
     <string name="enter_threshold_value">Zadejte hodnotu prahu</string>
     <string name="threshold_lux_desc">Hodnota Lux (0-10000). Pod touto hodnotou = Noc.</string>
     <string name="threshold_brightness_desc">Hodnota jasu (0-255). Pod touto hodnotou = Noc.</string>
+    <string name="night_mode_start">Čas zahájení nočního režimu</string>
+    <string name="night_mode_end">Čas ukončení nočního režimu</string>
 
     <!-- Categories for SettingsFragment -->
     <string name="category_general">Obecné</string>

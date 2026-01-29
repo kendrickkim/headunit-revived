@@ -253,7 +253,7 @@ class Settings(context: Context) {
         AUTO(0),
         DAY(1),
         NIGHT(2),
-        AUTO_WAIT_GPS(3),
+        MANUAL_TIME(3),
         LIGHT_SENSOR(4),
         SCREEN_BRIGHTNESS(5);
 
@@ -262,6 +262,18 @@ class Settings(context: Context) {
             fun fromInt(value: Int) = map[value]
         }
     }
+
+    var nightModeManualStart: Int
+        get() = prefs.getInt("night-mode-manual-start", 1140) // Default 19:00 (19 * 60)
+        set(value) {
+            prefs.edit().putInt("night-mode-manual-start", value).apply()
+        }
+
+    var nightModeManualEnd: Int
+        get() = prefs.getInt("night-mode-manual-end", 420) // Default 07:00 (7 * 60)
+        set(value) {
+            prefs.edit().putInt("night-mode-manual-end", value).apply()
+        }
 
     companion object {
         const val CONNECTION_TYPE_WIFI = "wifi"

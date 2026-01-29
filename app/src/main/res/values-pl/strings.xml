@@ -97,6 +97,8 @@
     <string name="enter_threshold_value">Wprowadź wartość progu</string>
     <string name="threshold_lux_desc">Wartość Lux (0-10000). Poniżej = Noc.</string>
     <string name="threshold_brightness_desc">Jasność (0-255). Poniżej = Noc.</string>
+    <string name="night_mode_start">Czas rozpoczęcia trybu nocnego</string>
+    <string name="night_mode_end">Czas zakończenia trybu nocnego</string>
 
     <!-- Categories for SettingsFragment -->
 

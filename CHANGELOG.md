@@ -1,4 +1,8 @@
 # Changelog
+### v.1.11.0
+- New Feature: Advanced Night Mode (Light Sensor, Screen Brightness, separate thresholds)
+- New Feature: Enhanced Service Notification (Reduced noise, added Exit button)
+
 ### v.1.10.4
 - Added: Dutch translation 🇳🇱 thanks to safariking
 - Several black screen and connection error enhancements

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="night_mode">
-        <item>Auto (Time)</item>
+        <item>Auto (Sunrise/Sunset)</item>
         <item>Day</item>
         <item>Night</item>
-        <item>Auto (Time + GPS)</item>
+        <item>Manual Time</item>
         <item>Light Sensor</item>
         <item>Screen Brightness</item>
     </string-array>

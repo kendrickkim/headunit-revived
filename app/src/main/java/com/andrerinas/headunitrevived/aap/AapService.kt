@@ -88,13 +88,15 @@ class AapService : Service(), UsbReceiver.Listener {
         }
         nightModeManager?.start()
 
-        val filter = IntentFilter(ACTION_REQUEST_NIGHT_MODE_UPDATE)
+        val nightModeFilter = IntentFilter(ACTION_REQUEST_NIGHT_MODE_UPDATE)
+        val usbFilter = UsbReceiver.createFilter()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(nightModeUpdateReceiver, filter, RECEIVER_NOT_EXPORTED)
-            registerReceiver(usbReceiver, UsbReceiver.createFilter(), RECEIVER_NOT_EXPORTED);
+            registerReceiver(nightModeUpdateReceiver, nightModeFilter, RECEIVER_NOT_EXPORTED)
+            registerReceiver(usbReceiver, usbFilter, RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(nightModeUpdateReceiver, filter)
-            registerReceiver(usbReceiver, UsbReceiver.createFilter());
+            registerReceiver(nightModeUpdateReceiver, nightModeFilter)
+            registerReceiver(usbReceiver, usbFilter)
         }
 
         startService(GpsLocationService.intent(this));

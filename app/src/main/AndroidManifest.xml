@@ -68,7 +68,7 @@
 
         <activity
             android:name=".main.MainActivity"
-            android:configChanges="keyboardHidden|uiMode|orientation|screenSize|screenLayout|smallestScreenSize"
+            android:configChanges="keyboardHidden|uiMode"
             android:launchMode="singleTask"
             android:screenOrientation="sensor"
             android:theme="@style/SplashTheme"

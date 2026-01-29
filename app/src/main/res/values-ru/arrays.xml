@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="night_mode">
-        <item>Авто (Время)</item>
+        <item>Авто (Восход/Закат)</item>
         <item>День</item>
         <item>Ночь</item>
-        <item>Авто (Время + GPS)</item>
+        <item>Ручное время</item>
         <item>Датчик света</item>
         <item>Яркость экрана</item>
     </string-array>

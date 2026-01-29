@@ -96,6 +96,8 @@
     <string name="enter_threshold_value">輸入閾值</string>
     <string name="threshold_lux_desc">Lux 值 (0-10000)。低於此值 = 夜間。</string>
     <string name="threshold_brightness_desc">亮度值 (0-255)。低於此值 = 夜間。</string>
+    <string name="night_mode_start">夜間模式開始時間</string>
+    <string name="night_mode_end">夜間模式結束時間</string>
 
     <!-- Categories for SettingsFragment -->
     <string name="category_general">一般</string>

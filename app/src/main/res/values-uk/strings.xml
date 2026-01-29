@@ -1,0 +1,154 @@
+<resources>
+    <string name="app_name">Headunit Revived</string>
+    <string name="menu">Меню</string>
+    <string name="settings">Налаштування</string>
+
+    <string name="title_activity_settings">Налаштування</string>
+    <string name="dummy_button">Невикористана кнопка</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="allowed">Дозволено</string>
+    <string name="ignored">Ігноровано</string>
+    <string name="exit">Вийти</string>
+    <string name="video">Android Auto</string>
+    <string name="self_mode">Самостійний режим</string>
+    <string name="to_android_auto">В Android Auto</string>
+    <string name="title">Headunit Revived</string>
+    <string name="remove">Видалити</string>
+    <string name="usb">USB</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="dpi">Щільність екрана (DPI)</string>
+    <string name="mic_sample_rate">Частота дискретизації мікрофона</string>
+    <string name="keymap">Розкладка клавіш</string>
+    <string name="night_mode">Нічний режим</string>
+    <string name="bluetooth_address_s">Bluetooth-адреса</string>
+    <string name="enter_bluetooth_mac">Ввести MAC-адресу Bluetooth</string>
+    <string name="reset">Скинути</string>
+    <string name="gps_for_navigation">GPS для навігації</string>
+    <string name="gps_for_navigation_description">Використовувати GPS для навігації</string>
+    <string name="enabled">Увімкнено</string>
+    <string name="disabled">Вимкнено</string>
+    <string name="resolution">Роздільна здатність</string>
+    <string name="change_resolution">Змінити роздільну здатність</string>
+    <string name="change_dpi">Змінити DPI</string>
+    <string name="change_view_mode">Змінити режим перегляду</string>
+    <string name="view_mode">Режим перегляду</string>
+    <string name="surface_view">SurfaceView</string>
+    <string name="texture_view">TextureView</string>
+    <string name="gles_view">GLES 2.0</string>
+    <string name="auto">Авто</string>
+    <string name="screen_orientation">Орієнтація екрана</string>
+    <string name="change_screen_orientation">Змінити орієнтацію екрана</string>
+    <string name="orientation_system_default">Системно за замовчуванням</string>
+    <string name="orientation_auto_sensor">Автоматично (датчик)</string>
+    <string name="orientation_landscape">Альбомна (0°)</string>
+    <string name="orientation_landscape_reverse">Альбомна перевернута (180°)</string>
+    <string name="orientation_portrait">Портретна (90°)</string>
+    <string name="orientation_portrait_reverse">Портретна перевернута (270°)</string>
+    <string name="enter_dpi_value">Введіть значення DPI (0 — автоматично)</string>
+    <string name="custom_margin">Користувацькі поля</string>
+    <string name="custom_margin_description">Задати користувацькі поля дисплея (введіть 0 для автоматичного налаштування)</string>
+    <string name="enter_custom_margins">Введіть користувацькі поля (0 — автоматично)</string>
+    <string name="margin_left">Ліворуч</string>
+    <string name="margin_top">Вгору</string>
+    <string name="margin_right">Праворуч</string>
+    <string name="margin_bottom">Вниз</string>
+
+    <string name="start_in_fullscreen_mode">Запускати в повноекранному режимі</string>
+    <string name="start_in_fullscreen_mode_description">Увімкнути повноекранний режим. Потрібне перезавантаження пристрою для застосування змін.</string>
+
+    <string name="usb_status">Статус USB: %s</string>
+    <string name="projection_status">Статус проєкції: %s</string>
+    <string name="connected">Підключено</string>
+    <string name="disconnected">Відключено</string>
+    <string name="running">Запущено</string>
+    <string name="not_running">Не запущено</string>
+    <string name="no_android_auto_device_connected">Пристрій Android Auto не підключений. Будь ласка, перевірте USB-зʼєднання.</string>
+    <string name="no_usb_device_connected">Немає підключених USB-пристроїв.</string>
+    <string name="press_back_again_to_exit">Натисніть Назад ще раз для виходу</string>
+    <string name="back">Назад</string>
+    <string name="debug_mode">Режим налагодження</string>
+    <string name="debug_mode_description">Увімкнути розширене логування</string>
+    <string name="export_logs">Експортувати журнал подій</string>
+    <string name="export_logs_description">Зберегти журнал подій для налагодження</string>
+    <string name="use_native_ssl">Використовувати системний SSL</string>
+    <string name="use_native_ssl_description">Використовувати системний OpenSSL (швидше на старіших пристроях). Потрібне перезавантаження.</string>
+    <string name="not_set">Не задано</string>
+    <string name="keymap_description">Змінити призначення клавіш для вашого пристрою</string>
+
+    <string name="key_soft_left">Ліва софт-кнопка</string>
+    <string name="key_soft_right">Права софт-кнопка</string>
+    <string name="key_dpad_up">D-Pad вгору</string>
+    <string name="key_dpad_down">D-Pad вниз</string>
+    <string name="key_dpad_left">D-Pad ліворуч</string>
+    <string name="key_dpad_right">D-Pad праворуч</string>
+    <string name="key_dpad_center">D-Pad центр (OK)</string>
+    <string name="key_media_play">Відтворення</string>
+    <string name="key_media_pause">Пауза</string>
+    <string name="key_media_play_pause">Відтворення / Пауза</string>
+    <string name="key_media_next">Наступний трек</string>
+    <string name="key_media_prev">Попередній трек</string>
+    <string name="key_search">Голосові команди</string>
+    <string name="key_call">Телефон</string>
+    <string name="key_music">Музика</string>
+    <string name="key_nav">Навігація</string>
+    <string name="key_night">Перемкнути нічний режим</string>
+
+    <string name="night_mode_threshold">Поріг нічного режиму</string>
+    <string name="enter_threshold_value">Введіть порогове значення</string>
+    <string name="threshold_lux_desc">Значення люкс (0-10000). Нижче = Ніч.</string>
+    <string name="threshold_brightness_desc">Значення яскравості (0-255). Нижче = Ніч.</string>
+    <string name="night_mode_start">Час початку нічного режиму</string>
+    <string name="night_mode_end">Час закінчення нічного режиму</string>
+
+    <!-- Categories for SettingsFragment -->
+    <string name="category_general">Загальні</string>
+    <string name="auto_start_self_mode">Автозапуск самостійного режиму</string>
+    <string name="auto_start_self_mode_description">Автоматично запускати самостійний режим під час відкриття програми.</string>
+    <string name="right_hand_drive">Правостороннє керування</string>
+    <string name="right_hand_drive_description">Розмістити інтерфейс для правостороннього керування автомобілем.</string>
+    <string name="category_graphic">Графіка</string>
+    <string name="category_debug">Налагодження</string>
+
+    <!-- Video Settings -->
+    <string name="category_video">Відео</string>
+    <string name="force_software_decoding">Примусове програмне декодування</string>
+    <string name="force_software_decoding_description">Може вирішити проблеми на деяких пристроях, але працює повільніше.</string>
+    <string name="wifi_launcher_mode">Бездротовий сервер</string>
+    <string name="wifi_launcher_mode_description">Дозволити телефону підключатися до цього планшета (потрібен застосунок Wireless Launcher)</string>
+    <string name="auto_connect_last_session">Автоматично підключатися до останньої сесії</string>
+    <string name="auto_connect_last_session_description">Автоматично підключатися до останнього використаного пристрою під час запуску програми</string>
+    <string name="video_codec">Відеокодек</string>
+    <string name="fps_limit">Обмеження FPS</string>
+    <string name="save">Зберегти</string>
+    <string name="save_and_restart">Зберегти (потрібне перепідключення)</string>
+    <string name="add_new">Додати новий</string>
+    <string name="cancel">Скасувати</string>
+
+    <!-- Audio Settings -->
+    <string name="category_audio">Звук</string>
+    <string name="enable_audio_sink">Увімкнути аудіоприймач</string>
+    <string name="enable_audio_sink_description">Якщо вимкнено, головний пристрій не працюватиме як аудіоприймач. Звук відтворюватиметься з телефону.</string>
+    <string name="use_aac_audio">Використовувати аудіокодек AAC</string>
+    <string name="use_aac_audio_description">Використовувати кодек AAC для збереження швидкості (експериментально).</string>
+
+    <!-- Info Settings -->
+    <string name="category_info">Інформація</string>
+    <string name="about">Про застосунок і підтримка</string>
+    <string name="about_description">Отримати більше інформації про Headunit Revived</string>
+    <string name="version">Версія</string>
+    <string name="about_title">Про Headunit Revived</string>
+    <string name="copyright">© 2025-%d André Rinas</string>
+
+    <!-- Safety Disclaimer -->
+    <string name="disclaimer_title">Безпека та відповідальність</string>
+    <string name="disclaimer_header">Важливе попередження</string>
+    <string name="disclaimer_accept">Я розумію та погоджуюся</string>
+    <string name="disclaimer_text"><![CDATA[
+        <b>1. Зосередьтеся на дорозі</b><br/>
+        Використовувати цю програму за кермом небезпечно. Завжди пріоритизуйте безпечне керування та дотримуйтесь усіх місцевих правил дорожнього руху. Використовуйте це ПЗ лише тоді, коли це безпечно.<br/><br/>
+        <b>2. Обмеження відповідальності</b><br/>
+        Headunit Revived надається як є, без будь-яких гарантій. Розробники не несуть відповідальності за будь-які аварії, пошкодження вашого автомобіля або пристрою, а також за будь-які правові наслідки, що можуть виникнути внаслідок використання цього програмного забезпечення.<br/><br/>
+        <b>3. Відсутність афілійованості</b><br/>
+        Цей проєкт є незалежною ініціативою з відкритим вихідним кодом і не повʼязаний, не схвалений та не має жодного відношення до компанії Google LLC або бренду Android Auto.
+    ]]></string>
+</resources>

@@ -16,8 +16,18 @@ class NightMode(private val settings: Settings, val hasGPSLocation: Boolean) {
                 Settings.NightMode.AUTO -> calculator.current
                 Settings.NightMode.DAY -> false
                 Settings.NightMode.NIGHT -> true
-                Settings.NightMode.AUTO_WAIT_GPS -> {
-                    if (hasGPSLocation) calculator.current else false
+                Settings.NightMode.MANUAL_TIME -> {
+                    val now = Calendar.getInstance()
+                    val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+                    val start = settings.nightModeManualStart
+                    val end = settings.nightModeManualEnd
+                    
+                    if (start <= end) {
+                        currentMinutes in start..end
+                    } else {
+                        // Rollover (e.g. 22:00 to 06:00)
+                        currentMinutes >= start || currentMinutes <= end
+                    }
                 }
                 Settings.NightMode.LIGHT_SENSOR -> {
                     if (currentLux >= 0) currentLux < settings.nightModeThresholdLux else false
@@ -33,8 +43,12 @@ class NightMode(private val settings: Settings, val hasGPSLocation: Boolean) {
             Settings.NightMode.AUTO -> "NightMode: ${calculator.current}"
             Settings.NightMode.DAY -> "NightMode: DAY"
             Settings.NightMode.NIGHT -> "NightMode: NIGHT"
-            Settings.NightMode.AUTO_WAIT_GPS -> {
-                if (hasGPSLocation)"NightMode: ${calculator.current}" else "NightMode: DAY"
+            Settings.NightMode.MANUAL_TIME -> {
+                val startH = settings.nightModeManualStart / 60
+                val startM = settings.nightModeManualStart % 60
+                val endH = settings.nightModeManualEnd / 60
+                val endM = settings.nightModeManualEnd % 60
+                "NightMode: Manual (%02d:%02d - %02d:%02d)".format(startH, startM, endH, endM)
             }
             Settings.NightMode.LIGHT_SENSOR -> "NightMode: Sensor ($currentLux < ${settings.nightModeThresholdLux})"
             Settings.NightMode.SCREEN_BRIGHTNESS -> "NightMode: Brightness ($currentBrightness < ${settings.nightModeThresholdBrightness})"

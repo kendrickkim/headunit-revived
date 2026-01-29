@@ -97,6 +97,8 @@
     <string name="enter_threshold_value">Введите пороговое значение</string>
     <string name="threshold_lux_desc">Значение люкс (0-10000). Ниже = Ночь.</string>
     <string name="threshold_brightness_desc">Значение яркости (0-255). Ниже = Ночь.</string>
+    <string name="night_mode_start">Время начала ночного режима</string>
+    <string name="night_mode_end">Время окончания ночного режима</string>
 
     <!-- Categories for SettingsFragment -->
     <string name="category_general">Общие</string>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="night_mode">
-        <item>Auto (Czas)</item>
+        <item>Auto (Wschód/zachód słońca)</item>
         <item>Dzień</item>
         <item>Noc</item>
-        <item>Auto (Czas + GPS)</item>
+        <item>Czas ręczny</item>
         <item>Czujnik światła</item>
         <item>Jasność ekranu</item>
     </string-array>

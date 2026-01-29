@@ -97,6 +97,8 @@
     <string name="enter_threshold_value">Inserir valor do limiar</string>
     <string name="threshold_lux_desc">Valor Lux (0-10000). Abaixo disto = Noite.</string>
     <string name="threshold_brightness_desc">Valor de brilho (0-255). Abaixo disto = Noite.</string>
+    <string name="night_mode_start">Hora de início do modo noturno</string>
+    <string name="night_mode_end">Hora de término do modo noturno</string>
 
     <!-- Categories for SettingsFragment -->
     <string name="category_general">Geral</string>

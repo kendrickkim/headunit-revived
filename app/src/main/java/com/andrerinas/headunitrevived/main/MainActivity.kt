@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private var lastBackPressTime: Long = 0
     var keyListener: KeyListener? = null
+
     private val viewModel: MainViewModel by viewModels()
 
     interface KeyListener {

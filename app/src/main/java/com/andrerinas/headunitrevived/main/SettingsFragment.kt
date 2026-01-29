@@ -1,6 +1,7 @@
 package com.andrerinas.headunitrevived.main
 
 import android.app.AlertDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -56,6 +57,8 @@ class SettingsFragment : Fragment() {
     private var pendingScreenOrientation: Settings.ScreenOrientation? = null
     private var pendingThresholdLux: Int? = null
     private var pendingThresholdBrightness: Int? = null
+    private var pendingManualStart: Int? = null
+    private var pendingManualEnd: Int? = null
 
     private var requiresRestart = false
     private var hasChanges = false
@@ -74,6 +77,8 @@ class SettingsFragment : Fragment() {
         pendingNightMode = settings.nightMode
         pendingThresholdLux = settings.nightModeThresholdLux
         pendingThresholdBrightness = settings.nightModeThresholdBrightness
+        pendingManualStart = settings.nightModeManualStart
+        pendingManualEnd = settings.nightModeManualEnd
         pendingMicSampleRate = settings.micSampleRate
         pendingUseGps = settings.useGpsForNavigation
         pendingResolution = settings.resolutionId
@@ -154,6 +159,8 @@ class SettingsFragment : Fragment() {
         pendingNightMode?.let { settings.nightMode = it }
         pendingThresholdLux?.let { settings.nightModeThresholdLux = it }
         pendingThresholdBrightness?.let { settings.nightModeThresholdBrightness = it }
+        pendingManualStart?.let { settings.nightModeManualStart = it }
+        pendingManualEnd?.let { settings.nightModeManualEnd = it }
         pendingMicSampleRate?.let { settings.micSampleRate = it }
         pendingUseGps?.let { settings.useGpsForNavigation = it }
         pendingResolution?.let { settings.resolutionId = it }
@@ -205,6 +212,8 @@ class SettingsFragment : Fragment() {
         val anyChange = pendingNightMode != settings.nightMode ||
                         pendingThresholdLux != settings.nightModeThresholdLux ||
                         pendingThresholdBrightness != settings.nightModeThresholdBrightness ||
+                        pendingManualStart != settings.nightModeManualStart ||
+                        pendingManualEnd != settings.nightModeManualEnd ||
                         pendingMicSampleRate != settings.micSampleRate ||
                         pendingUseGps != settings.useGpsForNavigation ||
                         pendingResolution != settings.resolutionId ||
@@ -252,7 +261,7 @@ class SettingsFragment : Fragment() {
             nameResId = R.string.night_mode,
             value = run {
                 val base = resources.getStringArray(R.array.night_mode)[pendingNightMode!!.value]
-                if (pendingNightMode == Settings.NightMode.AUTO || pendingNightMode == Settings.NightMode.AUTO_WAIT_GPS) {
+                if (pendingNightMode == Settings.NightMode.AUTO) {
                     val info = com.andrerinas.headunitrevived.utils.NightMode(settings, true).getCalculationInfo()
                     "$base ($info)"
                 } else {
@@ -308,6 +317,36 @@ class SettingsFragment : Fragment() {
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .show()
+                }
+            ))
+        }
+
+        if (pendingNightMode == Settings.NightMode.MANUAL_TIME) {
+            val formatTime = { minutes: Int -> "%02d:%02d".format(minutes / 60, minutes % 60) }
+
+            items.add(SettingItem.SettingEntry(
+                stableId = "nightModeStart",
+                nameResId = R.string.night_mode_start,
+                value = formatTime(pendingManualStart!!),
+                onClick = { _ ->
+                    TimePickerDialog(requireContext(), { _, hour, minute ->
+                        pendingManualStart = hour * 60 + minute
+                        checkChanges()
+                        updateSettingsList()
+                    }, pendingManualStart!! / 60, pendingManualStart!! % 60, true).show()
+                }
+            ))
+
+            items.add(SettingItem.SettingEntry(
+                stableId = "nightModeEnd",
+                nameResId = R.string.night_mode_end,
+                value = formatTime(pendingManualEnd!!),
+                onClick = { _ ->
+                    TimePickerDialog(requireContext(), { _, hour, minute ->
+                        pendingManualEnd = hour * 60 + minute
+                        checkChanges()
+                        updateSettingsList()
+                    }, pendingManualEnd!! / 60, pendingManualEnd!! % 60, true).show()
                 }
             ))
         }
@@ -499,8 +538,8 @@ class SettingsFragment : Fragment() {
                 val currentIdx = pendingScreenOrientation!!.value
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.change_screen_orientation)
-                    .setSingleChoiceItems(orientationOptions, currentIdx) { dialog, which ->
-                        pendingScreenOrientation = Settings.ScreenOrientation.fromInt(which)
+                    .setSingleChoiceItems(orientationOptions, currentIdx) { dialog, whiches ->
+                        pendingScreenOrientation = Settings.ScreenOrientation.fromInt(whiches)
                         checkChanges()
                         dialog.dismiss()
                         updateSettingsList()

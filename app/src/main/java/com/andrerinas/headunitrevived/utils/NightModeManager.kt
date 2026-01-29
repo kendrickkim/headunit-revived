@@ -12,7 +12,9 @@ import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings as SystemSettings
+import androidx.core.content.ContextCompat
 import com.andrerinas.headunitrevived.contract.LocationUpdateIntent
+import java.util.Calendar
 
 class NightModeManager(
     private val context: Context,
@@ -68,7 +70,8 @@ class NightModeManager(
             addAction(Intent.ACTION_TIME_TICK)
             addAction(LocationUpdateIntent.action)
         }
-        context.registerReceiver(receiver, filter)
+        
+        ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
 
         if (settings.nightMode == Settings.NightMode.LIGHT_SENSOR) {
             if (lightSensor != null) {
@@ -135,11 +138,10 @@ class NightModeManager(
                         currentBrightness < thresholdBrightness
                     }
                 } catch (e: Exception) {
-                    // Keep error log for visibility
                     AppLog.e("NightModeManager: Failed to read brightness", e)
                 }
             }
-            // Delegate to standard calculator for other modes
+            // Delegate to standard calculator for other modes (Auto, Day, Night, Manual)
             else -> {
                 isNight = nightModeCalculator.current
             }
