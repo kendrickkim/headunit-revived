@@ -312,7 +312,10 @@ class VideoDecoder(private val settings: Settings) {
             running = true
             codecConfigured = true
 
-            outputThread = Thread { outputThreadLoop() }.apply {
+            outputThread = Thread {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DISPLAY)
+                outputThreadLoop()
+            }.apply {
                 name = "VideoDecoder-Output"
                 start()
             }
@@ -334,11 +337,11 @@ class VideoDecoder(private val settings: Settings) {
         try {
             var inputIndex = -1
             var attempts = 0
-            while (attempts < 10) {
+            while (attempts < 30) {
                 inputIndex = currentCodec.dequeueInputBuffer(TIMEOUT_US)
                 if (inputIndex >= 0) break
                 attempts++
-                if (attempts == 5) AppLog.w("Decoder input buffer full, retrying...")
+                if (attempts == 15) AppLog.w("Decoder input buffer full, retrying...")
             }
 
             if (inputIndex < 0) {
