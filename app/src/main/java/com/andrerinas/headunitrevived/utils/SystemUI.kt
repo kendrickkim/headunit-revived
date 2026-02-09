@@ -1,5 +1,6 @@
 package com.andrerinas.headunitrevived.utils
 
+import android.graphics.Color
 import android.os.Build
 import android.view.View
 import android.view.Window
@@ -8,6 +9,7 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 object SystemUI {
 
@@ -21,20 +23,9 @@ object SystemUI {
             window.attributes = params
         }
 
-        // Handle Translucent flags for older APIs (19-29)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (fullscreen) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
-            }
-        }
+        val controllerCompat = WindowInsetsControllerCompat(window, window.decorView)
 
-        // Toggle fitsSystemWindows programmatically.
-        root.fitsSystemWindows = !fullscreen
-
+        // Handle Immersive Mode for modern APIs (30+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val controller = window.insetsController
             if (controller != null) {
@@ -56,9 +47,25 @@ object SystemUI {
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             } else {
-                // Reset to visible and clear all layout flags to ensure content stays inside bars
-                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             }
+        }
+
+        // Fix for Non-Fullscreen: Force black bars on pre-Android 15 devices
+        if (!fullscreen) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                // We set black for pre-Android 15. On Android 15+ these are ignored by the OS.
+                if (Build.VERSION.SDK_INT < 35) {
+                    window.statusBarColor = Color.BLACK
+                    window.navigationBarColor = Color.BLACK
+                }
+            }
+            // Ensure icons are white (not dark) on our black background
+            controllerCompat.isAppearanceLightStatusBars = false
+            controllerCompat.isAppearanceLightNavigationBars = false
         }
 
         // Manual Inset Handling
@@ -70,12 +77,10 @@ object SystemUI {
             val manualB = settings.insetBottom
 
             if (fullscreen) {
-                // In Fullscreen we only apply manual insets
                 v.setPadding(manualL, manualT, manualR, manualB)
                 HeadUnitScreenConfig.updateInsets(manualL, manualT, manualR, manualB)
             } else {
                 val bars = insetsCompat.getInsets(WindowInsetsCompat.Type.systemBars())
-                // Combine system bars with manual insets
                 val totalL = bars.left + manualL
                 val totalT = bars.top + manualT
                 val totalR = bars.right + manualR
@@ -84,7 +89,7 @@ object SystemUI {
                 v.setPadding(totalL, totalT, totalR, totalB)
                 HeadUnitScreenConfig.updateInsets(totalL, totalT, totalR, totalB)
             }
-            insetsCompat
+            WindowInsetsCompat.CONSUMED
         }
 
         ViewCompat.requestApplyInsets(root)

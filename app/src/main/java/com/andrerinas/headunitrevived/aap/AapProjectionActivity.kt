@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.R
@@ -106,6 +107,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         val screenOrientation = settings.screenOrientation

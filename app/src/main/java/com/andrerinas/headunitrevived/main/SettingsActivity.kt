@@ -2,6 +2,7 @@ package com.andrerinas.headunitrevived.main
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import com.andrerinas.headunitrevived.R
@@ -10,6 +11,7 @@ import com.andrerinas.headunitrevived.utils.SystemUI
 
 class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
         val appSettings = Settings(this)
