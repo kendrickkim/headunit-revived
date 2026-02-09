@@ -124,8 +124,6 @@
         <item>Автопоиск (Headunit Server)</item>
         <item>Wireless Helper (ожидание телефона)</item>
     </string-array>
-    <string name="auto_connect_last_session">Автоподключение последнего сеанса</string>
-    <string name="wifi_launcher_mode_description">Позволяет телефону подключаться к этому планшету (требуется приложение Wifi Launcher на телефоне)</string>
     <string name="auto_connect_last_session">Автоподключение последней сессии</string>
     <string name="auto_connect_last_session_description">Автоматически подключаться к последнему использованному устройству при запуске приложения</string>
     <string name="video_codec">Видеокодек</string>

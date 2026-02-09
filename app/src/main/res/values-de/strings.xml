@@ -120,11 +120,11 @@ INHALT</string>
     <string name="force_software_decoding_description">Kann Probleme auf manchen Geräten beheben, verbraucht aber mehr Leistung.</string>
     <string name="wireless_mode">WLAN-Modus</string>
     <string name="wireless_mode_description">Wählen Sie, wie sich die App drahtlos verbindet (Manuelle Liste, automatische Suche oder Helper-Modus)</string>
-    <deferred-string-array name="wireless_connection_modes">
+    <string-array name="wireless_connection_modes">
         <item>Manuell (Liste)</item>
         <item>Auto-Suche (Headunit Server)</item>
         <item>Wireless Helper (Wartet auf Handy)</item>
-    </deferred-string-array>
+    </string-array>
     <string name="auto_connect_last_session">Autom. Verbindung zur letzten Sitzung</string>
     <string name="auto_connect_last_session_description">Verbindet beim Start automatisch mit dem zuletzt genutzten Gerät</string>
     <string name="video_codec">Video Codec</string>
