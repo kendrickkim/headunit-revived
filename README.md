@@ -67,6 +67,12 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
 - **Native Wireless Connection on Hotspot:** Connecting to the native AA Headunit Server (Port 5277) may fail if the phone creates a mobile hotspot with Carrier-NAT IPs (e.g., 10.x.x.x). Use Wireless Launcher App instead.
 
 ## Changelog
+### v.1.13.2
+- Fixed margins now working for devices prior Android 5 Lollipop
+- Fixing warnings
+- Fixing broken colors on mixed daynight values
+- Fixed a bug where a message is bigger than thought after about 20 minutes and connections closes
+
 ### v.1.13.1
 - Fixed Custom Insets Dialog with a Scrollview
 - Fixed 4 app crashes listed in play console

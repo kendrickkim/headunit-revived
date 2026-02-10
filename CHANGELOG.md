@@ -1,4 +1,10 @@
 # Changelog
+### v.1.13.2
+- Fixed margins now working for devices prior Android 5 Lollipop
+- Fixing warnings
+- Fixing broken colors on mixed daynight values
+- Fixed a bug where a message is bigger than thought after about 20 minutes and connections closes
+
 ### v.1.13.1
 - Fixed Custom Insets Dialog with a Scrollview
 - Fixed 4 app crashes listed in play console

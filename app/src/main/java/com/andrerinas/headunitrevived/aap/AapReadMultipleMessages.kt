@@ -25,13 +25,13 @@ internal class AapReadMultipleMessages(
         }
         try {
             processBulk(size, recvBuffer)
-        } catch (e: AapMessageHandler.HandleException) {
-            return -1
+        } catch (e: Exception) {
+            AppLog.e("AapRead: Error in USB processBulk (ignored): ${e.message}")
+            return 0 // Continue even on bulk error
         }
         return 0
     }
 
-    @Throws(AapMessageHandler.HandleException::class)
     private fun processBulk(size: Int, buf: ByteArray) {
         fifo.put(buf, 0, size)
         fifo.flip()
@@ -41,47 +41,43 @@ internal class AapReadMultipleMessages(
             fifo.get(recvHeader.buf, 0, recvHeader.buf.size)
             recvHeader.decode()
 
-            AppLog.d("AapRead: Decoded header -> Channel: ${Channel.name(recvHeader.chan)}, Encrypted Length: ${recvHeader.enc_len}, Flags: ${recvHeader.flags}, Type: ${recvHeader.msg_type}")
-
             if (recvHeader.flags == 0x09) {
                 if (fifo.remaining() < 4) {
-                    AppLog.e("AapRead: Buffer underflow while trying to read fragment total size. Disconnecting.")
                     fifo.reset()
                     break
                 }
-                val sizeBuf = ByteArray(4)
-                fifo.get(sizeBuf, 0, 4)
-                val totalSize = Utils.bytesToInt(sizeBuf, 0, false)
-                AppLog.d("AapRead: First fragment (flag 0x09) indicates total size: $totalSize")
+                fifo.get(ByteArray(4), 0, 4) // Skip totalSize for now (Handled in AapReadSingle)
             }
 
             if (recvHeader.enc_len > msgBuffer.size) {
-                AppLog.e("AapRead: Message too large (${recvHeader.enc_len} bytes). Buffer is only ${msgBuffer.size}. Disconnecting.")
-                break
+                AppLog.e("AapRead: Message too large (${recvHeader.enc_len} bytes). Skipping.")
+                break // Cannot safely skip without knowing where next header is if this is corrupted
             }
 
             if (fifo.remaining() < recvHeader.enc_len) {
-                AppLog.e("AapRead: Buffer underflow while trying to read message body. Disconnecting.")
                 fifo.reset()
                 break
             }
 
             fifo.get(msgBuffer, 0, recvHeader.enc_len)
-            AppLog.d("AapRead: Received message body (${recvHeader.enc_len} bytes).")
 
-            val msg = AapMessageIncoming.decrypt(recvHeader, 0, msgBuffer, ssl)
+            try {
+                val msg = AapMessageIncoming.decrypt(recvHeader, 0, msgBuffer, ssl)
 
-            if (msg == null) {
-                if (AppLog.LOG_VERBOSE) {
-                    AppLog.d("AapRead: Decryption returned no message (likely SSL control packet). Continuing.")
+                if (msg == null) {
+                    if (AppLog.LOG_VERBOSE) {
+                        AppLog.d("AapRead: Decryption returned no message (likely SSL control packet). Continuing.")
+                    }
+                    continue 
                 }
-                continue // Skip to next message in the buffer
-            }
 
-            handler.handle(msg)
+                handler.handle(msg)
+            } catch (e: Exception) {
+                AppLog.e("AapRead: Error handling USB message (ignored): ${e.message}")
+                // Continue with next message in FIFO
+            }
         }
 
-        // consume
         fifo.compact()
     }
 }

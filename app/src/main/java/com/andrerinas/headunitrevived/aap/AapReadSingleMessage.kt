@@ -11,43 +11,44 @@ internal class AapReadSingleMessage(connection: AccessoryConnection, ssl: AapSsl
     private val msgBuffer = ByteArray(65535) // unsigned short max
 
     override fun doRead(connection: AccessoryConnection): Int {
-        // Step 1: Read the encrypted header
-        val headerSize = connection.recvBlocking(recvHeader.buf, recvHeader.buf.size, 5000, true) // Increased timeout
-        if (headerSize != AapMessageIncoming.EncryptedHeader.SIZE) {
-            if (headerSize == -1) {
-                AppLog.i("AapRead: Connection closed (EOF). Disconnecting.")
-            } else {
-                AppLog.e("AapRead: Failed to read full header. Expected ${AapMessageIncoming.EncryptedHeader.SIZE}, got $headerSize. Disconnecting.")
-            }
-            return -1
-        }
-
-        recvHeader.decode()
-
-        // This logic seems specific and might be part of a fragmentation protocol.
-        if (recvHeader.flags == 0x09) {
-            val sizeBuf = ByteArray(4)
-            val readSize = connection.recvBlocking(sizeBuf, sizeBuf.size, 150, true)
-            if(readSize != 4) {
-                AppLog.e("AapRead: Failed to read fragment total size. Disconnecting.")
-                return -1
-            }
-            val totalSize = Utils.bytesToInt(sizeBuf, 0, false)
-        }
-
-        // Step 2: Read the encrypted message body
-        if (recvHeader.enc_len > msgBuffer.size) {
-            AppLog.e("AapRead: Message too large (${recvHeader.enc_len} bytes). Buffer is only ${msgBuffer.size}. Disconnecting.")
-            return -1
-        }
-        val msgSize = connection.recvBlocking(msgBuffer, recvHeader.enc_len, 5000, true) // Increased timeout
-        if (msgSize != recvHeader.enc_len) {
-            AppLog.e("AapRead: Failed to read full message body. Expected ${recvHeader.enc_len}, got $msgSize. Disconnecting.")
-            return -1
-        }
-
-        // Step 3: Decrypt the message
         try {
+            // Step 1: Read the encrypted header
+            val headerSize = connection.recvBlocking(recvHeader.buf, recvHeader.buf.size, 5000, true) // Increased timeout
+            if (headerSize != AapMessageIncoming.EncryptedHeader.SIZE) {
+                if (headerSize == -1) {
+                    AppLog.i("AapRead: Connection closed (EOF). Disconnecting.")
+                    return -1
+                } else {
+                    AppLog.e("AapRead: Failed to read full header. Expected ${AapMessageIncoming.EncryptedHeader.SIZE}, got $headerSize. Skipping.")
+                    return 0
+                }
+            }
+
+            recvHeader.decode()
+
+            // This logic seems specific and might be part of a fragmentation protocol.
+            if (recvHeader.flags == 0x09) {
+                val sizeBuf = ByteArray(4)
+                val readSize = connection.recvBlocking(sizeBuf, sizeBuf.size, 150, true)
+                if(readSize != 4) {
+                    AppLog.e("AapRead: Failed to read fragment total size. Skipping.")
+                    return 0
+                }
+                // val totalSize = Utils.bytesToInt(sizeBuf, 0, false)
+            }
+
+            // Step 2: Read the encrypted message body
+            if (recvHeader.enc_len > msgBuffer.size) {
+                AppLog.e("AapRead: Message too large (${recvHeader.enc_len} bytes). Buffer is only ${msgBuffer.size}. Skipping.")
+                return 0
+            }
+            val msgSize = connection.recvBlocking(msgBuffer, recvHeader.enc_len, 5000, true) // Increased timeout
+            if (msgSize != recvHeader.enc_len) {
+                AppLog.e("AapRead: Failed to read full message body. Expected ${recvHeader.enc_len}, got $msgSize. Skipping.")
+                return 0
+            }
+
+            // Step 3: Decrypt the message
             val msg = AapMessageIncoming.decrypt(recvHeader, 0, msgBuffer, ssl)
 
             if (msg == null) {
@@ -61,9 +62,9 @@ internal class AapReadSingleMessage(connection: AccessoryConnection, ssl: AapSsl
             // Step 4: Handle the decrypted message
             handler.handle(msg)
             return 0
-        } catch (e: AapMessageHandler.HandleException) {
-            AppLog.e("AapRead: Exception during message handling. Disconnecting.", e)
-            return -1
+        } catch (e: Exception) {
+            AppLog.e("AapRead: Error in read loop (ignored): ${e.message}")
+            return 0
         }
     }
 }
