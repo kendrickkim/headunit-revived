@@ -231,6 +231,19 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     private fun setFullscreen() {
         val container = findViewById<View>(R.id.container)
         SystemUI.apply(window, container, settings.startInFullscreenMode)
+
+        // Workaround for API < 19 (Jelly Bean) where Sticky Immersive Mode doesn't exist.
+        // If bars appear (e.g. on touch), hide them again after a delay.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT && settings.startInFullscreenMode) {
+            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+                if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    // Bars are visible. Hide them again.
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        SystemUI.apply(window, container, true)
+                    }, 2000)
+                }
+            }
+        }
     }
 
     val transport: AapTransport

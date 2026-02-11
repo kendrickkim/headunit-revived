@@ -173,7 +173,9 @@ internal class AapControlSensor(private val aapTransport: AapTransport, private 
         
         if (request.type == Sensors.SensorType.NIGHT) {
             AppLog.i("Night sensor requested. Triggering immediate update.")
-            context.sendBroadcast(Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE))
+            val intent = Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE)
+            intent.setPackage(context.packageName)
+            context.sendBroadcast(intent)
         }
         return 0
     }

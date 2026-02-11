@@ -3,6 +3,7 @@ package com.andrerinas.headunitrevived.aap
 import android.app.UiModeManager
 import android.content.Context
 import android.content.Context.UI_MODE_SERVICE
+import android.content.Intent
 import android.media.AudioManager
 import android.os.Handler
 import android.os.HandlerThread
@@ -110,9 +111,6 @@ class AapTransport(
 
     internal fun startSensor(type: Int) {
         startedSensors.add(type)
-        if (type == Sensors.SensorType.NIGHT_VALUE) {
-            send(NightModeEvent(false))
-        }
     }
 
     private fun sendEncryptedMessage(data: ByteArray, length: Int): Int {
@@ -287,10 +285,9 @@ class AapTransport(
         }
 
         if (mapped == KeyEvent.KEYCODE_N) {
-            val enabled = modeManager.nightMode != UiModeManager.MODE_NIGHT_YES
-            send(NightModeEvent(enabled))
-            modeManager.nightMode =
-                if (enabled) UiModeManager.MODE_NIGHT_YES else UiModeManager.MODE_NIGHT_NO
+            val intent = Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE)
+            intent.setPackage(context.packageName)
+            context.sendBroadcast(intent)
             return
         }
 
