@@ -16,21 +16,26 @@ object LocaleHelper {
      * The list is determined at build time by scanning the res/values-* directories
      * for those containing strings.xml files. This is stored in BuildConfig.AVAILABLE_LOCALES
      * so new translations are automatically included when contributors add values-XX folders.
+     *
+     * English is always included as it's the default language in the base "values/" folder.
      */
     fun getAvailableLocales(context: Context): List<Locale> {
         return try {
-            val localesString = BuildConfig.AVAILABLE_LOCALES
-            if (localesString.isBlank()) {
-                emptyList()
-            } else {
-                localesString.split(",")
-                    .mapNotNull { parseLocale(it.trim()) }
-                    .distinctBy { it.toString() }
-                    .sortedBy { it.getDisplayName(it).lowercase() }
-            }
+            val localesFromBuildConfig = BuildConfig.AVAILABLE_LOCALES
+                .takeIf { it.isNotBlank() }
+                ?.split(",")
+                ?.mapNotNull { parseLocale(it.trim()) }
+                ?: emptyList()
+
+            // Always include English as it's the default language (in values/ folder)
+            val allLocales = localesFromBuildConfig + Locale.ENGLISH
+
+            allLocales
+                .distinctBy { it.language + "_" + it.country }
+                .sortedBy { it.getDisplayName(it).lowercase() }
         } catch (e: Exception) {
-            // Fallback if something goes wrong
-            emptyList()
+            // Fallback: at minimum return English
+            listOf(Locale.ENGLISH)
         }
     }
 
