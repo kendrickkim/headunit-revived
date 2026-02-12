@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Android Auto is starting..."
+            android:text="@string/android_auto_starting"
             android:textColor="@android:color/white"
             android:textSize="18sp" />
     </LinearLayout>

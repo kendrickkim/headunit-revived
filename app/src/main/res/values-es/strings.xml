@@ -192,6 +192,7 @@
     <string name="success">Éxito</string>
     <string name="failed">Error</string>
     <string name="failed_start_android_auto">Error al iniciar Android Auto</string>
+    <string name="android_auto_starting">Android Auto está iniciando…</string>
 
     <!-- Safety Disclaimer -->
     <string name="disclaimer_title">Seguridad &amp; Responsabilidad</string>

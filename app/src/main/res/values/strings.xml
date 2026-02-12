@@ -205,5 +205,6 @@
     <string name="success">Success</string>
     <string name="failed">Failed</string>
     <string name="failed_start_android_auto">Failed to start Android Auto</string>
+    <string name="android_auto_starting">Android Auto is starting…</string>
 </resources>
 
