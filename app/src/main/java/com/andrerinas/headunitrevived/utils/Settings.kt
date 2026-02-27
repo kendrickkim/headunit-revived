@@ -257,6 +257,10 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("auto-start-self-mode", false)
         set(value) { prefs.edit().putBoolean("auto-start-self-mode", value).apply() }
 
+    var autoStartOnUsb: Boolean
+        get() = prefs.getBoolean("auto-start-on-usb", false)
+        set(value) { prefs.edit().putBoolean("auto-start-on-usb", value).apply() }
+
     var autoConnectPriorityOrder: List<String>
         get() {
             val stored = prefs.getString("auto-connect-priority-order", null)

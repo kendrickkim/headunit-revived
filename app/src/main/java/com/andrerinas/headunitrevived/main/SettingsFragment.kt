@@ -27,6 +27,7 @@ import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.utils.LocaleHelper
 import com.andrerinas.headunitrevived.BuildConfig
 import java.util.Locale
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -37,6 +38,16 @@ class SettingsFragment : Fragment() {
     private lateinit var settingsAdapter: SettingsAdapter
     private lateinit var toolbar: MaterialToolbar
     private var saveButton: MaterialButton? = null
+
+    private val bluetoothPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            showBluetoothDeviceSelector()
+        } else {
+            showBluetoothPermissionDeniedDialog()
+        }
+    }
 
     // Local state to hold changes before saving
     private var pendingNightMode: Settings.NightMode? = null
@@ -70,6 +81,8 @@ class SettingsFragment : Fragment() {
     private var pendingInsetTop: Int? = null
     private var pendingInsetRight: Int? = null
     private var pendingInsetBottom: Int? = null
+
+    private var pendingAutoStartOnUsb: Boolean? = null
 
     private var pendingMediaVolumeOffset: Int? = null
     private var pendingAssistantVolumeOffset: Int? = null
@@ -113,6 +126,7 @@ class SettingsFragment : Fragment() {
         pendingUseNativeSsl = settings.useNativeSsl
         pendingAutoStartBtName = settings.autoStartBluetoothDeviceName
         pendingAutoStartBtMac = settings.autoStartBluetoothDeviceMac
+        pendingAutoStartOnUsb = settings.autoStartOnUsb
         pendingScreenOrientation = settings.screenOrientation
         pendingAppLanguage = settings.appLanguage
         
@@ -216,6 +230,7 @@ class SettingsFragment : Fragment() {
         pendingUseNativeSsl?.let { settings.useNativeSsl = it }
         pendingAutoStartBtName?.let { settings.autoStartBluetoothDeviceName = it }
         pendingAutoStartBtMac?.let { settings.autoStartBluetoothDeviceMac = it }
+        pendingAutoStartOnUsb?.let { settings.autoStartOnUsb = it }
         pendingScreenOrientation?.let { settings.screenOrientation = it }
 
         pendingMediaVolumeOffset?.let { settings.mediaVolumeOffset = it }
@@ -259,8 +274,8 @@ class SettingsFragment : Fragment() {
 
         Toast.makeText(context, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
 
-        // Check for Overlay permission if BT Auto-start is configured
-        if (!pendingAutoStartBtMac.isNullOrEmpty() && Build.VERSION.SDK_INT >= 23) {
+        // Check for Overlay permission if BT or USB Auto-start is configured
+        if ((!pendingAutoStartBtMac.isNullOrEmpty() || pendingAutoStartOnUsb == true) && Build.VERSION.SDK_INT >= 23) {
             if (!android.provider.Settings.canDrawOverlays(requireContext())) {
                 MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                     .setTitle(R.string.overlay_permission_title)
@@ -308,6 +323,7 @@ class SettingsFragment : Fragment() {
                         pendingMicInputSource != settings.micInputSource ||
                         pendingUseNativeSsl != settings.useNativeSsl ||
                         pendingAutoStartBtMac != settings.autoStartBluetoothDeviceMac ||
+                        pendingAutoStartOnUsb != settings.autoStartOnUsb ||
                         pendingScreenOrientation != settings.screenOrientation ||
                         pendingAppLanguage != settings.appLanguage ||
                         pendingInsetLeft != settings.insetLeft ||
@@ -536,6 +552,18 @@ class SettingsFragment : Fragment() {
             value = if (pendingAutoStartBtName.isNullOrEmpty()) getString(R.string.bt_device_not_set) else pendingAutoStartBtName!!,
             onClick = {
                 showBluetoothDeviceSelector()
+            }
+        ))
+
+        items.add(SettingItem.ToggleSettingEntry(
+            stableId = "autoStartUsb",
+            nameResId = R.string.auto_start_usb_label,
+            descriptionResId = R.string.auto_start_usb_description,
+            isChecked = pendingAutoStartOnUsb!!,
+            onCheckedChanged = { isChecked ->
+                pendingAutoStartOnUsb = isChecked
+                checkChanges()
+                updateSettingsList()
             }
         ))
 
@@ -1035,7 +1063,7 @@ class SettingsFragment : Fragment() {
 
     private fun showBluetoothDeviceSelector() {
         if (Build.VERSION.SDK_INT >= 31 && ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(android.Manifest.permission.BLUETOOTH_CONNECT), BT_CONNECT_PERMISSION_CODE)
+            bluetoothPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
             return
         }
 
@@ -1104,18 +1132,22 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == BT_CONNECT_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                showBluetoothDeviceSelector()
-            } else {
-                Toast.makeText(requireContext(), "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
+    private fun showBluetoothPermissionDeniedDialog() {
+        MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
+            .setTitle(R.string.bt_permission_denied_title)
+            .setMessage(R.string.bt_permission_denied_message)
+            .setPositiveButton(R.string.open_settings) { _, _ ->
+                val intent = Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    android.net.Uri.parse("package:${requireContext().packageName}")
+                )
+                startActivity(intent)
             }
-        }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     companion object {
-        private const val BT_CONNECT_PERMISSION_CODE = 101
         private val SAVE_ITEM_ID = 1001
     }
 }
