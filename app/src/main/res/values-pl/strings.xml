@@ -144,6 +144,13 @@
     <string name="auto_connect_last_session_description">Automatycznie połącz z ostatnio używanym urządzeniem przy starcie aplikacji</string>
     <string name="auto_connect_single_usb">Automatyczne połączenie urządzenia USB</string>
     <string name="auto_connect_single_usb_description">Automatyczne połączenie, gdy dostępne jest tylko jedno kompatybilne urządzenie</string>
+    <string name="auto_connect_settings">Ustawienia automatycznego łączenia</string>
+    <string name="auto_connect_settings_description">Konfiguracja metod automatycznego łączenia i ich priorytetów</string>
+    <string name="auto_connect_priority">Priorytet %d</string>
+    <string name="auto_connect_all_disabled">Wszystkie wyłączone</string>
+    <string name="drag_to_reorder">Przeciągnij, aby zmienić kolejność</string>
+    <string name="move_up">Przesuń w górę</string>
+    <string name="move_down">Przesuń w dół</string>
     <string name="auto_connecting_single_usb">Automatyczne łączenie z urządzeniem USB…</string>
     <string name="video_codec">Kodek wideo</string>
     <string name="fps_limit">Limit FPS</string>

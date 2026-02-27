@@ -144,6 +144,13 @@
     <string name="auto_connect_last_session_description">Reconecta automaticamente ao último dispositivo usado ao iniciar o app</string>
     <string name="auto_connect_single_usb">Conectar dispositivo USB automaticamente</string>
     <string name="auto_connect_single_usb_description">Conectar automaticamente quando apenas um dispositivo compatível estiver disponível</string>
+    <string name="auto_connect_settings">Configurações de Auto-Conexão</string>
+    <string name="auto_connect_settings_description">Configurar métodos de auto-conexão e sua ordem de prioridade</string>
+    <string name="auto_connect_priority">Prioridade %d</string>
+    <string name="auto_connect_all_disabled">Todos desativados</string>
+    <string name="drag_to_reorder">Arraste para reordenar</string>
+    <string name="move_up">Mover para cima</string>
+    <string name="move_down">Mover para baixo</string>
     <string name="auto_connecting_single_usb">Conectando automaticamente ao dispositivo USB…</string>
     <string name="video_codec">Codec de vídeo</string>
     <string name="fps_limit">Limite de FPS</string>

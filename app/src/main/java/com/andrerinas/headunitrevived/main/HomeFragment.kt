@@ -103,22 +103,29 @@ class HomeFragment : Fragment() {
 
         val appSettings = App.provide(requireContext()).settings
 
-        // 1. Priority: Auto-Connect last session (WiFi/USB)
-        if (appSettings.autoConnectLastSession && !hasAttemptedAutoConnect && !AapService.isConnected) {
-            hasAttemptedAutoConnect = true
-            attemptAutoConnect()
-        }
-
-        // 2. Priority: Auto-Start Self Mode
-        if (appSettings.autoStartSelfMode && !hasAutoStarted && !AapService.isConnected) {
-            hasAutoStarted = true
-            startSelfMode()
-        }
-
-        // 3. Priority: Auto-connect single USB device
-        if (appSettings.autoConnectSingleUsbDevice && !hasAttemptedSingleUsbAutoConnect && !AapService.isConnected) {
-            hasAttemptedSingleUsbAutoConnect = true
-            attemptSingleUsbAutoConnect()
+        // Execute auto-connect methods in user-defined priority order
+        for (methodId in appSettings.autoConnectPriorityOrder) {
+            if (AapService.isConnected) break
+            when (methodId) {
+                Settings.AUTO_CONNECT_LAST_SESSION -> {
+                    if (appSettings.autoConnectLastSession && !hasAttemptedAutoConnect) {
+                        hasAttemptedAutoConnect = true
+                        attemptAutoConnect()
+                    }
+                }
+                Settings.AUTO_CONNECT_SELF_MODE -> {
+                    if (appSettings.autoStartSelfMode && !hasAutoStarted) {
+                        hasAutoStarted = true
+                        startSelfMode()
+                    }
+                }
+                Settings.AUTO_CONNECT_SINGLE_USB -> {
+                    if (appSettings.autoConnectSingleUsbDevice && !hasAttemptedSingleUsbAutoConnect) {
+                        hasAttemptedSingleUsbAutoConnect = true
+                        attemptSingleUsbAutoConnect()
+                    }
+                }
+            }
         }
     }
 

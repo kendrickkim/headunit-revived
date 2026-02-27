@@ -143,6 +143,13 @@
     <string name="auto_connect_last_session_description">Automatisch opnieuw verbinding maken met het laatst gebruikte apparaat bij het opstarten van de app.</string>
     <string name="auto_connect_single_usb">USB-apparaat automatisch verbinden</string>
     <string name="auto_connect_single_usb_description">Automatisch verbinden wanneer slechts één compatibel apparaat beschikbaar is</string>
+    <string name="auto_connect_settings">Auto-Connect instellingen</string>
+    <string name="auto_connect_settings_description">Auto-Connect methoden en hun prioriteit instellen</string>
+    <string name="auto_connect_priority">Prioriteit %d</string>
+    <string name="auto_connect_all_disabled">Alles uitgeschakeld</string>
+    <string name="drag_to_reorder">Sleep om te herschikken</string>
+    <string name="move_up">Omhoog</string>
+    <string name="move_down">Omlaag</string>
     <string name="auto_connecting_single_usb">Automatisch verbinden met USB-apparaat…</string>
     <string name="video_codec">Video Codec</string>
     <string name="fps_limit">FPS Limiet</string>

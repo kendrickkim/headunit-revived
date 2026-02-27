@@ -49,8 +49,6 @@ class SettingsFragment : Fragment() {
     private var pendingForceSoftware: Boolean? = null
     private var pendingRightHandDrive: Boolean? = null
     private var pendingWifiConnectionMode: Int? = null
-    private var pendingAutoConnectLastSession: Boolean? = null
-    private var pendingAutoConnectSingleUsb: Boolean? = null
     private var pendingVideoCodec: String? = null
     private var pendingFpsLimit: Int? = null
     private var pendingDebugMode: Boolean? = null
@@ -59,7 +57,6 @@ class SettingsFragment : Fragment() {
     private var pendingUseAacAudio: Boolean? = null
     private var pendingMicInputSource: Int? = null
     private var pendingUseNativeSsl: Boolean? = null
-    private var pendingAutoStartSelfMode: Boolean? = null
     private var pendingAutoStartBtName: String? = null
     private var pendingAutoStartBtMac: String? = null
     private var pendingScreenOrientation: Settings.ScreenOrientation? = null
@@ -106,8 +103,6 @@ class SettingsFragment : Fragment() {
         pendingForceSoftware = settings.forceSoftwareDecoding
         pendingRightHandDrive = settings.rightHandDrive
         pendingWifiConnectionMode = settings.wifiConnectionMode
-        pendingAutoConnectLastSession = settings.autoConnectLastSession
-        pendingAutoConnectSingleUsb = settings.autoConnectSingleUsbDevice
         pendingVideoCodec = settings.videoCodec
         pendingFpsLimit = settings.fpsLimit
         pendingDebugMode = settings.debugMode
@@ -116,7 +111,6 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio = settings.useAacAudio
         pendingMicInputSource = settings.micInputSource
         pendingUseNativeSsl = settings.useNativeSsl
-        pendingAutoStartSelfMode = settings.autoStartSelfMode
         pendingAutoStartBtName = settings.autoStartBluetoothDeviceName
         pendingAutoStartBtMac = settings.autoStartBluetoothDeviceMac
         pendingScreenOrientation = settings.screenOrientation
@@ -220,7 +214,6 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio?.let { settings.useAacAudio = it }
         pendingMicInputSource?.let { settings.micInputSource = it }
         pendingUseNativeSsl?.let { settings.useNativeSsl = it }
-        pendingAutoStartSelfMode?.let { settings.autoStartSelfMode = it }
         pendingAutoStartBtName?.let { settings.autoStartBluetoothDeviceName = it }
         pendingAutoStartBtMac?.let { settings.autoStartBluetoothDeviceMac = it }
         pendingScreenOrientation?.let { settings.screenOrientation = it }
@@ -244,17 +237,6 @@ class SettingsFragment : Fragment() {
             }
             ContextCompat.startForegroundService(requireContext(), intent)
         }
-
-        pendingAutoConnectLastSession?.let {
-            settings.autoConnectLastSession = it
-            if (it) {
-                val intent = Intent(requireContext(), AapService::class.java).apply {
-                    action = AapService.ACTION_CHECK_USB
-                }
-                ContextCompat.startForegroundService(requireContext(), intent)
-            }
-        }
-        pendingAutoConnectSingleUsb?.let { settings.autoConnectSingleUsbDevice = it }
 
         // Notify Service about Night Mode changes immediately
         val nightModeUpdateIntent = Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE)
@@ -317,8 +299,6 @@ class SettingsFragment : Fragment() {
                         pendingForceSoftware != settings.forceSoftwareDecoding ||
                         pendingRightHandDrive != settings.rightHandDrive ||
                         pendingWifiConnectionMode != settings.wifiConnectionMode ||
-                        pendingAutoConnectLastSession != settings.autoConnectLastSession ||
-                        pendingAutoConnectSingleUsb != settings.autoConnectSingleUsbDevice ||
                         pendingVideoCodec != settings.videoCodec ||
                         pendingFpsLimit != settings.fpsLimit ||
                         pendingDebugMode != settings.debugMode ||
@@ -327,7 +307,6 @@ class SettingsFragment : Fragment() {
                         pendingUseAacAudio != settings.useAacAudio ||
                         pendingMicInputSource != settings.micInputSource ||
                         pendingUseNativeSsl != settings.useNativeSsl ||
-                        pendingAutoStartSelfMode != settings.autoStartSelfMode ||
                         pendingAutoStartBtMac != settings.autoStartBluetoothDeviceMac ||
                         pendingScreenOrientation != settings.screenOrientation ||
                         pendingAppLanguage != settings.appLanguage ||
@@ -551,18 +530,6 @@ class SettingsFragment : Fragment() {
             }
         ))
 
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "autoStartSelfMode",
-            nameResId = R.string.auto_start_self_mode,
-            descriptionResId = R.string.auto_start_self_mode_description,
-            isChecked = pendingAutoStartSelfMode!!,
-            onCheckedChanged = { isChecked ->
-                pendingAutoStartSelfMode = isChecked
-                checkChanges()
-                updateSettingsList()
-            }
-        ))
-
         items.add(SettingItem.SettingEntry(
             stableId = "autoStartBt",
             nameResId = R.string.auto_start_bt_label,
@@ -572,27 +539,16 @@ class SettingsFragment : Fragment() {
             }
         ))
 
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "autoConnectLastSession",
-            nameResId = R.string.auto_connect_last_session,
-            descriptionResId = R.string.auto_connect_last_session_description,
-            isChecked = pendingAutoConnectLastSession!!,
-            onCheckedChanged = { isChecked ->
-                pendingAutoConnectLastSession = isChecked
-                checkChanges()
-                updateSettingsList()
-            }
-        ))
-
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "autoConnectSingleUsb",
-            nameResId = R.string.auto_connect_single_usb,
-            descriptionResId = R.string.auto_connect_single_usb_description,
-            isChecked = pendingAutoConnectSingleUsb!!,
-            onCheckedChanged = { isChecked ->
-                pendingAutoConnectSingleUsb = isChecked
-                checkChanges()
-                updateSettingsList()
+        items.add(SettingItem.SettingEntry(
+            stableId = "autoConnectSettings",
+            nameResId = R.string.auto_connect_settings,
+            value = getAutoConnectSummary(),
+            onClick = {
+                try {
+                    findNavController().navigate(R.id.action_settingsFragment_to_autoConnectFragment)
+                } catch (e: Exception) {
+                    // Failover
+                }
             }
         ))
 
@@ -1111,6 +1067,41 @@ class SettingsFragment : Fragment() {
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh settings list when returning from sub-screens (e.g. AutoConnectFragment)
+        if (::settingsAdapter.isInitialized) {
+            // Re-read settings in case they changed in a sub-screen
+            settings = App.provide(requireContext()).settings
+            updateSettingsList()
+        }
+    }
+
+    private fun getAutoConnectSummary(): String {
+        val order = settings.autoConnectPriorityOrder
+        val enabledNames = order.mapNotNull { id ->
+            val isEnabled = when (id) {
+                Settings.AUTO_CONNECT_LAST_SESSION -> settings.autoConnectLastSession
+                Settings.AUTO_CONNECT_SELF_MODE -> settings.autoStartSelfMode
+                Settings.AUTO_CONNECT_SINGLE_USB -> settings.autoConnectSingleUsbDevice
+                else -> false
+            }
+            if (isEnabled) {
+                when (id) {
+                    Settings.AUTO_CONNECT_LAST_SESSION -> getString(R.string.auto_connect_last_session)
+                    Settings.AUTO_CONNECT_SELF_MODE -> getString(R.string.auto_start_self_mode)
+                    Settings.AUTO_CONNECT_SINGLE_USB -> getString(R.string.auto_connect_single_usb)
+                    else -> null
+                }
+            } else null
+        }
+        return if (enabledNames.isEmpty()) {
+            getString(R.string.auto_connect_all_disabled)
+        } else {
+            enabledNames.joinToString(" → ")
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

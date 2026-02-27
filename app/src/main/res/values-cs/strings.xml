@@ -146,6 +146,13 @@
     <string name="auto_connect_last_session_description">Při spuštění aplikace se automaticky znovu připojit k naposledy použitému zařízení</string>
     <string name="auto_connect_single_usb">Automaticky připojit USB zařízení</string>
     <string name="auto_connect_single_usb_description">Automaticky připojit, když je dostupné pouze jedno kompatibilní zařízení</string>
+    <string name="auto_connect_settings">Nastavení automatického připojení</string>
+    <string name="auto_connect_settings_description">Konfigurace metod automatického připojení a jejich priorit</string>
+    <string name="auto_connect_priority">Priorita %d</string>
+    <string name="auto_connect_all_disabled">Vše vypnuto</string>
+    <string name="drag_to_reorder">Přetáhněte pro změnu pořadí</string>
+    <string name="move_up">Posunout nahoru</string>
+    <string name="move_down">Posunout dolů</string>
     <string name="auto_connecting_single_usb">Automatické připojování k USB zařízení…</string>
     <string name="video_codec">Video kodek</string>
     <string name="fps_limit">Limit FPS</string>

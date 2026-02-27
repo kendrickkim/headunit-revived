@@ -257,6 +257,28 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("auto-start-self-mode", false)
         set(value) { prefs.edit().putBoolean("auto-start-self-mode", value).apply() }
 
+    var autoConnectPriorityOrder: List<String>
+        get() {
+            val stored = prefs.getString("auto-connect-priority-order", null)
+            val order = if (stored.isNullOrEmpty()) {
+                DEFAULT_AUTO_CONNECT_ORDER.toMutableList()
+            } else {
+                stored.split(",").toMutableList()
+            }
+            // Migration safety: append any missing methods at end
+            for (method in DEFAULT_AUTO_CONNECT_ORDER) {
+                if (method !in order) {
+                    order.add(method)
+                }
+            }
+            // Remove unknown methods
+            order.retainAll(DEFAULT_AUTO_CONNECT_ORDER)
+            return order
+        }
+        set(value) {
+            prefs.edit().putString("auto-connect-priority-order", value.joinToString(",")).apply()
+        }
+
     var autoStartBluetoothDeviceName: String
         get() = prefs.getString("auto-start-bt-name", "")!!
         set(value) { prefs.edit().putString("auto-start-bt-name", value).apply() }
@@ -339,6 +361,16 @@ class Settings(context: Context) {
     companion object {
         const val CONNECTION_TYPE_WIFI = "wifi"
         const val CONNECTION_TYPE_USB = "usb"
+
+        const val AUTO_CONNECT_LAST_SESSION = "last-session"
+        const val AUTO_CONNECT_SELF_MODE = "self-mode"
+        const val AUTO_CONNECT_SINGLE_USB = "single-usb"
+
+        val DEFAULT_AUTO_CONNECT_ORDER = listOf(
+            AUTO_CONNECT_LAST_SESSION,
+            AUTO_CONNECT_SELF_MODE,
+            AUTO_CONNECT_SINGLE_USB
+        )
 
         val MicSampleRates = listOf(8000, 16000, 24000, 32000, 44100, 48000) // Changed to List
 

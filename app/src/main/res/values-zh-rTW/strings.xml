@@ -143,6 +143,13 @@
     <string name="auto_connect_last_session_description">應用程式啟動時自動重新連線到上次使用的裝置</string>
     <string name="auto_connect_single_usb">自動連接 USB 裝置</string>
     <string name="auto_connect_single_usb_description">當只有一個相容裝置可用時自動連接</string>
+    <string name="auto_connect_settings">自動連接設定</string>
+    <string name="auto_connect_settings_description">設定自動連接方式及其優先順序</string>
+    <string name="auto_connect_priority">優先順序 %d</string>
+    <string name="auto_connect_all_disabled">全部停用</string>
+    <string name="drag_to_reorder">拖曳以重新排序</string>
+    <string name="move_up">上移</string>
+    <string name="move_down">下移</string>
     <string name="auto_connecting_single_usb">正在自動連接 USB 裝置…</string>
     <string name="video_codec">視訊編碼</string>
     <string name="fps_limit">FPS 限制</string>

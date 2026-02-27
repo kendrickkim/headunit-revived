@@ -144,6 +144,13 @@
     <string name="auto_connect_last_session_description">Автоматически подключаться к последнему использованному устройству при запуске приложения</string>
     <string name="auto_connect_single_usb">Автоподключение USB-устройства</string>
     <string name="auto_connect_single_usb_description">Автоматически подключаться, если доступно только одно совместимое устройство</string>
+    <string name="auto_connect_settings">Настройки автоподключения</string>
+    <string name="auto_connect_settings_description">Настройка методов автоподключения и их приоритета</string>
+    <string name="auto_connect_priority">Приоритет %d</string>
+    <string name="auto_connect_all_disabled">Все отключены</string>
+    <string name="drag_to_reorder">Перетащите для изменения порядка</string>
+    <string name="move_up">Вверх</string>
+    <string name="move_down">Вниз</string>
     <string name="auto_connecting_single_usb">Автоподключение к USB-устройству…</string>
     <string name="video_codec">Видеокодек</string>
     <string name="fps_limit">Ограничение FPS</string>

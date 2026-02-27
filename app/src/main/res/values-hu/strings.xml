@@ -143,6 +143,16 @@
     </string-array>
     <string name="auto_connect_last_session">Automatikus folytatás</string>
     <string name="auto_connect_last_session_description">Indításkor automatikus újracsatlakozás a legutóbb használt eszközhöz.</string>
+    <string name="auto_connect_single_usb">USB-eszköz automatikus csatlakoztatása</string>
+    <string name="auto_connect_single_usb_description">Automatikus csatlakozás, ha csak egy kompatibilis eszköz érhető el</string>
+    <string name="auto_connecting_single_usb">Automatikus csatlakozás USB-eszközhöz…</string>
+    <string name="auto_connect_settings">Automatikus csatlakozás beállítások</string>
+    <string name="auto_connect_settings_description">Az automatikus csatlakozási módok és prioritásuk konfigurálása</string>
+    <string name="auto_connect_priority">Prioritás %d</string>
+    <string name="auto_connect_all_disabled">Mind letiltva</string>
+    <string name="drag_to_reorder">Húzza az átrendezéshez</string>
+    <string name="move_up">Felfelé</string>
+    <string name="move_down">Lefelé</string>
     <string name="video_codec">Videókódek</string>
     <string name="fps_limit">FPS korlát</string>
     <string name="save">Mentés</string>
