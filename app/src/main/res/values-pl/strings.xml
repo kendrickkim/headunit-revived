@@ -225,4 +225,9 @@
     <string name="failed">Niepowodzenie</string>
     <string name="failed_start_android_auto">Uruchomienie Android Auto nie powiodło się</string>
     <string name="android_auto_starting">Android Auto uruchamia się…</string>
+    <string name="retry">Ponów</string>
+    <string name="retry_connection_title">Ponów połączenie</string>
+    <string name="retry_connection_option">Ponów Android Auto</string>
+    <string name="reset_usb_option">Zresetuj połączenie USB</string>
+    <string name="reset_usb_timeout">Nie znaleziono urządzenia USB. Sprawdź połączenie.</string>
 </resources>

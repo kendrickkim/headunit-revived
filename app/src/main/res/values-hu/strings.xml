@@ -232,4 +232,9 @@
     <string name="shortcut_connect_desc">Kapcsolódás az utolsó ismert eszközhöz</string>
     <string name="shortcut_disconnect_title">Leválasztás</string>
     <string name="shortcut_disconnect_desc">Az aktuális munkamenet befejezése</string>
+    <string name="retry">Újra</string>
+    <string name="retry_connection_title">Kapcsolat újrapróbálása</string>
+    <string name="retry_connection_option">Android Auto újrapróbálása</string>
+    <string name="reset_usb_option">USB kapcsolat visszaállítása</string>
+    <string name="reset_usb_timeout">USB eszköz nem található. Ellenőrizze a csatlakozást.</string>
 </resources>

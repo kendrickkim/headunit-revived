@@ -227,4 +227,9 @@
     <string name="failed">Selhalo</string>
     <string name="failed_start_android_auto">Spuštění Android Auto selhalo</string>
     <string name="android_auto_starting">Android Auto se spouští…</string>
+    <string name="retry">Opakovat</string>
+    <string name="retry_connection_title">Opakovat připojení</string>
+    <string name="retry_connection_option">Opakovat Android Auto</string>
+    <string name="reset_usb_option">Resetovat USB připojení</string>
+    <string name="reset_usb_timeout">USB zařízení nenalezeno. Zkontrolujte připojení.</string>
 </resources>

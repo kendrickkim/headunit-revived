@@ -225,4 +225,9 @@
     <string name="failed">Falha</string>
     <string name="failed_start_android_auto">Falha ao iniciar Android Auto</string>
     <string name="android_auto_starting">Android Auto está iniciando…</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="retry_connection_title">Tentar conexão novamente</string>
+    <string name="retry_connection_option">Tentar Android Auto novamente</string>
+    <string name="reset_usb_option">Redefinir conexão USB</string>
+    <string name="reset_usb_timeout">Dispositivo USB não encontrado. Verifique a conexão.</string>
 </resources>

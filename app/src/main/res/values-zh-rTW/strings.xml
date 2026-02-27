@@ -224,4 +224,9 @@
     <string name="failed">失敗</string>
     <string name="failed_start_android_auto">啟動 Android Auto 失敗</string>
     <string name="android_auto_starting">Android Auto 啟動中…</string>
+    <string name="retry">重試</string>
+    <string name="retry_connection_title">重試連線</string>
+    <string name="retry_connection_option">重試 Android Auto</string>
+    <string name="reset_usb_option">重設 USB 連線</string>
+    <string name="reset_usb_timeout">找不到 USB 裝置，請檢查連線。</string>
 </resources>

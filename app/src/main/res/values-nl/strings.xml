@@ -224,4 +224,9 @@
     <string name="failed">Mislukt</string>
     <string name="failed_start_android_auto">Starten van Android Auto mislukt</string>
     <string name="android_auto_starting">Android Auto start op…</string>
+    <string name="retry">Opnieuw</string>
+    <string name="retry_connection_title">Verbinding opnieuw proberen</string>
+    <string name="retry_connection_option">Android Auto opnieuw proberen</string>
+    <string name="reset_usb_option">USB-verbinding resetten</string>
+    <string name="reset_usb_timeout">USB-apparaat niet gevonden. Controleer de verbinding.</string>
 </resources>

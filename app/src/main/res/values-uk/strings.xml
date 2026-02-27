@@ -225,4 +225,9 @@
     <string name="failed">Помилка</string>
     <string name="failed_start_android_auto">Не вдалося запустити Android Auto</string>
     <string name="android_auto_starting">Запуск Android Auto…</string>
+    <string name="retry">Повторити</string>
+    <string name="retry_connection_title">Повторити підключення</string>
+    <string name="retry_connection_option">Повторити Android Auto</string>
+    <string name="reset_usb_option">Скинути USB-підключення</string>
+    <string name="reset_usb_timeout">USB-пристрій не знайдено. Перевірте підключення.</string>
 </resources>
