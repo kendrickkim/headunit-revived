@@ -164,6 +164,8 @@
     <string name="usb_stability_timeout">Stabilitäts-Zeitlimit</string>
     <string name="usb_stability_timeout_description">Sekunden, die das Gerät verbunden bleiben muss, bevor es automatisch verbunden oder erneut verbunden wird (%d s)</string>
     <string name="usb_device_settling">Warten auf Stabilisierung des USB-Geräts…</string>
+    <string name="max_auto_retry_attempts">Max. automatische Wiederverbindungsversuche</string>
+    <string name="max_auto_retry_attempts_description">Anzahl der automatischen Wiederverbindungsversuche (%d)</string>
     <string name="video_codec">Video Codec</string>
     <string name="fps_limit">FPS Limit</string>
     <string name="save">Speichern</string>

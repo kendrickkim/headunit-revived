@@ -164,6 +164,8 @@
     <string name="usb_stability_timeout">Stability timeout</string>
     <string name="usb_stability_timeout_description">Seconds the device must stay connected before auto-connecting or reconnecting (%d s)</string>
     <string name="usb_device_settling">Waiting for USB device to stabilize…</string>
+    <string name="max_auto_retry_attempts">Max auto-reconnect attempts</string>
+    <string name="max_auto_retry_attempts_description">Number of automatic reconnection attempts (%d)</string>
     <string name="video_codec">Video Codec</string>
     <string name="fps_limit">FPS Limit</string>
     <string name="save">Save</string>

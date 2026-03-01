@@ -162,6 +162,8 @@
     <string name="usb_stability_timeout">Таймаут стабильности</string>
     <string name="usb_stability_timeout_description">Секунды, в течение которых устройство должно оставаться подключённым перед автоподключением или переподключением (%d с)</string>
     <string name="usb_device_settling">Ожидание стабилизации USB-устройства…</string>
+    <string name="max_auto_retry_attempts">Макс. попыток автоподключения</string>
+    <string name="max_auto_retry_attempts_description">Количество автоматических попыток переподключения (%d)</string>
     <string name="video_codec">Видеокодек</string>
     <string name="fps_limit">Ограничение FPS</string>
     <string name="save">Сохранить</string>

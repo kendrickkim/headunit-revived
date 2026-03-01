@@ -162,6 +162,8 @@
     <string name="usb_stability_timeout">Tiempo de espera de estabilidad</string>
     <string name="usb_stability_timeout_description">Segundos que el dispositivo debe permanecer conectado antes de conectar o reconectar automáticamente (%d s)</string>
     <string name="usb_device_settling">Esperando a que el dispositivo USB se estabilice…</string>
+    <string name="max_auto_retry_attempts">Máx. intentos de reconexión automática</string>
+    <string name="max_auto_retry_attempts_description">Número de intentos de reconexión automática (%d)</string>
     <string name="video_codec">Códec de vídeo</string>
     <string name="fps_limit">Límite FPS</string>
     <string name="save">Guardar</string>

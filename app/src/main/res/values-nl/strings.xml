@@ -161,6 +161,8 @@
     <string name="usb_stability_timeout">Stabiliteits-timeout</string>
     <string name="usb_stability_timeout_description">Seconden dat het apparaat verbonden moet blijven voordat automatisch wordt verbonden of opnieuw verbonden (%d s)</string>
     <string name="usb_device_settling">Wachten tot USB-apparaat stabiel is…</string>
+    <string name="max_auto_retry_attempts">Max. automatische herverbindingspogingen</string>
+    <string name="max_auto_retry_attempts_description">Aantal automatische herverbindingspogingen (%d)</string>
     <string name="video_codec">Video Codec</string>
     <string name="fps_limit">FPS Limiet</string>
     <string name="save">Opslaan</string>
