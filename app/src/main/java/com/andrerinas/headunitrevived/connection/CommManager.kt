@@ -392,11 +392,11 @@ class CommManager(
      * immediately, then schedules async cleanup via [doDisconnect]. A ByeByeRequest is sent
      * to the phone before closing the connection.
      */
-    fun disconnect() {
+    fun disconnect(sendByeBye: Boolean = true) {
         if (_connectionState.value is ConnectionState.Disconnected) return
 
         _connectionState.value = ConnectionState.Disconnected()
-        _disconnectJob = _scope.launch { doDisconnect() }
+        _disconnectJob = _scope.launch { doDisconnect(sendByeBye) }
     }
 
     /**

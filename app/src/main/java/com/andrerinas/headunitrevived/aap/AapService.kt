@@ -329,7 +329,9 @@ class AapService : Service(), UsbReceiver.Listener {
 
     override fun onUsbDetach(device: UsbDevice) {
         if (commManager.isConnectedToUsbDevice(device)) {
-            commManager.disconnect()
+            // Cable physically removed — the USB connection is already dead, so skip the
+            // ByeByeRequest send (which would block ~1 s trying to write to a gone device).
+            commManager.disconnect(sendByeBye = false)
         }
     }
 

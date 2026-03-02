@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class UsbAccessoryConnection(private val usbMgr: UsbManager, private val device: UsbDevice) : AccessoryConnection {
     private var usbDeviceConnected: UsbDeviceCompat? = null
-    private var usbDeviceConnection: UsbDeviceConnection? = null
+    @Volatile private var usbDeviceConnection: UsbDeviceConnection? = null
     private var usbInterface: UsbInterface? = null
     private var endpointIn: UsbEndpoint? = null
     private var endpointOut: UsbEndpoint? = null
@@ -150,26 +150,31 @@ class UsbAccessoryConnection(private val usbMgr: UsbManager, private val device:
         }
     }
 
-    override fun disconnect() {                                           // Release interface and close USB device connection. Called only by usb_disconnect()
+    override fun disconnect() {
+        // Close BEFORE acquiring sLock. UsbDeviceConnection.close() is thread-safe and
+        // immediately aborts any in-flight bulkTransfer() that holds sLock, allowing the
+        // synchronized block below to acquire it in milliseconds instead of blocking up to
+        // 5 s on the handshake thread's per-transfer timeout.
+        usbDeviceConnection?.close()
+
         synchronized(sLock) {
             if (usbDeviceConnected != null) {
                 AppLog.i(usbDeviceConnected!!.toString())
             }
-            endpointIn = null                                               // Input  EP
-            endpointOut = null                                               // Output EP
+            endpointIn = null
+            endpointOut = null
 
             if (usbDeviceConnection != null) {
                 var bret = false
                 if (usbInterface != null) {
-                    bret = usbDeviceConnection!!.releaseInterface(usbInterface)
+                    // releaseInterface() may fail since close() was already called; log and continue.
+                    bret = try { usbDeviceConnection!!.releaseInterface(usbInterface) } catch (e: Exception) { false }
                 }
                 if (bret) {
                     AppLog.i("OK releaseInterface()")
                 } else {
                     AppLog.e("Error releaseInterface()")
                 }
-
-                usbDeviceConnection!!.close()                                        //
             }
             usbDeviceConnection = null
             usbInterface = null
