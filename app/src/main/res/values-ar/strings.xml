@@ -163,6 +163,8 @@
     <string name="usb_stability_check_description">مكن هذا الخيار إذا كان لديك محول Android Auto لاسلكي ينقطع اتصاله ويعيد الاتصال عدة مرات قبل أن يعمل بشكل صحيح</string>
     <string name="usb_stability_timeout">مهلة الاستقرار</string>
     <string name="usb_stability_timeout_description">الثواني التي يجب أن يظل فيها الجهاز متصلاً قبل الاتصال التلقائي أو إعادة الاتصال (%d ثانية)</string>
+    <string name="max_auto_retry_attempts">الحد الأقصى لمحاولات إعادة الاتصال التلقائي</string>
+    <string name="max_auto_retry_attempts_description">عدد محاولات إعادة الاتصال التلقائي (%d)</string>
     <string name="usb_device_settling">في انتظار استقرار جهاز USB…</string>
     <string name="video_codec">ترميز الفيديو</string>
     <string name="fps_limit">حد معدل الإطارات</string>
@@ -263,4 +265,9 @@
     <string name="shortcut_night_mode_day_desc">فرض الوضع النهاري</string>
     <string name="shortcut_night_mode_night_title">الوضع: ليلي</string>
     <string name="shortcut_night_mode_night_desc">فرض الوضع الليلي</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="retry_connection_title">إعادة محاولة الاتصال</string>
+    <string name="retry_connection_option">إعادة محاولة Android Auto</string>
+    <string name="reset_usb_option">إعادة تعيين اتصال USB</string>
+    <string name="reset_usb_timeout">لم يتم العثور على جهاز USB. يرجى التحقق من الاتصال.</string>
 </resources>

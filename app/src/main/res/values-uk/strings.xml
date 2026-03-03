@@ -112,6 +112,8 @@
     <string name="category_general">Загальні</string>
     <string name="auto_start_self_mode">Автозапуск самостійного режиму</string>
     <string name="auto_start_self_mode_description">Автоматично запускати самостійний режим під час відкриття програми.</string>
+    <string name="usb_auto_connect">Автопідключення USB</string>
+    <string name="usb_auto_connect_description">Автоматично підключатися до відомого USB-пристрою при запуску програми.</string>
     <string name="auto_start_bt_label">Автозапуск при Bluetooth</string>
     <string name="auto_start_bt_description">Автоматично відкривати Headunit Revived при підключенні певного пристрою Bluetooth.</string>
     <string name="auto_start_usb_label">Автозапуск через USB</string>

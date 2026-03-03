@@ -111,6 +111,8 @@
     <string name="category_general">一般</string>
     <string name="auto_start_self_mode">自動開始自我模式</string>
     <string name="auto_start_self_mode_description">應用程式開啟時自動開始自我模式。</string>
+    <string name="usb_auto_connect">USB 自動連接</string>
+    <string name="usb_auto_connect_description">應用程式開啟時自動連接到已知的 USB 裝置。</string>
     <string name="auto_start_bt_label">藍牙自動啟動</string>
     <string name="auto_start_bt_description">當特定藍牙裝置連接時，自動開啟 Headunit Revived。</string>
     <string name="auto_start_usb_label">USB 自動啟動</string>

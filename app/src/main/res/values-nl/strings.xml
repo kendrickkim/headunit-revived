@@ -111,6 +111,8 @@
     <string name="category_general">Algemeen</string>
     <string name="auto_start_self_mode">Auto start Self-Mode</string>
     <string name="auto_start_self_mode_description">Start de zelfmodus automatisch wanneer de applicatie wordt geopend.</string>
+    <string name="usb_auto_connect">Automatisch verbinden met USB</string>
+    <string name="usb_auto_connect_description">Automatisch verbinden met een bekend USB-apparaat wanneer de applicatie wordt geopend.</string>
     <string name="auto_start_bt_label">Automatisch starten bij Bluetooth</string>
     <string name="auto_start_bt_description">Start Headunit Revived automatisch wanneer een specifiek Bluetooth-apparaat verbinding maakt.</string>
     <string name="auto_start_usb_label">Automatisch starten via USB</string>

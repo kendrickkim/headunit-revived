@@ -112,6 +112,8 @@
     <string name="category_general">Geral</string>
     <string name="auto_start_self_mode">Iniciar Self Mode automaticamente</string>
     <string name="auto_start_self_mode_description">Inicia o Self Mode automaticamente ao abrir o aplicativo.</string>
+    <string name="usb_auto_connect">Conexão automática USB</string>
+    <string name="usb_auto_connect_description">Conecta-se automaticamente a um dispositivo USB conhecido assim que o aplicativo é aberto.</string>
     <string name="auto_start_bt_label">Início automático por Bluetooth</string>
     <string name="auto_start_bt_description">Abrir automaticamente o Headunit Revived quando um dispositivo Bluetooth específico se conectar.</string>
     <string name="auto_start_usb_label">Início automático por USB</string>
