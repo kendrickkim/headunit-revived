@@ -257,4 +257,10 @@
     <string name="shortcut_connect_desc">Mit letztem Gerät verbinden</string>
     <string name="shortcut_disconnect_title">Trennen</string>
     <string name="shortcut_disconnect_desc">Aktuelle Sitzung beenden</string>
+    <string name="shortcut_night_mode_auto_title">Modus: Auto</string>
+    <string name="shortcut_night_mode_auto_desc">Automatischen Nachtmodus wiederherstellen</string>
+    <string name="shortcut_night_mode_day_title">Modus: Tag</string>
+    <string name="shortcut_night_mode_day_desc">Tagmodus erzwingen</string>
+    <string name="shortcut_night_mode_night_title">Modus: Nacht</string>
+    <string name="shortcut_night_mode_night_desc">Nachtmodus erzwingen</string>
 </resources>
