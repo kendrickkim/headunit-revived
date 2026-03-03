@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.andrerinas.headunitrevived.R
+import com.google.android.material.slider.Slider
 
 // Sealed class to represent different types of items in the settings list
 sealed class SettingItem {
@@ -30,6 +31,17 @@ sealed class SettingItem {
         val onCheckedChanged: (Boolean) -> Unit
     ) : SettingItem()
 
+    data class SliderSettingEntry(
+        override val stableId: String,
+        @StringRes val nameResId: Int,
+        var value: String,
+        var sliderValue: Float,
+        val valueFrom: Float,
+        val valueTo: Float,
+        val stepSize: Float,
+        val onValueChanged: (Float) -> Unit
+    ) : SettingItem()
+
     data class CategoryHeader(override val stableId: String, @StringRes val titleResId: Int) : SettingItem()
 }
 
@@ -40,6 +52,7 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
         private const val VIEW_TYPE_HEADER = 0
         private const val VIEW_TYPE_SETTING = 1
         private const val VIEW_TYPE_TOGGLE = 3
+        private const val VIEW_TYPE_SLIDER = 4
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -47,6 +60,7 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
             is SettingItem.CategoryHeader -> VIEW_TYPE_HEADER
             is SettingItem.SettingEntry -> VIEW_TYPE_SETTING
             is SettingItem.ToggleSettingEntry -> VIEW_TYPE_TOGGLE
+            is SettingItem.SliderSettingEntry -> VIEW_TYPE_SLIDER
         }
     }
 
@@ -56,14 +70,15 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
             VIEW_TYPE_HEADER -> HeaderViewHolder(inflater.inflate(R.layout.layout_category_header, parent, false))
             VIEW_TYPE_SETTING -> SettingViewHolder(inflater.inflate(R.layout.layout_setting_item, parent, false))
             VIEW_TYPE_TOGGLE -> ToggleSettingViewHolder(inflater.inflate(R.layout.layout_setting_item_toggle, parent, false))
+            VIEW_TYPE_SLIDER -> SliderSettingViewHolder(inflater.inflate(R.layout.layout_setting_item_slider, parent, false))
             else -> throw IllegalArgumentException("Unknown view type: $viewType")
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position)
-        
-        if (holder is SettingViewHolder || holder is ToggleSettingViewHolder) {
+
+        if (holder is SettingViewHolder || holder is ToggleSettingViewHolder || holder is SliderSettingViewHolder) {
             updateItemVisuals(holder.itemView, position)
         }
 
@@ -71,6 +86,7 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
             is SettingItem.CategoryHeader -> (holder as HeaderViewHolder).bind(item)
             is SettingItem.SettingEntry -> (holder as SettingViewHolder).bind(item)
             is SettingItem.ToggleSettingEntry -> (holder as ToggleSettingViewHolder).bind(item)
+            is SettingItem.SliderSettingEntry -> (holder as SliderSettingViewHolder).bind(item)
         }
     }
 
@@ -129,6 +145,27 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
         }
     }
 
+    class SliderSettingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val settingName: TextView = itemView.findViewById(R.id.settingName)
+        private val settingValue: TextView = itemView.findViewById(R.id.settingValue)
+        private val settingSlider: Slider = itemView.findViewById(R.id.settingSlider)
+
+        fun bind(setting: SettingItem.SliderSettingEntry) {
+            settingName.setText(setting.nameResId)
+            settingValue.text = setting.value
+            settingSlider.clearOnChangeListeners()
+            settingSlider.valueFrom = setting.valueFrom
+            settingSlider.valueTo = setting.valueTo
+            settingSlider.stepSize = setting.stepSize
+            settingSlider.value = setting.sliderValue
+            settingSlider.addOnChangeListener { _, value, fromUser ->
+                if (fromUser) {
+                    setting.onValueChanged(value)
+                }
+            }
+        }
+    }
+
     // DiffUtil.ItemCallback implementation
     private class SettingsDiffCallback : DiffUtil.ItemCallback<SettingItem>() {
         override fun areItemsTheSame(oldItem: SettingItem, newItem: SettingItem): Boolean {
@@ -141,6 +178,8 @@ class SettingsAdapter : ListAdapter<SettingItem, RecyclerView.ViewHolder>(Settin
                     oldItem.nameResId == newItem.nameResId && oldItem.value == newItem.value
                 oldItem is SettingItem.ToggleSettingEntry && newItem is SettingItem.ToggleSettingEntry ->
                     oldItem.nameResId == newItem.nameResId && oldItem.descriptionResId == newItem.descriptionResId && oldItem.isChecked == newItem.isChecked
+                oldItem is SettingItem.SliderSettingEntry && newItem is SettingItem.SliderSettingEntry ->
+                    oldItem.nameResId == newItem.nameResId && oldItem.value == newItem.value && oldItem.sliderValue == newItem.sliderValue
                 oldItem is SettingItem.CategoryHeader && newItem is SettingItem.CategoryHeader ->
                     oldItem.titleResId == newItem.titleResId
                 else -> false
