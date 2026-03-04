@@ -128,6 +128,14 @@ class MainActivity : BaseActivity() {
         super.onResume()
         setFullscreen()
 
+        val appSettings = Settings(this)
+        if (!appSettings.hasCompletedSetupWizard) {
+            com.andrerinas.headunitrevived.utils.SetupWizard(this) {
+                // Refresh activity after setup
+                recreate()
+            }.start()
+        }
+
         // If an Android Auto session is active, bring the projection activity to front
         if (AapService.isConnected) {
             AppLog.i("MainActivity: Active session detected, bringing projection to front")
