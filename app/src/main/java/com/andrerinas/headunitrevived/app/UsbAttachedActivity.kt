@@ -3,6 +3,7 @@ package com.andrerinas.headunitrevived.app
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.widget.Toast
@@ -25,14 +26,28 @@ class UsbAttachedActivity : Activity() {
         super.attachBaseContext(LocaleHelper.wrapContext(newBase))
     }
 
+    private fun resolveUsbDevice(intent: Intent?): UsbDevice? {
+        DeviceIntent(intent).device?.let { return it }
+
+        val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        val devices = usbManager.deviceList.values.toList()
+        return if (devices.size == 1) {
+            val device = devices[0]
+            AppLog.i("No USB device in intent extras, falling back to single device from deviceList: ${UsbDeviceCompat(device).uniqueName}")
+            device
+        } else {
+            AppLog.e("No USB device in intent extras and ${devices.size} devices in deviceList, cannot determine target")
+            null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         AppLog.i("USB Intent: $intent")
 
-        val device = DeviceIntent(intent).device
+        val device = resolveUsbDevice(intent)
         if (device == null) {
-            AppLog.e("No USB device")
             finish()
             return
         }
@@ -74,21 +89,24 @@ class UsbAttachedActivity : Activity() {
         val usbMode = UsbAccessoryMode(usbManager)
         AppLog.i("Switching USB device to accessory mode " + deviceCompat.uniqueName)
         Toast.makeText(this, getString(R.string.switching_usb_accessory_mode, deviceCompat.uniqueName), Toast.LENGTH_SHORT).show()
-        if (usbMode.connectAndSwitch(device)) {
-            Toast.makeText(this, getString(R.string.success), Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, getString(R.string.failed), Toast.LENGTH_SHORT).show()
-        }
-
-        finish()
+        Thread {
+            val result = usbMode.connectAndSwitch(device)
+            runOnUiThread {
+                if (result) {
+                    Toast.makeText(this, getString(R.string.success), Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, getString(R.string.failed), Toast.LENGTH_SHORT).show()
+                }
+                finish()
+            }
+        }.start()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        val device = DeviceIntent(getIntent()).device
+        val device = resolveUsbDevice(getIntent())
         if (device == null) {
-            AppLog.e("No USB device")
             finish()
             return
         }
