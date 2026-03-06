@@ -46,9 +46,7 @@ class VideoDecoder(private val settings: Settings) {
     private var legacyFrameBuffer: ByteArray? = null
 
     var dimensionsListener: VideoDimensionsListener? = null
-    // @Volatile so the output thread sees the value written by the caller (typically the main
-    // thread). Fired on the first releaseOutputBuffer — i.e. when the frame is actually rendered.
-    @Volatile var onFirstFrameListener: (() -> Unit)? = null
+    var onFirstFrameListener: (() -> Unit)? = null
 
     val videoWidth: Int get() = mWidth
     val videoHeight: Int get() = mHeight
@@ -105,7 +103,6 @@ class VideoDecoder(private val settings: Settings) {
             legacyFrameBuffer = null
             codecBufferInfo = null
             codecConfigured = false
-            onFirstFrameListener = null
             AppLog.i("Decoder stopped: $reason")
         }
     }
@@ -336,6 +333,8 @@ class VideoDecoder(private val settings: Settings) {
                 start()
             }
             
+            onFirstFrameListener?.invoke()
+            onFirstFrameListener = null
 
             AppLog.i("Codec initialized: $bestCodec for stream ${width}x${height}")
 
@@ -410,7 +409,6 @@ class VideoDecoder(private val settings: Settings) {
                 val outputIndex = currentCodec.dequeueOutputBuffer(bufferInfo, 10000L)
                 if (outputIndex >= 0) {
                     currentCodec.releaseOutputBuffer(outputIndex, true)
-                    onFirstFrameListener?.let { it(); onFirstFrameListener = null }
                 } else if (outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                     handleOutputFormatChange(currentCodec.outputFormat)
                 }

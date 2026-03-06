@@ -48,47 +48,32 @@ class UsbAccessoryMode(private val usbMgr: UsbManager) {
         }
         AppLog.i("acc_ver: $acc_ver")
 
-        // Send all accessory identification strings. Abort if any transfer fails — a partial
-        // identification (e.g. manufacturer sent but model missing) can cause the phone to
-        // ignore the ACC_REQ_START or fail to switch into accessory mode.
-        if (!initStringControlTransfer(connection, ACC_IDX_MAN, MANUFACTURER) ||
-            !initStringControlTransfer(connection, ACC_IDX_MOD, MODEL) ||
-            !initStringControlTransfer(connection, ACC_IDX_DES, DESCRIPTION) ||
-            !initStringControlTransfer(connection, ACC_IDX_VER, VERSION) ||
-            !initStringControlTransfer(connection, ACC_IDX_URI, URI) ||
-            !initStringControlTransfer(connection, ACC_IDX_SER, SERIAL)) {
-            return false
-        }
+        // Send all accessory identification strings
+        initStringControlTransfer(connection, ACC_IDX_MAN, MANUFACTURER)
+        initStringControlTransfer(connection, ACC_IDX_MOD, MODEL)
+        initStringControlTransfer(connection, ACC_IDX_DES, DESCRIPTION)
+        initStringControlTransfer(connection, ACC_IDX_VER, VERSION)
+        initStringControlTransfer(connection, ACC_IDX_URI, URI)
+        initStringControlTransfer(connection, ACC_IDX_SER, SERIAL)
 
         AppLog.i("Sending acc start")
         // Send accessory start request. Device should re-enumerate as an accessory.
         len = connection.controlTransfer(UsbConstants.USB_TYPE_VENDOR, ACC_REQ_START, 0, 0, byteArrayOf(), 0, USB_TIMEOUT_IN_MS)
-
-        // len == 0: clean ACK before re-enumeration (expected path).
-        // len < 0: phone disconnected before the ACK because it started re-enumerating
-        //          immediately upon receipt — the command was still received. Treat as success.
-        AppLog.i("Acc start sent (len=$len). Waiting for re-enumeration...")
-        try { Thread.sleep(500) } catch (e: Exception) {}
-        return true
+        
+        if (len == 0) {
+            // Give the device and the OS a bit of time to re-enumerate
+            try { Thread.sleep(500) } catch (e: Exception) {}
+            return true
+        }
+        return false
     }
 
-    private fun initStringControlTransfer(conn: UsbDeviceConnection, index: Int, string: String): Boolean {
+    private fun initStringControlTransfer(conn: UsbDeviceConnection, index: Int, string: String) {
         val len = conn.controlTransfer(UsbConstants.USB_TYPE_VENDOR, ACC_REQ_SEND_STRING, 0, index, string.toByteArray(), string.length, USB_TIMEOUT_IN_MS)
-        return if (len < 0) {
-            // Negative means the USB transfer itself failed (e.g. device disconnected or
-            // timed out). Abort the switch — ACC_REQ_START would be pointless.
+        if (len != string.length) {
             AppLog.e("Error controlTransfer len: $len  index: $index  string: \"$string\"")
-            false
         } else {
-            // len == string.length is the ideal ACK. Some phones return 0 for a successful
-            // OUT control transfer (they accept the data but report 0 bytes in the data
-            // stage). Treat any non-negative return as success; log a warning if unexpected.
-            if (len != string.length) {
-                AppLog.w("Unexpected controlTransfer len: $len (expected ${string.length})  index: $index  string: \"$string\"")
-            } else {
-                AppLog.i("Success controlTransfer len: $len  index: $index  string: \"$string\"")
-            }
-            true
+            AppLog.i("Success controlTransfer len: $len  index: $index  string: \"$string\"")
         }
     }
 

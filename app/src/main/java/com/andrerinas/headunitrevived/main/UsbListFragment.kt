@@ -164,7 +164,7 @@ class UsbListFragment : Fragment() {
                 mSettings.allowedDevices = allowedDevices
                 notifyDataSetChanged()
             } else {
-                if (App.provide(mContext).commManager.isConnected) {
+                if (AapService.isConnected) {
 
                     // Already connected -> bring existing projection to front
                     val aapIntent = AapProjectionActivity.intent(mContext).apply {
@@ -176,9 +176,7 @@ class UsbListFragment : Fragment() {
                     // Device is in Accessory Mode but we are NOT connected.
                     // Start connection immediately.
                     Toast.makeText(mContext, R.string.android_auto_starting, Toast.LENGTH_SHORT).show()
-                    ContextCompat.startForegroundService(mContext, Intent(mContext, AapService::class.java).apply {
-                        action = AapService.ACTION_CHECK_USB
-                    })
+                    ContextCompat.startForegroundService(mContext, AapService.createIntent(device.wrappedDevice, mContext))
                 } else {
                     // Standard connection flow
                     val usbManager = mContext.getSystemService(Context.USB_SERVICE) as UsbManager
