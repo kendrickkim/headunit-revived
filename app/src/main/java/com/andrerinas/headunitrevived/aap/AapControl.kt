@@ -57,6 +57,7 @@ internal class AapControlMedia(
                     if (nativeFocusRequestCount >= MAX_NATIVE_FOCUS_RETRIES) {
                         AppLog.i("Video Focus NATIVE received $nativeFocusRequestCount times in quick succession. Stopping transport.")
                         nativeFocusRequestCount = 0
+                        lastNativeFocusRequestTime = 0L
                         aapTransport.stop()
                     } else {
                         AppLog.i("Video Focus NATIVE (attempt $nativeFocusRequestCount/$MAX_NATIVE_FOCUS_RETRIES). Re-requesting projected focus.")
