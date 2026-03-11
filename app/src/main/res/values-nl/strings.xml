@@ -282,5 +282,29 @@
     <string name="start_log_capture">Start log capture</string>
     <string name="start_log_capture_description">Begins recording system logs to a file.</string>
     <string name="stop_log_capture">Stop log capture</string>
-    <string name="stop_log_capture_description">Stops recording and saves the log file.</string>
-    </resources>
+    <string name="stop_log_capture_description">Stopt de opname en slaat het logbestand op.</string>
+    <!-- Navigation notifications -->
+    <string name="show_navigation_notifications">Navigatiemeldingen</string>
+    <string name="show_navigation_notifications_description">Toon \"In X meter doe Y\" und huidige straat in meldingen (voor debuggen)</string>
+    <string name="nav_notification_channel_name">Navigatie</string>
+    <string name="nav_notification_channel_description">Turn-by-turn navigatie-updates van Android Auto</string>
+    <string name="nav_notification_title_format">In %1$d m — %2$s</string>
+    <string name="nav_notification_street_format">Straat: %1$s</string>
+    <string name="nav_action_unknown">Actie</string>
+    <string name="nav_action_depart">Vertrek</string>
+    <string name="nav_action_name_change">Naamswijziging</string>
+    <string name="nav_action_slight_turn">Flauwe bocht</string>
+    <string name="nav_action_turn">Bocht</string>
+    <string name="nav_action_sharp_turn">Scherpe bocht</string>
+    <string name="nav_action_uturn">Keerom</string>
+    <string name="nav_action_on_ramp">De weg oprijden</string>
+    <string name="nav_action_off_ramp">Afrit nemen</string>
+    <string name="nav_action_merge">Invoegen</string>
+    <string name="nav_action_roundabout_enter">Rotonde oprijden</string>
+    <string name="nav_action_roundabout_exit">Rotonde verlaten</string>
+    <string name="nav_action_roundabout">Rotonde</string>
+    <string name="nav_action_straight">Rechtdoor</string>
+    <string name="nav_action_ferry">Veerboot</string>
+    <string name="nav_action_ferry_train">Veerboot / trein</string>
+    <string name="nav_action_destination">Aankomst</string>
+</resources>

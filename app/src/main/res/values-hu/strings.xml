@@ -282,5 +282,29 @@
     <string name="start_log_capture">Start log capture</string>
     <string name="start_log_capture_description">Begins recording system logs to a file.</string>
     <string name="stop_log_capture">Stop log capture</string>
-    <string name="stop_log_capture_description">Stops recording and saves the log file.</string>
+    <string name="stop_log_capture_description">Leállítja a rögzítést és elmenti a naplófájlt.</string>
+    <!-- Navigation notifications -->
+    <string name="show_navigation_notifications">Navigációs értesítések</string>
+    <string name="show_navigation_notifications_description">A navigációs utasítások és az aktuális utca megjelenítése az értesítésekben (hibakereséshez)</string>
+    <string name="nav_notification_channel_name">Navigáció</string>
+    <string name="nav_notification_channel_description">Turn-by-turn navigációs frissítések az Android Auto-tól</string>
+    <string name="nav_notification_title_format">%1$d m múlva — %2$s</string>
+    <string name="nav_notification_street_format">Utca: %1$s</string>
+    <string name="nav_action_unknown">Művelet</string>
+    <string name="nav_action_depart">Indulás</string>
+    <string name="nav_action_name_change">Névváltoztatás</string>
+    <string name="nav_action_slight_turn">Enyhe kanyar</string>
+    <string name="nav_action_turn">Kanyar</string>
+    <string name="nav_action_sharp_turn">Éles kanyar</string>
+    <string name="nav_action_uturn">Visszafordulás</string>
+    <string name="nav_action_on_ramp">Felhajtás az útra</string>
+    <string name="nav_action_off_ramp">Lehajtás az útról</string>
+    <string name="nav_action_merge">Besorolás</string>
+    <string name="nav_action_roundabout_enter">Behajtás a körforgalomba</string>
+    <string name="nav_action_roundabout_exit">Kihajtás a körforgalomból</string>
+    <string name="nav_action_roundabout">Körforgalom</string>
+    <string name="nav_action_straight">Haladjon tovább egyenesen</string>
+    <string name="nav_action_ferry">Komp</string>
+    <string name="nav_action_ferry_train">Komp / vonat</string>
+    <string name="nav_action_destination">Megérkezés</string>
 </resources>

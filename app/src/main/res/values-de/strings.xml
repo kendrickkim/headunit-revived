@@ -284,4 +284,28 @@
     <string name="start_log_capture_description">Startet das Mitschreiben von System-Logs in eine Datei.</string>
     <string name="stop_log_capture">Log-Aufzeichnung stoppen</string>
     <string name="stop_log_capture_description">Stoppt die Aufzeichnung und speichert die Log-Datei.</string>
+    <!-- Navigation notifications (from any AA nav app) -->
+    <string name="show_navigation_notifications">Navigations-Benachrichtigungen</string>
+    <string name="show_navigation_notifications_description">Zeigt \"In X Metern Y tun\" und die aktuelle Straße in Benachrichtigungen an (zum Debuggen)</string>
+    <string name="nav_notification_channel_name">Navigation</string>
+    <string name="nav_notification_channel_description">Turn-by-Turn Navigations-Updates von Android Auto</string>
+    <string name="nav_notification_title_format">In %1$d m — %2$s</string>
+    <string name="nav_notification_street_format">Straße: %1$s</string>
+    <string name="nav_action_unknown">Aktion</string>
+    <string name="nav_action_depart">Abfahren</string>
+    <string name="nav_action_name_change">Namensänderung</string>
+    <string name="nav_action_slight_turn">Leicht abbiegen</string>
+    <string name="nav_action_turn">Abbiegen</string>
+    <string name="nav_action_sharp_turn">Scharf abbiegen</string>
+    <string name="nav_action_uturn">Wenden</string>
+    <string name="nav_action_on_ramp">Auffahren</string>
+    <string name="nav_action_off_ramp">Abfahren</string>
+    <string name="nav_action_merge">Zusammenführen</string>
+    <string name="nav_action_roundabout_enter">In den Kreisverkehr einfahren</string>
+    <string name="nav_action_roundabout_exit">Aus dem Kreisverkehr ausfahren</string>
+    <string name="nav_action_roundabout">Kreisverkehr</string>
+    <string name="nav_action_straight">Geradeaus</string>
+    <string name="nav_action_ferry">Fähre</string>
+    <string name="nav_action_ferry_train">Fähre / Zug</string>
+    <string name="nav_action_destination">Ankunft</string>
 </resources>

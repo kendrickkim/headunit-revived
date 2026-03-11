@@ -283,5 +283,29 @@
     <string name="start_log_capture">Start log capture</string>
     <string name="start_log_capture_description">Begins recording system logs to a file.</string>
     <string name="stop_log_capture">Stop log capture</string>
-    <string name="stop_log_capture_description">Stops recording and saves the log file.</string>
+    <string name="stop_log_capture_description">Zatrzymuje nagrywanie i zapisuje plik dziennika.</string>
+    <!-- Navigation notifications -->
+    <string name="show_navigation_notifications">Powiadomienia nawigacji</string>
+    <string name="show_navigation_notifications_description">Pokaż \"Za X metrów zrób Y\" i aktualną ulicę w powiadomieniach (do debugowania)</string>
+    <string name="nav_notification_channel_name">Nawigacja</string>
+    <string name="nav_notification_channel_description">Aktualizacje nawigacji krok po kroku z Android Auto</string>
+    <string name="nav_notification_title_format">Za %1$d m — %2$s</string>
+    <string name="nav_notification_street_format">Ulica: %1$s</string>
+    <string name="nav_action_unknown">Akcja</string>
+    <string name="nav_action_depart">Odjazd</string>
+    <string name="nav_action_name_change">Zmiana nazwy</string>
+    <string name="nav_action_slight_turn">Lekki skręt</string>
+    <string name="nav_action_turn">Skręt</string>
+    <string name="nav_action_sharp_turn">Ostry skręt</string>
+    <string name="nav_action_uturn">Zawracanie</string>
+    <string name="nav_action_on_ramp">Wjazd na drogę</string>
+    <string name="nav_action_off_ramp">Zjazd z rampy</string>
+    <string name="nav_action_merge">Łączenie pasów</string>
+    <string name="nav_action_roundabout_enter">Wjazd na rondo</string>
+    <string name="nav_action_roundabout_exit">Zjazd z ronda</string>
+    <string name="nav_action_roundabout">Rondo</string>
+    <string name="nav_action_straight">Prosto</string>
+    <string name="nav_action_ferry">Prom</string>
+    <string name="nav_action_ferry_train">Prom / pociąg</string>
+    <string name="nav_action_destination">Przyjazd</string>
     </resources>
