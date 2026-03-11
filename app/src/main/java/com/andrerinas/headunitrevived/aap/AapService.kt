@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.app.UiModeManager
-import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,7 +15,6 @@ import android.hardware.usb.UsbManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.IBinder
-import android.os.SystemClock
 import android.os.Parcel
 import android.os.Parcelable
 import android.widget.Toast
@@ -34,7 +32,6 @@ import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 import com.andrerinas.headunitrevived.connection.UsbReceiver
 import com.andrerinas.headunitrevived.location.GpsLocationService
 import com.andrerinas.headunitrevived.utils.AppLog
-import com.andrerinas.headunitrevived.utils.DeviceIntent
 import com.andrerinas.headunitrevived.utils.LocaleHelper
 import com.andrerinas.headunitrevived.utils.NightModeManager
 import kotlinx.coroutines.*
@@ -142,42 +139,8 @@ class AapService : Service(), UsbReceiver.Listener {
         registerReceivers()
 
         // Initialize MediaSession early to be ready for early focus requests
-        mediaSession = MediaSessionCompat(this, "HeadunitRevived").apply {
-            setCallback(object : MediaSessionCompat.Callback() {
-                override fun onPlay() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, false) }
-                override fun onPause() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, false) }
-                override fun onSkipToNext() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, false) }
-                override fun onSkipToPrevious() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, false) }
-                override fun onStop() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, false) }
-
-                override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-                    // This handles generic media button intents (e.g. from Bluetooth headsets)
-                    val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
-                    }
-                    keyEvent?.let {
-                        val isPress = it.action == android.view.KeyEvent.ACTION_DOWN
-                        commManager.send(it.keyCode, isPress)
-                        return true
-                    }
-                    return super.onMediaButtonEvent(mediaButtonEvent)
-                }
-            })
-            setPlaybackToRemote(object : androidx.media.VolumeProviderCompat(
-                androidx.media.VolumeProviderCompat.VOLUME_CONTROL_RELATIVE, 100, 50
-            ) {
-                override fun onAdjustVolume(direction: Int) {
-                    // Handle volume buttons from phone if needed
-                }
-            })
-            setMetadata(android.support.v4.media.MediaMetadataCompat.Builder()
-                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE, "Android Auto")
-                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST, "Connected")
-                .build())
-            isActive = true
+        if (mediaSession == null) {
+            setupMediaSession()
         }
 
         startService(GpsLocationService.intent(this))
@@ -251,19 +214,15 @@ class AapService : Service(), UsbReceiver.Listener {
         updateNotification()
 
         // Fix: Don't create a new session if one is already active, just ensure it's active.
-        // If we must recreate it, we should release the old one first.
         if (mediaSession == null) {
-            mediaSession = MediaSessionCompat(this, "HeadunitRevived").apply {
-                setCallback(object : MediaSessionCompat.Callback() {})
-                // Add the remote volume provider here as well if it was lost
-                setPlaybackToRemote(object : androidx.media.VolumeProviderCompat(
-                    androidx.media.VolumeProviderCompat.VOLUME_CONTROL_RELATIVE, 100, 50
-                ) {
-                    override fun onAdjustVolume(direction: Int) {}
-                })
-            }
+            setupMediaSession()
         }
         mediaSession?.isActive = true
+
+        // Link audio focus state changes to our MediaSession state
+        commManager.onAudioFocusStateChanged = { isPlaying ->
+            updateMediaSessionState(isPlaying)
+        }
 
         serviceScope.launch { commManager.startHandshake() }
         startActivity(AapProjectionActivity.intent(this).apply {
