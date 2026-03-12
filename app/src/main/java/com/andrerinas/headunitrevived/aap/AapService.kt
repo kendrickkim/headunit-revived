@@ -30,6 +30,7 @@ import com.andrerinas.headunitrevived.connection.CommManager
 import com.andrerinas.headunitrevived.connection.NetworkDiscovery
 import com.andrerinas.headunitrevived.connection.WifiDirectManager
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.media.session.MediaButtonReceiver
 import com.andrerinas.headunitrevived.connection.UsbAccessoryMode
 import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 import com.andrerinas.headunitrevived.connection.UsbReceiver
@@ -81,6 +82,23 @@ class AapService : Service(), UsbReceiver.Listener {
     private var hasEverConnected = false
     private var accessoryHandshakeFailures = 0
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
+    /**
+     * Runtime-registered receiver for MEDIA_BUTTON intents.
+     * Unlike manifest-registered receivers, runtime receivers are NOT affected by
+     * Android 8+ implicit broadcast restrictions — this is a critical difference
+     * that makes steering wheel controls work on China headunits.
+     */
+    private val mediaButtonReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (Intent.ACTION_MEDIA_BUTTON == intent.action) {
+                AppLog.i("Runtime MEDIA_BUTTON receiver fired")
+                mediaSession?.let {
+                    MediaButtonReceiver.handleIntent(it, intent)
+                }
+            }
+        }
+    }
 
     /**
      * Guards against duplicate [UsbAccessoryMode.connectAndSwitch] calls.
@@ -143,10 +161,14 @@ class AapService : Service(), UsbReceiver.Listener {
         observeConnectionState()
         registerReceivers()
 
-        // Initialize MediaSession early to be ready for early focus requests
+        // Initialize MediaSession early and set it active immediately.
+        // This ensures media button routing works even BEFORE an AA connection,
+        // which is critical for keymap configuration and early button presses.
         if (mediaSession == null) {
             setupMediaSession()
         }
+        mediaSession?.isActive = true
+        updateMediaSessionState(false) // Set initial PlaybackState so system knows our actions
 
         LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
         AppLog.i("Auto-started continuous log capture")
@@ -222,11 +244,9 @@ class AapService : Service(), UsbReceiver.Listener {
         isSwitchingToAccessory.set(false)
         updateNotification()
 
-        // Fix: Don't create a new session if one is already active, just ensure it's active.
-        if (mediaSession == null) {
-            setupMediaSession()
-        }
+        // Reactivate the existing MediaSession (created in onCreate, kept alive across disconnects)
         mediaSession?.isActive = true
+        updateMediaSessionState(true)
 
         // Link audio focus state changes to our MediaSession state
         commManager.onAudioFocusStateChanged = { isPlaying ->
@@ -286,9 +306,12 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun onDisconnected(state: CommManager.ConnectionState.Disconnected) {
         isSwitchingToAccessory.set(false)
         if (!isDestroying) updateNotification()
+        // Keep MediaSession alive across disconnect/reconnect cycles.
+        // Only deactivate it — do NOT release it. A released session can no longer
+        // receive media button events, which means the keymap stops working until
+        // the next connection. HUR keeps its session alive the entire service lifetime.
         mediaSession?.isActive = false
-        mediaSession?.release()
-        mediaSession = null
+        updateMediaSessionState(false)
         serviceScope.launch(Dispatchers.IO) {
             App.provide(this@AapService).audioDecoder.stop()
             App.provide(this@AapService).videoDecoder.stop("AapService::onDisconnect")
@@ -362,6 +385,16 @@ class AapService : Service(), UsbReceiver.Listener {
             UsbReceiver.createFilter(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        // Runtime-registered MEDIA_BUTTON receiver.
+        // Unlike manifest-registered receivers, runtime receivers bypass the
+        // Android 8+ implicit broadcast restriction. This is the primary mechanism
+        // that makes steering wheel media buttons work on China headunits.
+        ContextCompat.registerReceiver(
+            this, mediaButtonReceiver,
+            IntentFilter(Intent.ACTION_MEDIA_BUTTON),
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        AppLog.i("Registered runtime MEDIA_BUTTON receiver")
     }
 
     private fun registerNetworkMonitor() {
@@ -415,6 +448,7 @@ class AapService : Service(), UsbReceiver.Listener {
         nightModeManager?.stop()
         unregisterReceiver(nightModeUpdateReceiver)
         unregisterReceiver(usbReceiver)
+        try { unregisterReceiver(mediaButtonReceiver) } catch (_: Exception) {}
         uiModeManager.disableCarMode(0)
         serviceScope.cancel()
         LogExporter.stopCapture()
@@ -431,6 +465,13 @@ class AapService : Service(), UsbReceiver.Listener {
             stopSelf()
             return START_NOT_STICKY
         }
+
+        // Route MEDIA_BUTTON intents to the active MediaSession.
+        // This is the AndroidX-recommended pattern: MediaButtonReceiver (manifest)
+        // forwards the intent to this service, and handleIntent() dispatches it
+        // to the MediaSession callback. This works on Android 8+ where implicit
+        // broadcasts to manifest-registered receivers are restricted.
+        mediaSession?.let { MediaButtonReceiver.handleIntent(it, intent) }
 
         startForeground(1, createNotification())
         when (intent?.action) {
