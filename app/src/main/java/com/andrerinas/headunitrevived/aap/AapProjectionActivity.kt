@@ -70,7 +70,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 return
             }
             val gap = SystemClock.elapsedRealtime() - lastFrame
-            if (overlayState == OverlayState.HIDDEN && gap > 5000) {
+            if (overlayState == OverlayState.HIDDEN && gap > 10000) {
                 showReconnectingOverlay()
             } else if (overlayState == OverlayState.RECONNECTING && gap < 2000) {
                 hideReconnectingOverlay()
@@ -153,7 +153,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 commManager.connectionState.collect { state ->
                     when (state) {
-                        is CommManager.ConnectionState.Disconnected -> finish()
+                        is CommManager.ConnectionState.Disconnected -> {
+                            hideReconnectingOverlay()
+                            finish()
+                        }
                         is CommManager.ConnectionState.HandshakeComplete -> {
                             // Handshake done. If the surface is already ready (e.g. reconnect
                             // while the activity is in the foreground), start reading immediately.
