@@ -88,15 +88,24 @@ class AapService : Service(), UsbReceiver.Listener {
     private var wifiLock: WifiManager.WifiLock? = null
 
     /**
-     * Guards against duplicate [UsbAccessoryMode.connectAndSwitch] calls.
+     * Guards against duplicate [UsbAccessoryMode.connectAndSwitch] calls AND duplicate
+     * [connectUsbWithRetry] calls for devices already in accessory mode.
      *
-     * Set to `true` synchronously on the main thread before launching the background
-     * connectAndSwitch coroutine. Checked in [checkAlreadyConnectedUsb] to prevent
-     * multiple concurrent AOA switch attempts on the same device.
-     * Cleared when the switch completes (success or failure), when an accessory-mode
-     * device is found, or on disconnect.
+     * Set to `true` synchronously on the main thread before launching any background
+     * USB connect/switch coroutine. Checked in [checkAlreadyConnectedUsb] to prevent
+     * multiple concurrent connection attempts on the same device.
+     * Cleared in the coroutine's finally block, or on disconnect.
      */
     private val isSwitchingToAccessory = AtomicBoolean(false)
+
+    /**
+     * Set when the phone sends VIDEO_FOCUS_NATIVE (user tapped "Exit" in AA).
+     * Suppresses [scheduleReconnectIfNeeded] so we don't try to reconnect to a
+     * stale dongle that hasn't re-enumerated yet.
+     * Cleared on USB detach (dongle reset complete) or on fresh USB attach.
+     */
+    @Volatile
+    private var userExitedAA = false
 
     private val commManager get() = App.provide(this).commManager
 
@@ -338,9 +347,17 @@ class AapService : Service(), UsbReceiver.Listener {
         val settings = App.provide(this).settings
         val lastType = settings.lastConnectionType
 
-        // USB auto-reconnect: try again after a delay to give dongles time to re-enumerate
+        // USB auto-reconnect: try again after a delay to give dongles time to re-enumerate.
+        // Skip if the user voluntarily exited AA — the dongle is likely still connected with
+        // stale data, and reconnecting immediately just causes handshake failures. The next
+        // USB attach event will re-trigger the flow cleanly.
         if (lastType == com.andrerinas.headunitrevived.utils.Settings.CONNECTION_TYPE_USB &&
             (settings.autoConnectLastSession || settings.autoConnectSingleUsbDevice)) {
+            if (state.isUserExit) {
+                AppLog.i("AapService: USB disconnect after user Exit. Skipping auto-reconnect (waiting for dongle re-enumeration).")
+                userExitedAA = true
+                return
+            }
             AppLog.i("AapService: USB disconnect. Scheduling reconnect check in ${USB_RECONNECT_DELAY_MS}ms...")
             serviceScope.launch {
                 delay(USB_RECONNECT_DELAY_MS)
@@ -502,6 +519,7 @@ class AapService : Service(), UsbReceiver.Listener {
     // -------------------------------------------------------------------------
 
     override fun onUsbAttach(device: UsbDevice) {
+        userExitedAA = false
         if (UsbDeviceCompat.isInAccessoryMode(device)) {
             // Device already in AOA mode (re-enumerated after UsbAttachedActivity switched it).
             AppLog.i("USB accessory device attached, connecting.")
@@ -524,6 +542,7 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     override fun onUsbDetach(device: UsbDevice) {
+        userExitedAA = false
         if (commManager.isConnectedToUsbDevice(device)) {
             // Cable physically removed — the USB connection is already dead, so skip the
             // ByeByeRequest send (which would block ~1 s trying to write to a gone device).
@@ -536,8 +555,14 @@ class AapService : Service(), UsbReceiver.Listener {
         if (granted) {
             AppLog.i("USB permission granted for $deviceName")
             if (UsbDeviceCompat.isInAccessoryMode(device)) {
-                isSwitchingToAccessory.set(false)
-                serviceScope.launch { connectUsbWithRetry(device) }
+                isSwitchingToAccessory.set(true)
+                serviceScope.launch {
+                    try {
+                        connectUsbWithRetry(device)
+                    } finally {
+                        isSwitchingToAccessory.set(false)
+                    }
+                }
             } else {
                 isSwitchingToAccessory.set(true)
                 val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
@@ -638,8 +663,14 @@ class AapService : Service(), UsbReceiver.Listener {
         for (device in deviceList.values) {
             if (UsbDeviceCompat.isInAccessoryMode(device)) {
                 AppLog.i("Found device already in accessory mode: ${UsbDeviceCompat(device).uniqueName}")
-                isSwitchingToAccessory.set(false)
-                serviceScope.launch { connectUsbWithRetry(device) }
+                isSwitchingToAccessory.set(true)
+                serviceScope.launch {
+                    try {
+                        connectUsbWithRetry(device)
+                    } finally {
+                        isSwitchingToAccessory.set(false)
+                    }
+                }
                 return
             }
         }
@@ -674,11 +705,24 @@ class AapService : Service(), UsbReceiver.Listener {
             }
         }
 
-        // Single-USB mode: if exactly one non-accessory device is present, connect to it
+        // Single-USB mode: connect if there's exactly one candidate device.
+        // If the user has marked specific devices as "Allowed" in the USB list,
+        // only count those — so non-AA peripherals (dashcams, USB audio, etc.)
+        // don't prevent auto-connect. Falls back to counting all devices when
+        // no devices have been explicitly allowed (fresh install).
         if (singleUsb) {
             val nonAccessoryDevices = deviceList.values.filter { !UsbDeviceCompat.isInAccessoryMode(it) }
-            if (nonAccessoryDevices.size == 1) {
-                performSingleUsbConnect(nonAccessoryDevices[0])
+            val allowed = settings.allowedDevices
+            val candidates = if (allowed.isNotEmpty()) {
+                nonAccessoryDevices.filter { allowed.contains(UsbDeviceCompat(it).uniqueName) }
+            } else {
+                nonAccessoryDevices
+            }
+            if (allowed.isNotEmpty() && candidates.size != nonAccessoryDevices.size) {
+                AppLog.i("Single USB auto-connect: ${nonAccessoryDevices.size} USB device(s) present, ${candidates.size} allowed")
+            }
+            if (candidates.size == 1) {
+                performSingleUsbConnect(candidates[0])
             }
         }
     }

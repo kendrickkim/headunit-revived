@@ -76,7 +76,10 @@ class CommManager(
          *                `false` for all other disconnect causes (USB detach, read error,
          *                socket timeout, explicit user disconnect).
          */
-        data class Disconnected(val isClean: Boolean = false) : ConnectionState()
+        data class Disconnected(
+            val isClean: Boolean = false,
+            val isUserExit: Boolean = false
+        ) : ConnectionState()
 
         /** Physical connection handshake in progress (USB open or TCP connect). */
         object Connecting : ConnectionState()
@@ -324,7 +327,8 @@ class CommManager(
      * connection is already dead — there is no point sending a `ByeByeRequest`.
      */
     private fun transportedQuited(isClean: Boolean) {
-        _connectionState.value = ConnectionState.Disconnected(isClean)
+        val wasUserExit = _transport?.wasUserExit ?: false
+        _connectionState.value = ConnectionState.Disconnected(isClean, isUserExit = wasUserExit)
         // Transport already quit on its own — no ByeByeRequest needed (connection is dead).
         _disconnectJob = _scope.launch { doDisconnect(sendByeBye = false) }
     }
