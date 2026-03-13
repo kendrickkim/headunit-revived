@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.app.UiModeManager
-import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -20,7 +19,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
-import android.os.SystemClock
 import android.os.Parcel
 import android.os.Parcelable
 import android.widget.Toast
@@ -33,12 +31,12 @@ import com.andrerinas.headunitrevived.connection.CommManager
 import com.andrerinas.headunitrevived.connection.NetworkDiscovery
 import com.andrerinas.headunitrevived.connection.WifiDirectManager
 import android.support.v4.media.session.MediaSessionCompat
+import androidx.media.session.MediaButtonReceiver
 import com.andrerinas.headunitrevived.connection.UsbAccessoryMode
 import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 import com.andrerinas.headunitrevived.connection.UsbReceiver
 import com.andrerinas.headunitrevived.location.GpsLocationService
 import com.andrerinas.headunitrevived.utils.AppLog
-import com.andrerinas.headunitrevived.utils.DeviceIntent
 import com.andrerinas.headunitrevived.utils.LocaleHelper
 import com.andrerinas.headunitrevived.utils.LogExporter
 import com.andrerinas.headunitrevived.utils.NightModeManager
@@ -46,6 +44,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
 import android.app.NotificationManager
+import android.content.pm.ServiceInfo
 import java.net.ServerSocket
 
 /**
@@ -86,6 +85,23 @@ class AapService : Service(), UsbReceiver.Listener {
     private var accessoryHandshakeFailures = 0
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var wifiLock: WifiManager.WifiLock? = null
+
+    /**
+     * Runtime-registered receiver for MEDIA_BUTTON intents.
+     * Unlike manifest-registered receivers, runtime receivers are NOT affected by
+     * Android 8+ implicit broadcast restrictions — this is a critical difference
+     * that makes steering wheel controls work on China headunits.
+     */
+    private val mediaButtonReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (Intent.ACTION_MEDIA_BUTTON == intent.action) {
+                AppLog.i("Runtime MEDIA_BUTTON receiver fired")
+                mediaSession?.let {
+                    MediaButtonReceiver.handleIntent(it, intent)
+                }
+            }
+        }
+    }
 
     /**
      * Guards against duplicate [UsbAccessoryMode.connectAndSwitch] calls AND duplicate
@@ -162,44 +178,17 @@ class AapService : Service(), UsbReceiver.Listener {
         observeConnectionState()
         registerReceivers()
 
-        // Initialize MediaSession early to be ready for early focus requests
-        mediaSession = MediaSessionCompat(this, "HeadunitRevived").apply {
-            setCallback(object : MediaSessionCompat.Callback() {
-                override fun onPlay() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, false) }
-                override fun onPause() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, false) }
-                override fun onSkipToNext() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, false) }
-                override fun onSkipToPrevious() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, false) }
-                override fun onStop() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, false) }
-                
-                override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
-                    // This handles generic media button intents (e.g. from Bluetooth headsets)
-                    val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
-                    }
-                    keyEvent?.let {
-                        val isPress = it.action == android.view.KeyEvent.ACTION_DOWN
-                        commManager.send(it.keyCode, isPress)
-                        return true
-                    }
-                    return super.onMediaButtonEvent(mediaButtonEvent)
-                }
-            })
-            setPlaybackToRemote(object : androidx.media.VolumeProviderCompat(
-                androidx.media.VolumeProviderCompat.VOLUME_CONTROL_RELATIVE, 100, 50
-            ) {
-                override fun onAdjustVolume(direction: Int) {
-                    // Handle volume buttons from phone if needed
-                }
-            })
-            setMetadata(android.support.v4.media.MediaMetadataCompat.Builder()
-                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE, "Android Auto")
-                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST, "Connected")
-                .build())
-            isActive = true
+        // Initialize MediaSession early and set it active immediately.
+        // This ensures media button routing works even BEFORE an AA connection,
+        // which is critical for keymap configuration and early button presses.
+        if (mediaSession == null) {
+            setupMediaSession()
         }
+        mediaSession?.isActive = true
+        updateMediaSessionState(false) // Set initial PlaybackState so system knows our actions
+
+        LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
+        AppLog.i("Auto-started continuous log capture")
 
         LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
         AppLog.i("Auto-started continuous log capture")
@@ -276,26 +265,56 @@ class AapService : Service(), UsbReceiver.Listener {
         updateNotification()
         acquireWifiLock()
 
-        // Fix: Don't create a new session if one is already active, just ensure it's active.
-        // If we must recreate it, we should release the old one first.
-        if (mediaSession == null) {
-            mediaSession = MediaSessionCompat(this, "HeadunitRevived").apply {
-                setCallback(object : MediaSessionCompat.Callback() {})
-                // Add the remote volume provider here as well if it was lost
-                setPlaybackToRemote(object : androidx.media.VolumeProviderCompat(
-                    androidx.media.VolumeProviderCompat.VOLUME_CONTROL_RELATIVE, 100, 50
-                ) {
-                    override fun onAdjustVolume(direction: Int) {}
-                })
-            }
-        }
+        // Reactivate the existing MediaSession (created in onCreate, kept alive across disconnects)
         mediaSession?.isActive = true
-        
+        updateMediaSessionState(true)
+
+        // Link audio focus state changes to our MediaSession state
+        commManager.onAudioFocusStateChanged = { isPlaying ->
+            updateMediaSessionState(isPlaying)
+        }
+
         serviceScope.launch { commManager.startHandshake() }
         startActivity(AapProjectionActivity.intent(this).apply {
             putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
         })
+    }
+
+    private fun setupMediaSession() {
+        mediaSession = MediaSessionCompat(this, "HeadunitRevived").apply {
+            setCallback(object : MediaSessionCompat.Callback() {
+                override fun onPlay() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, false) }
+                override fun onPause() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, false) }
+                override fun onSkipToNext() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, false) }
+                override fun onSkipToPrevious() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, false) }
+                override fun onStop() { commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, true); commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, false) }
+
+                override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
+                    val keyEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
+                    }
+                    keyEvent?.let {
+                        val isPress = it.action == android.view.KeyEvent.ACTION_DOWN
+                        commManager.send(it.keyCode, isPress)
+                        return true
+                    }
+                    return super.onMediaButtonEvent(mediaButtonEvent)
+                }
+            })
+            setPlaybackToRemote(object : androidx.media.VolumeProviderCompat(
+                androidx.media.VolumeProviderCompat.VOLUME_CONTROL_RELATIVE, 100, 50
+            ) {
+                override fun onAdjustVolume(direction: Int) {}
+            })
+            setMetadata(android.support.v4.media.MediaMetadataCompat.Builder()
+                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_TITLE, "Android Auto")
+                .putString(android.support.v4.media.MediaMetadataCompat.METADATA_KEY_ARTIST, "Connected")
+                .build())
+        }
     }
 
     /**
@@ -309,9 +328,12 @@ class AapService : Service(), UsbReceiver.Listener {
         isSwitchingToAccessory.set(false)
         releaseWifiLock()
         if (!isDestroying) updateNotification()
+        // Keep MediaSession alive across disconnect/reconnect cycles.
+        // Only deactivate it — do NOT release it. A released session can no longer
+        // receive media button events, which means the keymap stops working until
+        // the next connection. HUR keeps its session alive the entire service lifetime.
         mediaSession?.isActive = false
-        mediaSession?.release()
-        mediaSession = null
+        updateMediaSessionState(false)
         serviceScope.launch(Dispatchers.IO) {
             App.provide(this@AapService).audioDecoder.stop()
             App.provide(this@AapService).videoDecoder.stop("AapService::onDisconnect")
@@ -393,6 +415,16 @@ class AapService : Service(), UsbReceiver.Listener {
             UsbReceiver.createFilter(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        // Runtime-registered MEDIA_BUTTON receiver.
+        // Unlike manifest-registered receivers, runtime receivers bypass the
+        // Android 8+ implicit broadcast restriction. This is the primary mechanism
+        // that makes steering wheel media buttons work on China headunits.
+        ContextCompat.registerReceiver(
+            this, mediaButtonReceiver,
+            IntentFilter(Intent.ACTION_MEDIA_BUTTON),
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        AppLog.i("Registered runtime MEDIA_BUTTON receiver")
     }
 
     private fun registerNetworkMonitor() {
@@ -465,6 +497,7 @@ class AapService : Service(), UsbReceiver.Listener {
         nightModeManager?.stop()
         unregisterReceiver(nightModeUpdateReceiver)
         unregisterReceiver(usbReceiver)
+        try { unregisterReceiver(mediaButtonReceiver) } catch (_: Exception) {}
         uiModeManager.disableCarMode(0)
         serviceScope.cancel()
         LogExporter.stopCapture()
@@ -481,6 +514,13 @@ class AapService : Service(), UsbReceiver.Listener {
             stopSelf()
             return START_NOT_STICKY
         }
+
+        // Route MEDIA_BUTTON intents to the active MediaSession.
+        // This is the AndroidX-recommended pattern: MediaButtonReceiver (manifest)
+        // forwards the intent to this service, and handleIntent() dispatches it
+        // to the MediaSession callback. This works on Android 8+ where implicit
+        // broadcasts to manifest-registered receivers are restricted.
+        mediaSession?.let { MediaButtonReceiver.handleIntent(it, intent) }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(1, createNotification(),

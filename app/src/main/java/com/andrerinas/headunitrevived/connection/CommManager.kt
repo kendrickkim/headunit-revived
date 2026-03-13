@@ -108,6 +108,9 @@ class CommManager(
 
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected())
 
+    /** Callback for audio focus state changes (isPlaying). Set by AapService. */
+    var onAudioFocusStateChanged: ((Boolean) -> Unit)? = null
+
     /** @Volatile: written on IO thread, read on Main and IO threads. */
     @Volatile private var _transport: AapTransport? = null
     @Volatile private var _connection: AccessoryConnection? = null
@@ -272,6 +275,7 @@ class CommManager(
                     val audioManager = context.getSystemService(Application.AUDIO_SERVICE) as AudioManager
                     _transport = AapTransport(audioDecoder, videoDecoder, audioManager, settings, _backgroundNotification, context, externalSsl = aapSslContext)
                     _transport!!.onQuit = { isClean -> transportedQuited(isClean) }
+                    _transport!!.onAudioFocusStateChanged = { isPlaying -> onAudioFocusStateChanged?.invoke(isPlaying) }
                 }
                 if (_transport?.startHandshake(_connection!!) == true) {
                     _connectionState.emit(ConnectionState.HandshakeComplete)
