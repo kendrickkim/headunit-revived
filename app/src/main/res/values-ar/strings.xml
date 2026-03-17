@@ -36,7 +36,20 @@
     <string name="app_theme">الوضع الداكن (التطبيق)</string>
     <string name="app_theme_description">التحكم في المظهر المرئي للتطبيق</string>
     <string name="change_app_theme">تغيير سمة التطبيق</string>
+    <string name="use_gradient_background">استخدام خلفية متدرجة</string>
+    <string name="use_gradient_background_description_on">يرسم التطبيق خلفيته الخاصة مع دائرة التدرج في المنتصف</string>
+    <string name="use_gradient_background_description_off">يتم استخدام الخلفية الكلاسيكية للتطبيق</string>
+    <string name="use_gradient_background_description_on_auto">يرسم التطبيق خلفيته الخاصة مع دائرة التدرج في المنتصف. لا ينطبق على وضع الداكن المتطرف</string>
+    <string name="use_gradient_background_description_off_auto">يتم استخدام الخلفية الكلاسيكية للتطبيق. لا ينطبق على وضع الداكن المتطرف</string>
     <string name="category_dark_mode">الوضع الداكن</string>
+    <string name="dark_mode_settings">إعدادات الوضع الداكن</string>
+    <string name="aa_monochrome">جعل Android Auto أحادي اللون</string>
+    <string name="aa_monochrome_description">يقلل ألوان Android Auto للقيادة الليلية. يتطلب وضع عرض GLES. يسري فقط عند تفعيل الوضع الداكن</string>
+    <string name="aa_desaturation">إزالة التشبع</string>
+    <string name="aa_desaturation_description">يتحكم في مقدار إزالة اللون. يسري فقط عند تفعيل الوضع الداكن</string>
+    <string name="gles_required_title">مطلوب GLES</string>
+    <string name="gles_required_message">يحتاج الوضع أحادي اللون إلى عرض GLES لتطبيق مرشح التدرج الرمادي على مخرجات الفيديو. هل تريد تفعيل GLES؟</string>
+    <string name="enable_gles">تفعيل GLES</string>
     <string name="category_navigation">الملاحة</string>
 
     <string name="reconnection_required_title">يلزم إعادة الاتصال</string>

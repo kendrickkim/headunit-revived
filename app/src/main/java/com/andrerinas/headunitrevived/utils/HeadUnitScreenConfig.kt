@@ -212,7 +212,7 @@ object HeadUnitScreenConfig {
 
     fun getScaleY(): Float {
         if (getNegotiatedHeight() > screenHeightPx) {
-            return divideOrOne(getNegotiatedHeight().toFloat(), screenHeightPx.toFloat())
+            return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
         }
         if (isPortraitScaled) {
             return 1.0f

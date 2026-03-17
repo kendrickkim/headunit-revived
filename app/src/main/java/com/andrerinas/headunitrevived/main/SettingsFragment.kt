@@ -1,7 +1,6 @@
 package com.andrerinas.headunitrevived.main
 
 import android.app.AlertDialog
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -23,23 +22,15 @@ import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.AapService
 import com.andrerinas.headunitrevived.main.settings.SettingItem
 import com.andrerinas.headunitrevived.main.settings.SettingsAdapter
-import com.andrerinas.headunitrevived.utils.AppThemeManager
 import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.utils.LocaleHelper
 import com.andrerinas.headunitrevived.BuildConfig
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.os.Handler
-import android.os.Looper
-import java.util.Locale
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class SettingsFragment : Fragment(), SensorEventListener {
+class SettingsFragment : Fragment() {
     private lateinit var settings: Settings
     private lateinit var settingsRecyclerView: RecyclerView
     private lateinit var settingsAdapter: SettingsAdapter
@@ -65,7 +56,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
     }
 
     // Local state to hold changes before saving
-    private var pendingNightMode: Settings.NightMode? = null
     private var pendingMicSampleRate: Int? = null
     private var pendingUseGps: Boolean? = null
     private var pendingShowNavigationNotifications: Boolean? = null
@@ -89,33 +79,12 @@ class SettingsFragment : Fragment(), SensorEventListener {
     private var pendingShowFpsCounter: Boolean? = null
     private var pendingScreenOrientation: Settings.ScreenOrientation? = null
     private var pendingAppLanguage: String? = null
-    private var pendingThresholdLux: Int? = null
-    private var pendingThresholdBrightness: Int? = null
-    private var pendingManualStart: Int? = null
-    private var pendingManualEnd: Int? = null
     // Custom Insets
     private var pendingInsetLeft: Int? = null
     private var pendingInsetTop: Int? = null
     private var pendingInsetRight: Int? = null
     private var pendingInsetBottom: Int? = null
 
-    private var pendingAppTheme: Settings.AppTheme? = null
-    private var pendingAppThemeThresholdLux: Int? = null
-    private var pendingAppThemeThresholdBrightness: Int? = null
-    private var pendingAppThemeManualStart: Int? = null
-    private var pendingAppThemeManualEnd: Int? = null
-    private var pendingMonochromeIcons: Boolean? = null
-    private var pendingUseExtremeDarkMode: Boolean? = null
-
-    // Direct light sensor reading (independent of AppThemeManager)
-    private var cachedLux: Float = -1f
-    private var sensorManager: SensorManager? = null
-    private val refreshHandler = Handler(Looper.getMainLooper())
-    private val refreshRunnable = Runnable {
-        if (isAdded && ::settingsAdapter.isInitialized) {
-            updateSettingsList()
-        }
-    }
     private var pendingMediaVolumeOffset: Int? = null
     private var pendingAssistantVolumeOffset: Int? = null
     private var pendingNavigationVolumeOffset: Int? = null
@@ -134,11 +103,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
         settings = App.provide(requireContext()).settings
 
         // Initialize local state with current values
-        pendingNightMode = settings.nightMode
-        pendingThresholdLux = settings.nightModeThresholdLux
-        pendingThresholdBrightness = settings.nightModeThresholdBrightness
-        pendingManualStart = settings.nightModeManualStart
-        pendingManualEnd = settings.nightModeManualEnd
         pendingMicSampleRate = settings.micSampleRate
         pendingUseGps = settings.useGpsForNavigation
         pendingShowNavigationNotifications = settings.showNavigationNotifications
@@ -171,13 +135,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
         pendingMediaVolumeOffset = settings.mediaVolumeOffset
         pendingAssistantVolumeOffset = settings.assistantVolumeOffset
         pendingNavigationVolumeOffset = settings.navigationVolumeOffset
-        pendingAppTheme = settings.appTheme
-        pendingAppThemeThresholdLux = settings.appThemeThresholdLux
-        pendingAppThemeThresholdBrightness = settings.appThemeThresholdBrightness
-        pendingAppThemeManualStart = settings.appThemeManualStart
-        pendingAppThemeManualEnd = settings.appThemeManualEnd
-        pendingMonochromeIcons = settings.monochromeIcons
-        pendingUseExtremeDarkMode = settings.useExtremeDarkMode
 
         // Intercept system back button
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -208,18 +165,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
             }
         }
     }
-
-    override fun onSensorChanged(event: SensorEvent) {
-        if (event.sensor.type == Sensor.TYPE_LIGHT) {
-            val newLux = event.values[0]
-            if (kotlin.math.abs(newLux - cachedLux) >= 1.0f || cachedLux < 0f) {
-                cachedLux = newLux
-                scheduleListRefresh()
-            }
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     private fun setupToolbar() {
         toolbar.setNavigationOnClickListener {
@@ -272,19 +217,8 @@ class SettingsFragment : Fragment(), SensorEventListener {
     }
 
     private fun saveSettings() {
-        // Detect changes BEFORE saving values to SharedPreferences
-        val themeChanged = pendingAppTheme != settings.appTheme
-        val appThemeThresholdChanged = pendingAppThemeThresholdLux != settings.appThemeThresholdLux ||
-                pendingAppThemeThresholdBrightness != settings.appThemeThresholdBrightness ||
-                pendingAppThemeManualStart != settings.appThemeManualStart ||
-                pendingAppThemeManualEnd != settings.appThemeManualEnd
         val languageChanged = pendingAppLanguage != settings.appLanguage
 
-        pendingNightMode?.let { settings.nightMode = it }
-        pendingThresholdLux?.let { settings.nightModeThresholdLux = it }
-        pendingThresholdBrightness?.let { settings.nightModeThresholdBrightness = it }
-        pendingManualStart?.let { settings.nightModeManualStart = it }
-        pendingManualEnd?.let { settings.nightModeManualEnd = it }
         pendingMicSampleRate?.let { settings.micSampleRate = it }
         pendingUseGps?.let { settings.useGpsForNavigation = it }
         pendingShowNavigationNotifications?.let { settings.showNavigationNotifications = it }
@@ -311,30 +245,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
         pendingAssistantVolumeOffset?.let { settings.assistantVolumeOffset = it }
         pendingNavigationVolumeOffset?.let { settings.navigationVolumeOffset = it }
 
-        pendingAppThemeThresholdLux?.let { settings.appThemeThresholdLux = it }
-        pendingAppThemeThresholdBrightness?.let { settings.appThemeThresholdBrightness = it }
-        pendingAppThemeManualStart?.let { settings.appThemeManualStart = it }
-        pendingAppThemeManualEnd?.let { settings.appThemeManualEnd = it }
-        pendingMonochromeIcons?.let { settings.monochromeIcons = it }
-        pendingUseExtremeDarkMode?.let { settings.useExtremeDarkMode = it }
-
-        pendingAppTheme?.let { newTheme ->
-            settings.appTheme = newTheme
-            if (themeChanged || (appThemeThresholdChanged && !AppThemeManager.isStaticMode(newTheme))) {
-                // Stop existing auto theme manager
-                com.andrerinas.headunitrevived.App.appThemeManager?.stop()
-                com.andrerinas.headunitrevived.App.appThemeManager = null
-
-                if (AppThemeManager.isStaticMode(newTheme)) {
-                    AppThemeManager.applyStaticTheme(settings)
-                } else {
-                    val manager = AppThemeManager(requireContext().applicationContext, settings)
-                    com.andrerinas.headunitrevived.App.appThemeManager = manager
-                    manager.start()
-                }
-            }
-        }
-
         pendingAppLanguage?.let { settings.appLanguage = it }
         
         pendingInsetLeft?.let { settings.insetLeft = it }
@@ -349,10 +259,6 @@ class SettingsFragment : Fragment(), SensorEventListener {
             }
             ContextCompat.startForegroundService(requireContext(), intent)
         }
-
-        // Notify Service about Night Mode changes immediately
-        val nightModeUpdateIntent = Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE)
-        requireContext().sendBroadcast(nightModeUpdateIntent)
 
         if (requiresRestart) {
             if (App.provide(requireContext()).commManager.isConnected) {
@@ -389,22 +295,14 @@ class SettingsFragment : Fragment(), SensorEventListener {
             }
         }
 
-        // Restart activity if language, theme, or app theme thresholds/times changed
-        val needsRecreate = languageChanged || themeChanged ||
-                (appThemeThresholdChanged && pendingAppTheme?.let { !AppThemeManager.isStaticMode(it) } == true)
-        if (needsRecreate) {
+        if (languageChanged) {
             requireActivity().recreate()
         }
     }
 
     private fun checkChanges() {
         // Check for any changes
-        val anyChange = pendingNightMode != settings.nightMode ||
-                        pendingThresholdLux != settings.nightModeThresholdLux ||
-                        pendingThresholdBrightness != settings.nightModeThresholdBrightness ||
-                        pendingManualStart != settings.nightModeManualStart ||
-                        pendingManualEnd != settings.nightModeManualEnd ||
-                        pendingMicSampleRate != settings.micSampleRate ||
+        val anyChange = pendingMicSampleRate != settings.micSampleRate ||
                         pendingUseGps != settings.useGpsForNavigation ||
                         pendingShowNavigationNotifications != settings.showNavigationNotifications ||
                         pendingResolution != settings.resolutionId ||
@@ -432,14 +330,7 @@ class SettingsFragment : Fragment(), SensorEventListener {
                         pendingInsetBottom != settings.insetBottom ||
                         pendingMediaVolumeOffset != settings.mediaVolumeOffset ||
                         pendingAssistantVolumeOffset != settings.assistantVolumeOffset ||
-                        pendingNavigationVolumeOffset != settings.navigationVolumeOffset ||
-                        pendingAppTheme != settings.appTheme ||
-                        pendingAppThemeThresholdLux != settings.appThemeThresholdLux ||
-                        pendingAppThemeThresholdBrightness != settings.appThemeThresholdBrightness ||
-                        pendingAppThemeManualStart != settings.appThemeManualStart ||
-                        pendingAppThemeManualEnd != settings.appThemeManualEnd ||
-                        pendingMonochromeIcons != settings.monochromeIcons ||
-                        pendingUseExtremeDarkMode != settings.useExtremeDarkMode
+                        pendingNavigationVolumeOffset != settings.navigationVolumeOffset
 
         hasChanges = anyChange
 
@@ -581,268 +472,22 @@ class SettingsFragment : Fragment(), SensorEventListener {
             }
         ))
 
-        // --- Dark Mode Settings ---
+        // --- Dark Mode ---
         items.add(SettingItem.CategoryHeader("darkMode", R.string.category_dark_mode))
 
-        // App Theme (Application)
         val appThemeTitles = resources.getStringArray(R.array.app_theme)
         items.add(SettingItem.SettingEntry(
-            stableId = "appTheme",
-            nameResId = R.string.app_theme,
-            value = appThemeTitles[pendingAppTheme!!.value],
-            onClick = { _ ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.change_app_theme)
-                    .setSingleChoiceItems(appThemeTitles, pendingAppTheme!!.value) { dialog, which ->
-                        pendingAppTheme = Settings.AppTheme.fromInt(which)
-                        if (pendingAppTheme == Settings.AppTheme.EXTREME_DARK) {
-                            pendingMonochromeIcons = true
-                        } else if (pendingAppTheme == Settings.AppTheme.CLEAR) {
-                            pendingMonochromeIcons = false
-                        }
-                        // Reset useExtremeDarkMode for static modes
-                        if (pendingAppTheme == Settings.AppTheme.CLEAR ||
-                            pendingAppTheme == Settings.AppTheme.DARK ||
-                            pendingAppTheme == Settings.AppTheme.EXTREME_DARK) {
-                            pendingUseExtremeDarkMode = false
-                        }
-                        checkChanges()
-                        dialog.dismiss()
-                        updateSettingsList()
-                    }
-                    .show()
+            stableId = "darkModeSettings",
+            nameResId = R.string.dark_mode_settings,
+            value = appThemeTitles[settings.appTheme.value],
+            onClick = {
+                try {
+                    findNavController().navigate(R.id.action_settingsFragment_to_darkModeFragment)
+                } catch (e: Exception) {
+                    // Failover
+                }
             }
         ))
-
-        // "Use Extreme Dark" toggle for auto modes
-        if (pendingAppTheme != Settings.AppTheme.CLEAR &&
-            pendingAppTheme != Settings.AppTheme.DARK &&
-            pendingAppTheme != Settings.AppTheme.EXTREME_DARK) {
-            items.add(SettingItem.ToggleSettingEntry(
-                stableId = "useExtremeDarkMode",
-                nameResId = R.string.use_extreme_dark,
-                descriptionResId = R.string.use_extreme_dark_description,
-                isChecked = pendingUseExtremeDarkMode!!,
-                onCheckedChanged = { isChecked ->
-                    pendingUseExtremeDarkMode = isChecked
-                    checkChanges()
-                    updateSettingsList()
-                }
-            ))
-        }
-
-        // Monochrome icons toggle (for all dark-capable modes)
-        if (pendingAppTheme != Settings.AppTheme.CLEAR) {
-            items.add(SettingItem.ToggleSettingEntry(
-                stableId = "monochromeIcons",
-                nameResId = R.string.monochrome_icons,
-                descriptionResId = R.string.monochrome_icons_description,
-                isChecked = pendingMonochromeIcons!!,
-                onCheckedChanged = { isChecked ->
-                    pendingMonochromeIcons = isChecked
-                    checkChanges()
-                    updateSettingsList()
-                }
-            ))
-        }
-
-        // App theme sub-options: threshold slider for Light Sensor / Screen Brightness
-        if (pendingAppTheme == Settings.AppTheme.LIGHT_SENSOR || pendingAppTheme == Settings.AppTheme.SCREEN_BRIGHTNESS) {
-            val isSensor = pendingAppTheme == Settings.AppTheme.LIGHT_SENSOR
-            val currentValue = if (isSensor) pendingAppThemeThresholdLux else pendingAppThemeThresholdBrightness
-            val title = getString(if (isSensor) R.string.threshold_light_title else R.string.threshold_brightness_title)
-            val hint = getString(if (isSensor) R.string.threshold_light_hint else R.string.threshold_brightness_hint)
-            val currentReading = if (isSensor) {
-                if (cachedLux >= 0) getString(R.string.current_light_reading, cachedLux.toInt()) else ""
-            } else { "" }
-            val displayValue = if (isSensor) {
-                val base = "${currentValue ?: 0} Lux"
-                if (currentReading.isNotEmpty()) "$base ($currentReading)" else base
-            } else {
-                "${currentValue ?: 0} / 255"
-            }
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "appThemeThreshold",
-                nameResId = if (isSensor) R.string.threshold_light_title else R.string.threshold_brightness_title,
-                value = displayValue,
-                onClick = { _ ->
-                    if (isSensor) {
-                        showLuxSliderDialog(
-                            title = title,
-                            message = hint,
-                            initialLux = currentValue ?: 0,
-                            currentReading = currentReading,
-                            onConfirm = { newLux ->
-                                pendingAppThemeThresholdLux = newLux
-                                checkChanges()
-                                updateSettingsList()
-                            }
-                        )
-                    } else {
-                        showSliderDialog(
-                            title = title,
-                            message = hint,
-                            initialPercentage = currentValue ?: 100,
-                            minLabel = "0",
-                            maxLabel = "255",
-                            formatValue = { v -> "$v" },
-                            currentReading = "",
-                            sliderMax = 255,
-                            onConfirm = { newVal ->
-                                pendingAppThemeThresholdBrightness = newVal
-                                checkChanges()
-                                updateSettingsList()
-                            }
-                        )
-                    }
-                }
-            ))
-        }
-
-        // App theme sub-options: time pickers for Manual Time
-        if (pendingAppTheme == Settings.AppTheme.MANUAL_TIME) {
-            val formatTime = { minutes: Int -> "%02d:%02d".format(minutes / 60, minutes % 60) }
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "appThemeStart",
-                nameResId = R.string.night_mode_start,
-                value = formatTime(pendingAppThemeManualStart!!),
-                onClick = { _ ->
-                    TimePickerDialog(requireContext(), { _, hour, minute ->
-                        pendingAppThemeManualStart = hour * 60 + minute
-                        checkChanges()
-                        updateSettingsList()
-                    }, pendingAppThemeManualStart!! / 60, pendingAppThemeManualStart!! % 60, true).show()
-                }
-            ))
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "appThemeEnd",
-                nameResId = R.string.night_mode_end,
-                value = formatTime(pendingAppThemeManualEnd!!),
-                onClick = { _ ->
-                    TimePickerDialog(requireContext(), { _, hour, minute ->
-                        pendingAppThemeManualEnd = hour * 60 + minute
-                        checkChanges()
-                        updateSettingsList()
-                    }, pendingAppThemeManualEnd!! / 60, pendingAppThemeManualEnd!! % 60, true).show()
-                }
-            ))
-        }
-
-        // Night Mode (Android Auto)
-        items.add(SettingItem.SettingEntry(
-            stableId = "nightMode",
-            nameResId = R.string.night_mode,
-            value = run {
-                val base = resources.getStringArray(R.array.night_mode)[pendingNightMode!!.value]
-                if (pendingNightMode == Settings.NightMode.AUTO) {
-                    val info = com.andrerinas.headunitrevived.utils.NightMode(settings, true).getCalculationInfo()
-                    "$base ($info)"
-                } else {
-                    base
-                }
-            },
-            onClick = { _ ->
-                val nightModeTitles = resources.getStringArray(R.array.night_mode)
-
-                AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.night_mode)
-                    .setSingleChoiceItems(nightModeTitles, pendingNightMode!!.value) { dialog, which ->
-                        pendingNightMode = Settings.NightMode.fromInt(which)!!
-                        checkChanges()
-                        dialog.dismiss()
-                        updateSettingsList()
-                    }
-                    .show()
-            }
-        ))
-
-        // Night mode sub-options: threshold slider for Light Sensor / Screen Brightness
-        if (pendingNightMode == Settings.NightMode.LIGHT_SENSOR || pendingNightMode == Settings.NightMode.SCREEN_BRIGHTNESS) {
-            val isSensor = pendingNightMode == Settings.NightMode.LIGHT_SENSOR
-            val currentValue = if (isSensor) pendingThresholdLux else pendingThresholdBrightness
-            val title = getString(if (isSensor) R.string.threshold_light_title else R.string.threshold_brightness_title)
-            val hint = getString(if (isSensor) R.string.threshold_light_hint else R.string.threshold_brightness_hint)
-            val nmCurrentReading = if (isSensor) {
-                if (cachedLux >= 0) getString(R.string.current_light_reading, cachedLux.toInt()) else ""
-            } else { "" }
-            val displayValue = if (isSensor) {
-                val base = "${currentValue ?: 0} Lux"
-                if (nmCurrentReading.isNotEmpty()) "$base ($nmCurrentReading)" else base
-            } else {
-                "${currentValue ?: 0} / 255"
-            }
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "nightModeThreshold",
-                nameResId = if (isSensor) R.string.threshold_light_title else R.string.threshold_brightness_title,
-                value = displayValue,
-                onClick = { _ ->
-                    if (isSensor) {
-                        showLuxSliderDialog(
-                            title = title,
-                            message = hint,
-                            initialLux = currentValue ?: 0,
-                            currentReading = nmCurrentReading,
-                            onConfirm = { newLux ->
-                                pendingThresholdLux = newLux
-                                checkChanges()
-                                updateSettingsList()
-                            }
-                        )
-                    } else {
-                        showSliderDialog(
-                            title = title,
-                            message = hint,
-                            initialPercentage = currentValue ?: 100,
-                            minLabel = "0",
-                            maxLabel = "255",
-                            formatValue = { v -> "$v" },
-                            currentReading = "",
-                            sliderMax = 255,
-                            onConfirm = { newVal ->
-                                pendingThresholdBrightness = newVal
-                                checkChanges()
-                                updateSettingsList()
-                            }
-                        )
-                    }
-                }
-            ))
-        }
-
-        // Night mode sub-options: time pickers for Manual Time
-        if (pendingNightMode == Settings.NightMode.MANUAL_TIME) {
-            val formatTime = { minutes: Int -> "%02d:%02d".format(minutes / 60, minutes % 60) }
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "nightModeStart",
-                nameResId = R.string.night_mode_start,
-                value = formatTime(pendingManualStart!!),
-                onClick = { _ ->
-                    TimePickerDialog(requireContext(), { _, hour, minute ->
-                        pendingManualStart = hour * 60 + minute
-                        checkChanges()
-                        updateSettingsList()
-                    }, pendingManualStart!! / 60, pendingManualStart!! % 60, true).show()
-                }
-            ))
-
-            items.add(SettingItem.SettingEntry(
-                stableId = "nightModeEnd",
-                nameResId = R.string.night_mode_end,
-                value = formatTime(pendingManualEnd!!),
-                onClick = { _ ->
-                    TimePickerDialog(requireContext(), { _, hour, minute ->
-                        pendingManualEnd = hour * 60 + minute
-                        checkChanges()
-                        updateSettingsList()
-                    }, pendingManualEnd!! / 60, pendingManualEnd!! % 60, true).show()
-                }
-            ))
-        }
 
         // --- Navigation Settings ---
         items.add(SettingItem.CategoryHeader("navigation", R.string.category_navigation))
@@ -1451,23 +1096,11 @@ class SettingsFragment : Fragment(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        // Register light sensor for live lux reading
-        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-        val lightSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT)
-        if (lightSensor != null) {
-            sensorManager?.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
-        // Refresh settings list when returning from sub-screens (e.g. AutoConnectFragment)
+        // Refresh settings list when returning from sub-screens (e.g. AutoConnectFragment, DarkModeFragment)
         if (::settingsAdapter.isInitialized) {
             settings = App.provide(requireContext()).settings
             updateSettingsList()
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager?.unregisterListener(this)
-        refreshHandler.removeCallbacks(refreshRunnable)
     }
 
     private fun getAutoConnectSummary(): String {
@@ -1547,249 +1180,7 @@ class SettingsFragment : Fragment(), SensorEventListener {
             .show()
     }
 
-    private fun showSliderDialog(
-        title: String,
-        message: String,
-        initialPercentage: Int,
-        minLabel: String,
-        maxLabel: String,
-        formatValue: (Int) -> String,
-        currentReading: String = "",
-        sliderMax: Int = 100,
-        onConfirm: (Int) -> Unit
-    ) {
-        val context = requireContext()
-        val density = context.resources.displayMetrics.density
-        val padding = (24 * density).toInt()
-
-        val layout = android.widget.LinearLayout(context).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(padding, (8 * density).toInt(), padding, 0)
-        }
-
-        val hint = android.widget.TextView(context).apply {
-            text = message
-            textSize = 14f
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-        }
-        layout.addView(hint)
-
-        val label = android.widget.TextView(context).apply {
-            text = formatValue(initialPercentage.coerceIn(0, sliderMax))
-            textSize = 24f
-            gravity = android.view.Gravity.CENTER
-            val topMargin = (16 * density).toInt()
-            val lp = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = topMargin
-            layoutParams = lp
-        }
-        layout.addView(label)
-
-        val seekBar = android.widget.SeekBar(context).apply {
-            max = sliderMax
-            progress = initialPercentage.coerceIn(0, sliderMax)
-            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                    label.text = formatValue(progress)
-                }
-                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-            })
-        }
-        layout.addView(seekBar)
-
-        // Min/Max labels row
-        val rangeRow = android.widget.LinearLayout(context).apply {
-            orientation = android.widget.LinearLayout.HORIZONTAL
-            val lp = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            layoutParams = lp
-        }
-        val minText = android.widget.TextView(context).apply {
-            text = minLabel
-            textSize = 12f
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-            val lp = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            layoutParams = lp
-        }
-        val maxText = android.widget.TextView(context).apply {
-            text = maxLabel
-            textSize = 12f
-            gravity = android.view.Gravity.END
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-            val lp = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            layoutParams = lp
-        }
-        rangeRow.addView(minText)
-        rangeRow.addView(maxText)
-        layout.addView(rangeRow)
-
-        // Current reading label below slider
-        if (currentReading.isNotEmpty()) {
-            val readingLabel = android.widget.TextView(context).apply {
-                text = currentReading
-                textSize = 16f
-                gravity = android.view.Gravity.CENTER
-                setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-                val lp = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                lp.topMargin = (16 * density).toInt()
-                layoutParams = lp
-            }
-            layout.addView(readingLabel)
-        }
-
-        MaterialAlertDialogBuilder(context, R.style.DarkAlertDialog)
-            .setTitle(title)
-            .setView(layout)
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                onConfirm(seekBar.progress)
-                dialog.dismiss()
-            }
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.cancel()
-            }
-            .show()
-    }
-
-    private fun scheduleListRefresh() {
-        refreshHandler.removeCallbacks(refreshRunnable)
-        refreshHandler.postDelayed(refreshRunnable, 500)
-    }
-
-    private fun showLuxSliderDialog(
-        title: String,
-        message: String,
-        initialLux: Int,
-        currentReading: String = "",
-        onConfirm: (Int) -> Unit
-    ) {
-        val context = requireContext()
-        val density = context.resources.displayMetrics.density
-        val padding = (24 * density).toInt()
-
-        var currentMax = if (initialLux <= LUX_MAX_FINE) LUX_MAX_FINE else LUX_MAX
-
-        val layout = android.widget.LinearLayout(context).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(padding, (8 * density).toInt(), padding, 0)
-        }
-
-        val hint = android.widget.TextView(context).apply {
-            text = message
-            textSize = 14f
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-        }
-        layout.addView(hint)
-
-        val label = android.widget.TextView(context).apply {
-            text = "$initialLux Lux"
-            textSize = 24f
-            gravity = android.view.Gravity.CENTER
-            val lp = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = (16 * density).toInt()
-            layoutParams = lp
-        }
-        layout.addView(label)
-
-        val seekBar = android.widget.SeekBar(context).apply {
-            max = currentMax
-            progress = initialLux.coerceIn(0, currentMax)
-        }
-
-        val minText = android.widget.TextView(context).apply {
-            text = "0 Lux"
-            textSize = 12f
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        val maxText = android.widget.TextView(context).apply {
-            text = "${currentMax} Lux"
-            textSize = 12f
-            gravity = android.view.Gravity.END
-            setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                label.text = "$progress Lux"
-            }
-            override fun onStartTrackingTouch(sb: android.widget.SeekBar?) {}
-            override fun onStopTrackingTouch(sb: android.widget.SeekBar?) {}
-        })
-        layout.addView(seekBar)
-
-        val rangeRow = android.widget.LinearLayout(context).apply {
-            orientation = android.widget.LinearLayout.HORIZONTAL
-        }
-        rangeRow.addView(minText)
-        rangeRow.addView(maxText)
-        layout.addView(rangeRow)
-
-        val checkBox = android.widget.CheckBox(context).apply {
-            text = getString(R.string.enable_fine_lux_control)
-            isChecked = currentMax == LUX_MAX_FINE
-            val lp = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.topMargin = (12 * density).toInt()
-            layoutParams = lp
-        }
-        checkBox.setOnCheckedChangeListener { _, isChecked ->
-            val oldProgress = seekBar.progress
-            currentMax = if (isChecked) LUX_MAX_FINE else LUX_MAX
-            seekBar.max = currentMax
-            seekBar.progress = oldProgress.coerceIn(0, currentMax)
-            maxText.text = "${currentMax} Lux"
-            label.text = "${seekBar.progress} Lux"
-        }
-        layout.addView(checkBox)
-
-        if (currentReading.isNotEmpty()) {
-            val readingLabel = android.widget.TextView(context).apply {
-                text = currentReading
-                textSize = 16f
-                gravity = android.view.Gravity.CENTER
-                setTextColor(context.resources.getColor(android.R.color.darker_gray, null))
-                val lp = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                lp.topMargin = (16 * density).toInt()
-                layoutParams = lp
-            }
-            layout.addView(readingLabel)
-        }
-
-        MaterialAlertDialogBuilder(context, R.style.DarkAlertDialog)
-            .setTitle(title)
-            .setView(layout)
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                onConfirm(seekBar.progress)
-                dialog.dismiss()
-            }
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.cancel()
-            }
-            .show()
-    }
-
     companion object {
         private val SAVE_ITEM_ID = 1001
-        private const val LUX_MAX = 10000
-        private const val LUX_MAX_FINE = 100
-        private const val BRIGHTNESS_MAX = 255
     }
 }

@@ -36,7 +36,20 @@
     <string name="app_theme">Tryb ciemny (Aplikacja)</string>
     <string name="app_theme_description">Kontroluj wygląd aplikacji</string>
     <string name="change_app_theme">Zmień motyw</string>
+    <string name="use_gradient_background">Użyj tła gradientowego</string>
+    <string name="use_gradient_background_description_on">Aplikacja rysuje własne tło z wyśrodkowanym okręgiem gradientu</string>
+    <string name="use_gradient_background_description_off">Używane jest klasyczne tło aplikacji</string>
+    <string name="use_gradient_background_description_on_auto">Aplikacja rysuje własne tło z wyśrodkowanym okręgiem gradientu. Nie dotyczy trybu Ekstremalnie ciemny</string>
+    <string name="use_gradient_background_description_off_auto">Używane jest klasyczne tło aplikacji. Nie dotyczy trybu Ekstremalnie ciemny</string>
     <string name="category_dark_mode">Tryb ciemny</string>
+    <string name="dark_mode_settings">Ustawienia trybu ciemnego</string>
+    <string name="aa_monochrome">Monochromatyczny Android Auto</string>
+    <string name="aa_monochrome_description">Redukuje kolory Android Auto do jazdy nocnej. Wymaga trybu widoku GLES. Działa tylko przy włączonym trybie ciemnym</string>
+    <string name="aa_desaturation">Desaturacja</string>
+    <string name="aa_desaturation_description">Kontroluje, ile koloru zostanie usunięte. Działa tylko przy włączonym trybie ciemnym</string>
+    <string name="gles_required_title">Wymagany GLES</string>
+    <string name="gles_required_message">Tryb monochromatyczny wymaga renderowania GLES, aby zastosować filtr skali szarości na wyjściu wideo. Włączyć GLES?</string>
+    <string name="enable_gles">Włącz GLES</string>
     <string name="category_navigation">Nawigacja</string>
 
     <string name="reconnection_required_title">Wymagane ponowne połączenie</string>

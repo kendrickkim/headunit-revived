@@ -56,6 +56,10 @@ class GlProjectionView(context: Context) : GLSurfaceView(context), IProjectionVi
         renderer.setScale(scaleX, scaleY)
     }
 
+    fun setDesaturation(value: Float) {
+        renderer.setDesaturation(value)
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         renderer.release()
@@ -100,8 +104,11 @@ class GlProjectionView(context: Context) : GLSurfaceView(context), IProjectionVi
             precision mediump float;
             varying vec2 vTextureCoord;
             uniform samplerExternalOES sTexture;
+            uniform float uDesaturation;
             void main() {
-                gl_FragColor = texture2D(sTexture, vTextureCoord);
+                vec4 color = texture2D(sTexture, vTextureCoord);
+                float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                gl_FragColor = vec4(mix(color.rgb, vec3(gray), uDesaturation), color.a);
             }
         """
 
@@ -125,6 +132,14 @@ class GlProjectionView(context: Context) : GLSurfaceView(context), IProjectionVi
         private var maTextureHandle = 0
         private var muMVPMatrixHandle = 0
         private var muSTMatrixHandle = 0
+        private var muDesaturationHandle = 0
+
+        @Volatile
+        private var desaturation = 0.0f
+
+        fun setDesaturation(value: Float) {
+            desaturation = value.coerceIn(0f, 1f)
+        }
 
         private var updateSurface = false
 
@@ -169,6 +184,7 @@ class GlProjectionView(context: Context) : GLSurfaceView(context), IProjectionVi
             maTextureHandle = GLES20.glGetAttribLocation(program, "aTextureCoord")
             muMVPMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
             muSTMatrixHandle = GLES20.glGetUniformLocation(program, "uSTMatrix")
+            muDesaturationHandle = GLES20.glGetUniformLocation(program, "uDesaturation")
 
             // Buffers
             val bb = ByteBuffer.allocateDirect(squareCoords.size * 4)
@@ -232,7 +248,8 @@ class GlProjectionView(context: Context) : GLSurfaceView(context), IProjectionVi
             Matrix.scaleM(mVPMatrix, 0, mScaleX, mScaleY, 1f)
             GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mVPMatrix, 0)
             GLES20.glUniformMatrix4fv(muSTMatrixHandle, 1, false, sSTMatrix, 0)
-            
+            GLES20.glUniform1f(muDesaturationHandle, desaturation)
+
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
         }
 
