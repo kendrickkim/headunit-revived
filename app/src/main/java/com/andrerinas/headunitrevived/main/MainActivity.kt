@@ -50,6 +50,8 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        logLaunchSource()
+
         // If an Android Auto session is active, bring the projection activity to front
         if (App.provide(this).commManager.isConnected) {
             AppLog.i("MainActivity: Active session detected in onCreate, bringing projection to front")
@@ -138,6 +140,29 @@ class MainActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
+    }
+
+    private fun logLaunchSource() {
+        val source = intent?.getStringExtra(EXTRA_LAUNCH_SOURCE)
+        if (source != null) {
+            AppLog.i("App launched via: $source")
+            return
+        }
+
+        val referrer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            referrer?.toString()
+        } else null
+
+        val isLauncherTap = intent?.action == Intent.ACTION_MAIN &&
+                intent.hasCategory(Intent.CATEGORY_LAUNCHER)
+
+        if (isLauncherTap) {
+            AppLog.i("App launched by user tap (referrer: ${referrer ?: "none"})")
+        } else if (referrer != null) {
+            AppLog.i("App launched by third party: $referrer (action: ${intent?.action})")
+        } else {
+            AppLog.i("App launched, source unknown (action: ${intent?.action})")
+        }
     }
 
     private fun handleIntent(intent: Intent?) {
@@ -267,5 +292,6 @@ class MainActivity : BaseActivity() {
 
     companion object {
         private const val permissionRequestCode = 97
+        const val EXTRA_LAUNCH_SOURCE = "launch_source"
     }
 }

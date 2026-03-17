@@ -10,6 +10,7 @@ import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.aap.AapService
 
 import com.andrerinas.headunitrevived.location.GpsLocationService
+import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
 
 class BootCompleteReceiver : BroadcastReceiver() {
@@ -18,7 +19,11 @@ class BootCompleteReceiver : BroadcastReceiver() {
         val h = Handler(Looper.getMainLooper())
         h.postDelayed({
             val settings = Settings(context)
-            if (!settings.autoStartOnBoot) return@postDelayed
+            if (!settings.autoStartOnBoot) {
+                AppLog.i("Boot auto-start: disabled, skipping")
+                return@postDelayed
+            }
+            AppLog.i("Boot auto-start: starting AapService")
             val serviceIntent = Intent(context, AapService::class.java)
             ContextCompat.startForegroundService(context, serviceIntent)
         }, 10000)
