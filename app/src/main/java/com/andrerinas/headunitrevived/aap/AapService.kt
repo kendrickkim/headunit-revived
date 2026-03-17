@@ -214,6 +214,12 @@ class AapService : Service(), UsbReceiver.Listener {
         nightModeManager = NightModeManager(this, App.provide(this).settings) { isNight ->
             AppLog.i("NightMode update: $isNight")
             commManager.send(NightModeEvent(isNight))
+            // Also notify local components (for AA monochrome filter)
+            val intent = Intent(ACTION_NIGHT_MODE_CHANGED).apply {
+                setPackage(packageName)
+                putExtra("isNight", isNight)
+            }
+            sendBroadcast(intent)
         }
         nightModeManager?.start()
     }
@@ -1157,6 +1163,7 @@ class AapService : Service(), UsbReceiver.Listener {
         const val ACTION_STOP_SERVICE              = "com.andrerinas.headunitrevived.ACTION_STOP_SERVICE"
         const val ACTION_DISCONNECT                = "com.andrerinas.headunitrevived.ACTION_DISCONNECT"
         const val ACTION_REQUEST_NIGHT_MODE_UPDATE = "com.andrerinas.headunitrevived.ACTION_REQUEST_NIGHT_MODE_UPDATE"
+        const val ACTION_NIGHT_MODE_CHANGED      = "com.andrerinas.headunitrevived.ACTION_NIGHT_MODE_CHANGED"
         /**
          * Sent after the caller has already invoked [CommManager.connect(socket)].
          * The [observeConnectionState] flow observer handles the result — [onStartCommand]

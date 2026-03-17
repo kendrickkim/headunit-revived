@@ -49,6 +49,13 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_settingsFragment_to_darkModeFragment"
+            app:destination="@id/darkModeFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -65,6 +72,11 @@
         android:id="@+id/autoConnectFragment"
         android:name="com.andrerinas.headunitrevived.main.AutoConnectFragment"
         android:label="@string/auto_connect_settings" />
+
+    <fragment
+        android:id="@+id/darkModeFragment"
+        android:name="com.andrerinas.headunitrevived.main.DarkModeFragment"
+        android:label="@string/dark_mode_settings" />
 
     <fragment
         android:id="@+id/usbListFragment"

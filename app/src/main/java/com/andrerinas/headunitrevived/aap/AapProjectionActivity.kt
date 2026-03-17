@@ -35,12 +35,14 @@ import com.andrerinas.headunitrevived.decoder.VideoDimensionsListener
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.IntentFilters
 import com.andrerinas.headunitrevived.view.IProjectionView
+import com.andrerinas.headunitrevived.view.GlProjectionView
 import com.andrerinas.headunitrevived.view.ProjectionView
 import com.andrerinas.headunitrevived.view.TextureProjectionView
 import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.view.OverlayTouchView
 import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import com.andrerinas.headunitrevived.utils.SystemUI
+import android.content.IntentFilter
 
 class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, VideoDimensionsListener {
 
@@ -113,6 +115,22 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
              } else {
                  AppLog.e("Watchdog: SurfaceView NOT valid.")
              }
+        }
+    }
+
+    private val nightModeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val isNight = intent.getBooleanExtra("isNight", false)
+            updateDesaturation(isNight)
+        }
+    }
+
+    private fun updateDesaturation(isNight: Boolean) {
+        if (settings.aaMonochromeEnabled && projectionView is GlProjectionView) {
+            val level = if (isNight) settings.aaDesaturationLevel / 100f else 0f
+            (projectionView as GlProjectionView).setDesaturation(level)
+        } else if (projectionView is GlProjectionView) {
+            (projectionView as GlProjectionView).setDesaturation(0f)
         }
     }
 
@@ -289,6 +307,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         watchdogHandler.removeCallbacks(videoWatchdogRunnable)
         watchdogHandler.removeCallbacks(reconnectingWatchdog)
         unregisterReceiver(keyCodeReceiver)
+        unregisterReceiver(nightModeReceiver)
     }
 
     override fun onResume() {
@@ -300,10 +319,16 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
         // Register key event receiver safely for Android 14+
         ContextCompat.registerReceiver(this, keyCodeReceiver, IntentFilters.keyEvent, ContextCompat.RECEIVER_NOT_EXPORTED)
-        
-        setFullscreen() // Call setFullscreen here as well
 
+        // Register night mode receiver for AA monochrome filter
+        ContextCompat.registerReceiver(this, nightModeReceiver, IntentFilter(AapService.ACTION_NIGHT_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
 
+        // Request current night mode state for initial desaturation
+        sendBroadcast(Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE).apply {
+            setPackage(packageName)
+        })
+
+        setFullscreen()
     }
 
     override fun onNewIntent(intent: Intent) {

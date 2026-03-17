@@ -20,6 +20,8 @@ class SettingsActivity : BaseActivity() {
         if (appSettings.appTheme == Settings.AppTheme.EXTREME_DARK ||
             (appSettings.useExtremeDarkMode && isNightActive)) {
             theme.applyStyle(R.style.ThemeOverlay_ExtremeDark, true)
+        } else if (appSettings.useGradientBackground) {
+            theme.applyStyle(R.style.ThemeOverlay_GradientBackground, true)
         }
         requestedOrientation = appSettings.screenOrientation.androidOrientation
 
@@ -33,8 +35,27 @@ class SettingsActivity : BaseActivity() {
         navGraph.startDestination = R.id.settingsFragment
         navController.graph = navGraph
 
+        // Restore sub-screen after recreate() (e.g. theme change from DarkModeFragment)
+        val restoredDestination = savedInstanceState?.getInt(KEY_CURRENT_DESTINATION, 0) ?: 0
+        if (restoredDestination != 0 && restoredDestination != R.id.settingsFragment) {
+            try {
+                navController.navigate(restoredDestination)
+            } catch (_: Exception) {}
+        }
+
         val root = findViewById<View>(R.id.settings_nav_host)
         SystemUI.apply(window, root, appSettings.fullscreenMode)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.settings_nav_host) as? NavHostFragment
+        val currentDest = navHostFragment?.navController?.currentDestination?.id ?: 0
+        outState.putInt(KEY_CURRENT_DESTINATION, currentDest)
+    }
+
+    companion object {
+        private const val KEY_CURRENT_DESTINATION = "current_nav_destination"
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
