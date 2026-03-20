@@ -216,27 +216,23 @@ object HeadUnitScreenConfig {
         }
         return 1.0f
     }
-
-    fun getScaleY(): Float {
-        if (stretchToFill) {
-            // Before PR #233 Fix scaler Y
-            if (getNegotiatedHeight() > screenHeightPx) {
-                return divideOrOne(getNegotiatedHeight().toFloat(), screenHeightPx.toFloat())
+        // Stretch option PR #259
+        fun getScaleY(): Float {
+        if (getNegotiatedHeight() > screenHeightPx) {
+            return if (stretchToFill) {
+                // Before PR #233 Fix scaler Y
+                divideOrOne(getNegotiatedHeight().toFloat(), screenHeightPx.toFloat())
+            } else {
+                // After PR #233 Fix scaler Y
+                divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
             }
-            if (isPortraitScaled) {
-                return 1.0f
-            }
-            return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
-        } else {
-            // After PR #233 Fix scaler Y
-            if (getNegotiatedHeight() > screenHeightPx) {
-                return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
-            }
-            if (isPortraitScaled) {
-                return 1.0f
-            }
-            return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
         }
+
+        if (isPortraitScaled) {
+            return 1.0f
+        }
+
+        return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
     }
 
     fun getDensityWidth(): Int {
