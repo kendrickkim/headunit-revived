@@ -20,6 +20,7 @@ import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.main.settings.SettingItem
 import com.andrerinas.headunitrevived.main.settings.SettingsAdapter
+import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -142,8 +143,8 @@ class AutoStartFragment : Fragment() {
         pendingAutoStartBtName?.let { settings.autoStartBluetoothDeviceName = it }
         pendingAutoStartBtMac?.let { settings.autoStartBluetoothDeviceMac = it }
 
-        // Check for Overlay permission if BT or USB Auto-start is configured
-        if ((!pendingAutoStartBtMac.isNullOrEmpty() || pendingAutoStartOnUsb == true) && Build.VERSION.SDK_INT >= 23) {
+        // Check for Overlay permission if BT, USB, or Boot Auto-start is configured
+        if ((!pendingAutoStartBtMac.isNullOrEmpty() || pendingAutoStartOnUsb == true || pendingAutoStartOnBoot == true) && Build.VERSION.SDK_INT >= 23) {
             if (!android.provider.Settings.canDrawOverlays(requireContext())) {
                 MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                     .setTitle(R.string.overlay_permission_title)
@@ -215,6 +216,38 @@ class AutoStartFragment : Fragment() {
 
         settingsAdapter.submitList(items) {
             scrollState?.let { recyclerView.layoutManager?.onRestoreInstanceState(it) }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Re-check overlay permission. If the user returned from system settings
+        // without granting it, disable auto-start settings that require it.
+        if (Build.VERSION.SDK_INT >= 23 && !android.provider.Settings.canDrawOverlays(requireContext())) {
+            var disabled = false
+            if (settings.autoStartOnBoot) {
+                settings.autoStartOnBoot = false
+                pendingAutoStartOnBoot = false
+                disabled = true
+            }
+            if (settings.autoStartOnUsb) {
+                settings.autoStartOnUsb = false
+                pendingAutoStartOnUsb = false
+                disabled = true
+            }
+            if (!settings.autoStartBluetoothDeviceMac.isNullOrEmpty()) {
+                settings.autoStartBluetoothDeviceMac = ""
+                settings.autoStartBluetoothDeviceName = ""
+                pendingAutoStartBtMac = ""
+                pendingAutoStartBtName = ""
+                disabled = true
+            }
+            if (disabled) {
+                AppLog.w("Overlay permission not granted, disabling auto-start settings")
+                Toast.makeText(requireContext(), getString(R.string.overlay_permission_denied_auto_start_disabled), Toast.LENGTH_LONG).show()
+                checkChanges()
+                updateSettingsList()
+            }
         }
     }
 

@@ -143,11 +143,11 @@
     <string name="auto_start_bt_label">Автозапуск при Bluetooth</string>
     <string name="auto_start_bt_description">Автоматично відкривати Headunit Revived при підключенні певного пристрою Bluetooth.</string>
     <string name="auto_start_usb_label">Автозапуск через USB</string>
-    <string name="auto_start_usb_description">Автоматично відкривати застосунок при підключенні USB-пристрою</string>
+    <string name="auto_start_usb_description">Автоматично відкривати додаток і намагатися підключитися при підключенні сумісного USB-пристрою</string>
     <string name="auto_start_settings">Налаштування автозапуску</string>
     <string name="auto_start_settings_description">Налаштуйте, коли додаток запускається автоматично</string>
     <string name="auto_start_on_boot_label">Запуск при завантаженні</string>
-    <string name="auto_start_on_boot_description">Автоматично запускати службу додатка при завантаженні пристрою</string>
+    <string name="auto_start_on_boot_description">Автоматично відкривати додаток при запуску пристрою. Потрібен дозвіл \'Відображення поверх інших додатків\' на Android 10+</string>
     <string name="select_bt_device">Вибрати Bluetooth-пристрій</string>
     <string name="bt_device_not_set">Не задано</string>
     <string name="bt_permission_denied_title">Потрібен дозвіл Bluetooth</string>
@@ -349,4 +349,8 @@
     <string name="use_extreme_dark_description">Використовувати повністю чорний фон при активному темному режимі</string>
     <string name="show_fps_counter">Показувати лічильник FPS</string>
     <string name="show_fps_counter_description">Відображати частоту кадрів у реальному часі у верхньому лівому куті під час проекції.</string>
+    <string name="overlay_permission_required">Автозапуск потребує дозволу \'Відображення поверх інших додатків\'</string>
+    <string name="usb_permission_denied">Дозвіл USB відхилено. Будь ласка, дозвольте доступ до USB для автоматичного підключення.</string>
+    <string name="overlay_permission_denied_auto_start_disabled">Дозвіл на накладення не надано. Автозапуск було вимкнено.</string>
+    <string name="use_white_background">Використовувати білі шпалери головного екрана</string>
     </resources>

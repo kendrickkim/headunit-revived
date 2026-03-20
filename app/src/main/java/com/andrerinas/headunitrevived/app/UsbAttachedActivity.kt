@@ -82,8 +82,8 @@ class UsbAttachedActivity : Activity() {
         }
 
         val deviceCompat = UsbDeviceCompat(device)
-        if (!settings.isConnectingDevice(deviceCompat)) {
-            AppLog.i("Skipping device " + deviceCompat.uniqueName)
+        if (!settings.autoStartOnUsb && !settings.isConnectingDevice(deviceCompat)) {
+            AppLog.i("Skipping device ${deviceCompat.uniqueName} (not allowed and USB auto-start disabled)")
             finish()
             return
         }
