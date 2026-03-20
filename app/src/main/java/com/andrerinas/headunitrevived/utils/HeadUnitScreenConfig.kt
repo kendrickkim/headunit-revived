@@ -16,6 +16,10 @@ object HeadUnitScreenConfig {
     private var isSmallScreen: Boolean = true
     private var isPortraitScaled: Boolean = false
     private var isInitialized: Boolean = false // New flag
+    
+    // Flag to determine if the projection should stretch and ignore aspect ratio
+    private var stretchToFill: Boolean = true 
+    
     var negotiatedResolutionType: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType? = null
     private lateinit var currentSettings: Settings // Store settings instance
 
@@ -35,6 +39,9 @@ object HeadUnitScreenConfig {
 
 
     fun init(context: Context, displayMetrics: DisplayMetrics, settings: Settings) {
+        // Read user preference for stretching the screen from the app's Settings
+        stretchToFill = settings.stretchToFill
+
         val screenWidth: Int
         val screenHeight: Int
 
@@ -211,13 +218,23 @@ object HeadUnitScreenConfig {
     }
 
     fun getScaleY(): Float {
-        if (getNegotiatedHeight() > screenHeightPx) {
-            return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
-        }
         if (isPortraitScaled) {
             return 1.0f
         }
-        return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
+
+        return if (stretchToFill) {
+            // Legacy behavior: Stretches the projection to completely fill the screen bounds.
+            // This prevents letterboxing (black bars) on non-standard displays like 1024x600.
+            divideOrOne(getNegotiatedHeight().toFloat(), screenHeightPx.toFloat())
+        } else {
+            // PR #233 behavior: Maintains the negotiated aspect ratio strictly.
+            // This prevents distortion but might introduce black bars on screens that don't match the aspect ratio.
+            if (getNegotiatedHeight() > screenHeightPx) {
+                divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
+            } else {
+                divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
+            }
+        }
     }
 
     fun getDensityWidth(): Int {
