@@ -18,7 +18,7 @@ object HeadUnitScreenConfig {
     private var isInitialized: Boolean = false // New flag
     
     // Flag to determine if the projection should stretch and ignore aspect ratio
-    private var stretchToFill: Boolean = true 
+    private var stretchToFill: Boolean = false 
     
     var negotiatedResolutionType: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType? = null
     private lateinit var currentSettings: Settings // Store settings instance
