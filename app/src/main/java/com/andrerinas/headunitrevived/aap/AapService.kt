@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
 import android.app.NotificationManager
 import android.content.pm.ServiceInfo
+import com.andrerinas.headunitrevived.app.UsbAttachedActivity
 import java.net.ServerSocket
 
 /**
@@ -637,15 +638,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
     private fun requestUsbPermission(device: UsbDevice) {
         val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
-        val permissionIntent = PendingIntent.getBroadcast(
-            this, 0,
-            Intent(UsbReceiver.ACTION_USB_DEVICE_PERMISSION).apply {
-                setPackage(packageName)
-            },
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            else PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val permissionIntent = UsbReceiver.createPermissionPendingIntent(this)
         AppLog.i("Requesting USB permission for ${UsbDeviceCompat(device).uniqueName}")
         Toast.makeText(this, getString(R.string.requesting_usb_permission), Toast.LENGTH_SHORT).show()
         usbManager.requestPermission(device, permissionIntent)
@@ -718,8 +711,13 @@ class AapService : Service(), UsbReceiver.Listener {
                 val deviceName = UsbDeviceCompat(device).uniqueName
                 AppLog.i("Found device already in accessory mode: $deviceName")
                 if (!usbManager.hasPermission(device)) {
-                    AppLog.i("Accessory-mode device has no permission (re-enumerated); requesting: $deviceName")
-                    requestUsbPermission(device)
+                    AppLog.i("Accessory-mode device has no permission (re-enumerated); launching UsbAttachedActivity: $deviceName")
+                    // Launch UsbAttachedActivity to handle permission request from foreground
+                    startActivity(Intent(this, UsbAttachedActivity::class.java).apply {
+                        action = UsbManager.ACTION_USB_DEVICE_ATTACHED
+                        putExtra(UsbManager.EXTRA_DEVICE, device)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    })
                     return
                 }
                 isSwitchingToAccessory.set(true)
