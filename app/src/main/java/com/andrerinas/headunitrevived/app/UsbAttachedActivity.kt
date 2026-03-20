@@ -71,15 +71,11 @@ class UsbAttachedActivity : Activity() {
         }
 
         val deviceCompat = UsbDeviceCompat(device)
-        if (!settings.isConnectingDevice(deviceCompat)) {
-            AppLog.i("Skipping device ${deviceCompat.uniqueName} (not in allowed list)")
-            finish()
-            return
-        }
 
-        // Device is allowed — launch app UI if USB auto-start is enabled
+        // Launch app UI if USB auto-start is enabled (for any device — a non-AA
+        // device simply won't complete the AOA handshake, no harm done)
         if (settings.autoStartOnUsb && !App.provide(this).commManager.isConnected) {
-            AppLog.i("USB auto-start: launching app for allowed device ${deviceCompat.uniqueName}")
+            AppLog.i("USB auto-start: launching app for ${deviceCompat.uniqueName}")
             try {
                 startActivity(Intent(this, MainActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -88,6 +84,12 @@ class UsbAttachedActivity : Activity() {
             } catch (e: Exception) {
                 AppLog.w("Could not start UI from USB auto-start: ${e.message}")
             }
+        }
+
+        if (!settings.autoStartOnUsb && !settings.isConnectingDevice(deviceCompat)) {
+            AppLog.i("Skipping device ${deviceCompat.uniqueName} (not allowed and USB auto-start disabled)")
+            finish()
+            return
         }
 
         val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
