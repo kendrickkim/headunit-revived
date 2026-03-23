@@ -393,12 +393,12 @@ class AapService : Service(), UsbReceiver.Listener {
         // USB attach event will re-trigger the flow cleanly.
         if (lastType == com.andrerinas.headunitrevived.utils.Settings.CONNECTION_TYPE_USB &&
             (settings.autoConnectLastSession || settings.autoConnectSingleUsbDevice)) {
-            if (state.isUserExit && !settings.reopenOnReconnection) {
+            if (state.isUserExit && !(settings.autoStartOnUsb && settings.reopenOnReconnection)) {
                 AppLog.i("AapService: USB disconnect after user Exit. Skipping auto-reconnect (waiting for dongle re-enumeration).")
                 userExitedAA = true
                 return
             }
-            if (state.isUserExit && settings.reopenOnReconnection) {
+            if (state.isUserExit && settings.autoStartOnUsb && settings.reopenOnReconnection) {
                 AppLog.i("AapService: USB disconnect after user Exit with reopenOnReconnection enabled. Will reconnect on next USB attach.")
                 return
             }
@@ -1015,7 +1015,7 @@ class AapService : Service(), UsbReceiver.Listener {
      */
     private fun launchMainActivityIfNeeded(source: String) {
         val settings = App.provide(this).settings
-        if (!settings.reopenOnReconnection) return
+        if (!settings.autoStartOnUsb || !settings.reopenOnReconnection) return
 
         AppLog.i("Reopen on reconnection: launching MainActivity ($source)")
         launchMainActivityOnBoot()
