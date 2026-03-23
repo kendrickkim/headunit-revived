@@ -210,6 +210,7 @@
                 <action android:name="com.andrerinas.headunitrevived.ACTION_SET_NIGHT_MODE" />
                 <action android:name="com.andrerinas.headunitrevived.ACTION_CONNECT" />
                 <action android:name="com.andrerinas.headunitrevived.ACTION_DISCONNECT" />
+                <action android:name="com.andrerinas.headunitrevived.ACTION_STOP_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
@@ -219,6 +220,7 @@
                 <data android:scheme="headunit" android:host="connect" />
                 <data android:scheme="headunit" android:host="disconnect" />
                 <data android:scheme="headunit" android:host="nightmode" />
+                <data android:scheme="headunit" android:host="exit" />
             </intent-filter>
         </activity>
 
