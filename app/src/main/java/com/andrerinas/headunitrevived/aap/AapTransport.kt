@@ -109,15 +109,17 @@ class AapTransport(
         if (pollHandler == null) {
             return@Callback false
         }
-        pollHandler?.let {
-            if (!it.hasMessages(MSG_POLL)) {
-                it.sendEmptyMessage(MSG_POLL)
-            }
-        }
 
         if (ret < 0) {
             AppLog.i("Quitting because ret < 0 ($ret)")
             this.quit(clean = (ret == -2))
+            return@Callback true
+        }
+
+        pollHandler?.let {
+            if (!it.hasMessages(MSG_POLL)) {
+                it.sendEmptyMessage(MSG_POLL)
+            }
         }
         return@Callback true
     }
