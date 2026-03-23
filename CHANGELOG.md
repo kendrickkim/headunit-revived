@@ -1,4 +1,8 @@
 # Changelog
+### v.2.1.0-beta1
+- Fixed: Exit Intent not working. Thanks to benyjr
+- Added: Rotary Support
+
 ### v.2.0.2
 - Fixed: 60FPS never applied
 - Fixed: SSL Handshake fix for truncated messages
