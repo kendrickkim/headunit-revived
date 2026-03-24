@@ -432,9 +432,10 @@ class SettingsFragment : Fragment() {
                 if (isChecked) {
                     val conflicts = getKillOnDisconnectConflicts()
                     if (conflicts.isNotEmpty()) {
-                        // Temporarily mark as true so DiffUtil can detect the
+                        // Sync data model to true so DiffUtil can detect the
                         // change back to false when the dialog is canceled
                         pendingKillOnDisconnect = true
+                        updateSettingsList()
                         showKillOnDisconnectWarning(conflicts)
                     } else {
                         pendingKillOnDisconnect = true
@@ -1120,23 +1121,31 @@ class SettingsFragment : Fragment() {
         val conflictList = conflicts.joinToString("\n") { "• $it" }
         val message = getString(R.string.kill_on_disconnect_warning, conflictList)
 
-        MaterialAlertDialogBuilder(requireContext())
+        var confirmed = false
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.kill_on_disconnect_warning_title)
             .setMessage(message)
-            .setCancelable(false)
             .setPositiveButton(R.string.kill_on_disconnect_disable_and_enable) { _, _ ->
+                confirmed = true
                 disableKillOnDisconnectConflicts()
                 pendingKillOnDisconnect = true
                 checkChanges()
                 updateSettingsList()
                 Toast.makeText(context, getString(R.string.kill_on_disconnect_conflicts_disabled), Toast.LENGTH_LONG).show()
             }
-            .setNegativeButton(android.R.string.cancel) { _, _ ->
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+
+        dialog.setOnDismissListener {
+            if (!confirmed) {
                 pendingKillOnDisconnect = false
                 checkChanges()
                 updateSettingsList()
             }
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun disableKillOnDisconnectConflicts() {
