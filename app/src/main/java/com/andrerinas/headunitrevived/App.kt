@@ -36,6 +36,13 @@ class App : Application() {
         val settings = Settings(this) // Create a Settings instance
         AppLog.init(settings) // Initialize AppLog with settings for conditional logging
 
+        // Sync auto-start settings to device-protected storage so that
+        // BootCompleteReceiver, UsbAttachedActivity, and AutoStartReceiver
+        // can read them during locked boot (before user unlock)
+        Settings.syncAutoStartOnBootToDeviceStorage(this, settings.autoStartOnBoot)
+        Settings.syncAutoStartOnUsbToDeviceStorage(this, settings.autoStartOnUsb)
+        Settings.syncAutoStartBtMacToDeviceStorage(this, settings.autoStartBluetoothDeviceMac)
+
         // Apply app theme
         if (AppThemeManager.isStaticMode(settings.appTheme)) {
             AppThemeManager.applyStaticTheme(settings)
@@ -68,6 +75,11 @@ class App : Application() {
             component.notificationManager.createNotificationChannel(mediaChannel)
 
             AapNavigation.createNotificationChannel(this)
+
+            val bootChannel = NotificationChannel(bootStartChannel, "Boot Auto-Start", NotificationManager.IMPORTANCE_HIGH)
+            bootChannel.description = "Shown once after boot to open the app"
+            bootChannel.setShowBadge(false)
+            component.notificationManager.createNotificationChannel(bootChannel)
         }
 
         // Register the main broadcast receiver safely for Android 14+ using ContextCompat
@@ -76,6 +88,7 @@ class App : Application() {
 
     companion object {
         const val defaultChannel = "headunit_service_v2"
+        const val bootStartChannel = "headunit_boot_start"
         var appThemeManager: AppThemeManager? = null
 
         fun get(context: Context): App {

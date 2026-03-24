@@ -55,16 +55,6 @@ class UsbAttachedActivity : Activity() {
         }
 
         val settings = Settings(this)
-        if (settings.autoStartOnUsb && !App.provide(this).commManager.isConnected) {
-            AppLog.i("USB auto-start: launching app")
-            try {
-                startActivity(Intent(this, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                })
-            } catch (e: Exception) {
-                AppLog.w("Could not start UI from USB auto-start: ${e.message}")
-            }
-        }
 
         if (App.provide(this).commManager.connectionState.value is CommManager.ConnectionState.TransportStarted) {
             AppLog.e("Thread already running")
@@ -90,8 +80,26 @@ class UsbAttachedActivity : Activity() {
         }
 
         val deviceCompat = UsbDeviceCompat(device)
-        if (!settings.isConnectingDevice(deviceCompat)) {
-            AppLog.i("Skipping device " + deviceCompat.uniqueName)
+
+        // Launch app UI if USB auto-start is enabled (for any device — a non-AA
+        // device simply won't complete the AOA handshake, no harm done)
+        // Use device-protected storage for the auto-start check so it works
+        // during locked boot (before credential storage is available)
+        val autoStartOnUsb = Settings.isAutoStartOnUsbEnabled(this)
+        if (autoStartOnUsb && !App.provide(this).commManager.isConnected) {
+            AppLog.i("USB auto-start: launching app for ${deviceCompat.uniqueName}")
+            try {
+                startActivity(Intent(this, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(MainActivity.EXTRA_LAUNCH_SOURCE, "USB auto-start")
+                })
+            } catch (e: Exception) {
+                AppLog.w("Could not start UI from USB auto-start: ${e.message}")
+            }
+        }
+
+        if (!autoStartOnUsb && !settings.isConnectingDevice(deviceCompat)) {
+            AppLog.i("Skipping device ${deviceCompat.uniqueName} (not allowed and USB auto-start disabled)")
             finish()
             return
         }

@@ -25,6 +25,8 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.andrerinas.headunitrevived.App
+import com.andrerinas.headunitrevived.app.BootCompleteReceiver
+import com.andrerinas.headunitrevived.main.MainActivity
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.protocol.messages.NightModeEvent
 import com.andrerinas.headunitrevived.connection.CommManager
@@ -48,6 +50,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
 import android.app.NotificationManager
 import android.content.pm.ServiceInfo
+import android.graphics.PixelFormat
+import android.provider.Settings as AndroidSettings
+import android.view.View
+import android.view.WindowManager
 import com.andrerinas.headunitrevived.app.UsbAttachedActivity
 import java.net.ServerSocket
 
@@ -79,6 +85,7 @@ class AapService : Service(), UsbReceiver.Listener {
     private var wirelessServer: WirelessServer? = null
     private var networkDiscovery: NetworkDiscovery? = null
     private var mediaSession: MediaSessionCompat? = null
+    private var lastMediaButtonClickTime = 0L
 
     /**
      * Set to `true` before calling [stopSelf] or entering [onDestroy] to suppress any
@@ -302,20 +309,30 @@ class AapService : Service(), UsbReceiver.Listener {
                         mediaButtonEvent?.getParcelableExtra(Intent.EXTRA_KEY_EVENT)
                     }
 
-                    // Only handle ACTION_DOWN to ensure instant response and prevent double triggers.
-                    if (keyEvent != null && keyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-                        val keyCode = keyEvent.keyCode
-                        AppLog.d("MediaSession: Handling key $keyCode via ACTION_DOWN")
+                    if (keyEvent != null) {
+                        val actionStr = if (keyEvent.action == android.view.KeyEvent.ACTION_DOWN) "DOWN" else "UP"
+                        AppLog.d("MediaButtonEvent: Received key ${keyEvent.keyCode} ($actionStr)")
+
+                        // Only handle ACTION_DOWN to prevent double triggers.
+                        if (keyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
+                            val now = System.currentTimeMillis()
+                            if (now - lastMediaButtonClickTime < 300) {
+                                AppLog.i("MediaButtonEvent: Debouncing key ${keyEvent.keyCode} (too fast)")
+                                return true
+                            }
+                            lastMediaButtonClickTime = now
+                            
+                            AppLog.i("MediaButtonEvent: Processing key ${keyEvent.keyCode}")
+                            // Send a complete click sequence (press + release) immediately
+                            commManager.send(keyEvent.keyCode, true)
+                            commManager.send(keyEvent.keyCode, false)
+                            return true
+                        }
                         
-                        // Send a complete click sequence (press + release) immediately
-                        commManager.send(keyCode, true)
-                        commManager.send(keyCode, false)
-                        return true
-                    }
-                    
-                    // Consume ACTION_UP to prevent fallback to individual callbacks (onPlay, etc.)
-                    if (keyEvent != null && keyEvent.action == android.view.KeyEvent.ACTION_UP) {
-                        return true
+                        // Consume ACTION_UP to prevent fallback
+                        if (keyEvent.action == android.view.KeyEvent.ACTION_UP) {
+                            return true
+                        }
                     }
 
                     return super.onMediaButtonEvent(mediaButtonEvent)
@@ -387,9 +404,13 @@ class AapService : Service(), UsbReceiver.Listener {
         // USB attach event will re-trigger the flow cleanly.
         if (lastType == com.andrerinas.headunitrevived.utils.Settings.CONNECTION_TYPE_USB &&
             (settings.autoConnectLastSession || settings.autoConnectSingleUsbDevice)) {
-            if (state.isUserExit) {
+            if (state.isUserExit && !(settings.autoStartOnUsb && settings.reopenOnReconnection)) {
                 AppLog.i("AapService: USB disconnect after user Exit. Skipping auto-reconnect (waiting for dongle re-enumeration).")
                 userExitedAA = true
+                return
+            }
+            if (state.isUserExit && settings.autoStartOnUsb && settings.reopenOnReconnection) {
+                AppLog.i("AapService: USB disconnect after user Exit with reopenOnReconnection enabled. Will reconnect on next USB attach.")
                 return
             }
             AppLog.i("AapService: USB disconnect. Scheduling reconnect check in ${USB_RECONNECT_DELAY_MS}ms...")
@@ -540,6 +561,16 @@ class AapService : Service(), UsbReceiver.Listener {
         } else {
             startForeground(1, createNotification())
         }
+        // Launch the UI after boot.
+        // Direct startActivity() is silently blocked on MIUI/HyperOS even from
+        // a foreground service. We use an overlay window trampoline: creating a
+        // zero-size overlay gives the app a "visible" context that bypasses OEM
+        // background activity start restrictions. Falls back to full-screen
+        // intent notification if overlay permission is not granted.
+        if (intent?.getBooleanExtra(BootCompleteReceiver.EXTRA_BOOT_START, false) == true) {
+            launchMainActivityOnBoot()
+        }
+
         when (intent?.action) {
             ACTION_START_SELF_MODE       -> startSelfMode()
             ACTION_START_WIRELESS        -> startWirelessServer()
@@ -575,6 +606,7 @@ class AapService : Service(), UsbReceiver.Listener {
         if (UsbDeviceCompat.isInAccessoryMode(device)) {
             // Device already in AOA mode (re-enumerated after UsbAttachedActivity switched it).
             AppLog.i("USB accessory device attached, connecting.")
+            launchMainActivityIfNeeded("USB accessory attach")
             checkAlreadyConnectedUsb(force = true)
         } else {
             // UsbAttachedActivity normally handles normal-mode devices via a manifest intent
@@ -583,6 +615,7 @@ class AapService : Service(), UsbReceiver.Listener {
             // check after a delay to give UsbAttachedActivity a chance to handle it first.
             val deviceName = UsbDeviceCompat(device).uniqueName
             AppLog.i("Normal USB device attached: $deviceName. Will check auto-connect in ${USB_ATTACH_FALLBACK_DELAY_MS}ms...")
+            launchMainActivityIfNeeded("USB normal attach ($deviceName)")
             serviceScope.launch {
                 delay(USB_ATTACH_FALLBACK_DELAY_MS)
                 if (!commManager.isConnected && !isSwitchingToAccessory.get()) {
@@ -633,6 +666,7 @@ class AapService : Service(), UsbReceiver.Listener {
             }
         } else {
             AppLog.w("USB permission denied for $deviceName")
+            Toast.makeText(this, getString(R.string.usb_permission_denied), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -694,8 +728,9 @@ class AapService : Service(), UsbReceiver.Listener {
         val settings = App.provide(this).settings
         val lastSession = settings.autoConnectLastSession
         val singleUsb = settings.autoConnectSingleUsbDevice
+        val usbAutoStart = settings.autoStartOnUsb
 
-        if (!force && !lastSession && !singleUsb) return
+        if (!force && !lastSession && !singleUsb && !usbAutoStart) return
         if (commManager.isConnected ||
             commManager.connectionState.value is CommManager.ConnectionState.Connecting ||
             isSwitchingToAccessory.get()) return
@@ -759,6 +794,15 @@ class AapService : Service(), UsbReceiver.Listener {
                         return
                     }
                 }
+            }
+        }
+
+        // USB auto-start mode: attempt AOA switch for any single non-accessory device
+        if (usbAutoStart) {
+            val nonAccessoryDevices = deviceList.values.filter { !UsbDeviceCompat.isInAccessoryMode(it) }
+            if (nonAccessoryDevices.size == 1) {
+                performSingleUsbConnect(nonAccessoryDevices[0])
+                return
             }
         }
 
@@ -957,6 +1001,132 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun updateNotification() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(1, createNotification())
+    }
+
+    /**
+     * Launch MainActivity after boot using a cascading fallback chain designed
+     * to work across stock AOSP head units, Xiaomi MIUI/HyperOS, Samsung One UI,
+     * Huawei EMUI, OPPO ColorOS, and other OEM ROMs.
+     *
+     * Strategy order:
+     * 1. Direct startActivity (Android < 10, or any device without background
+     *    activity restrictions — works on most head units running AOSP)
+     * 2. Overlay window trampoline (Android 10+): creates a zero-size invisible
+     *    overlay giving the app a "visible" context. Bypasses MIUI, EMUI, ColorOS
+     *    background start restrictions. Requires SYSTEM_ALERT_WINDOW.
+     * 3. Full-screen intent notification (Android 10+): high-priority notification
+     *    with fullScreenIntent. Works on stock Android 10-13 and Samsung. On
+     *    Android 14+ needs USE_FULL_SCREEN_INTENT permission.
+     * 4. Tap-to-open notification (last resort): user taps notification to open.
+     */
+    /**
+     * Launches MainActivity when reopenOnReconnection is enabled and no activity is currently
+     * visible. Uses the same overlay trampoline technique as boot auto-start to bypass OEM
+     * background activity start restrictions.
+     */
+    private fun launchMainActivityIfNeeded(source: String) {
+        val settings = App.provide(this).settings
+        if (!settings.autoStartOnUsb || !settings.reopenOnReconnection) return
+
+        AppLog.i("Reopen on reconnection: launching MainActivity ($source)")
+        launchMainActivityOnBoot()
+    }
+
+    private fun launchMainActivityOnBoot() {
+        // Android < 10: no background activity start restrictions
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            AppLog.i("Boot auto-start: launching directly (API ${Build.VERSION.SDK_INT} < 29)")
+            launchDirectly()
+            return
+        }
+
+        // Android 10+: try overlay trampoline (bypasses all known OEM restrictions)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            AndroidSettings.canDrawOverlays(this)) {
+            AppLog.i("Boot auto-start: launching via overlay window trampoline")
+            if (launchViaOverlayTrampoline()) return
+        }
+
+        // Fallback: full-screen intent notification
+        AppLog.i("Boot auto-start: falling back to full-screen intent notification")
+        launchViaFullScreenIntent()
+    }
+
+    private fun launchDirectly() {
+        try {
+            val launchIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra(MainActivity.EXTRA_LAUNCH_SOURCE, "Boot auto-start")
+            }
+            startActivity(launchIntent)
+            AppLog.i("Boot auto-start: direct startActivity succeeded")
+        } catch (e: Exception) {
+            AppLog.e("Boot auto-start: direct startActivity failed: ${e.message}")
+            launchViaFullScreenIntent()
+        }
+    }
+
+    private fun launchViaOverlayTrampoline(): Boolean {
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        else
+            @Suppress("DEPRECATION")
+            WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+
+        val params = WindowManager.LayoutParams(
+            0, 0, overlayType,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT
+        )
+        val view = View(this)
+        return try {
+            wm.addView(view, params)
+            val launchIntent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                putExtra(MainActivity.EXTRA_LAUNCH_SOURCE, "Boot auto-start")
+            }
+            startActivity(launchIntent)
+            AppLog.i("Boot auto-start: startActivity called from overlay context")
+            true
+        } catch (e: Exception) {
+            AppLog.e("Boot auto-start: overlay trampoline failed: ${e.message}")
+            false
+        } finally {
+            try { wm.removeView(view) } catch (_: Exception) {}
+        }
+    }
+
+    private fun launchViaFullScreenIntent() {
+        val launchIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra(MainActivity.EXTRA_LAUNCH_SOURCE, "Boot auto-start")
+        }
+        val piFlags = PendingIntent.FLAG_UPDATE_CURRENT or
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        val fullScreenPi = PendingIntent.getActivity(this, 200, launchIntent, piFlags)
+
+        val notification = NotificationCompat.Builder(this, App.bootStartChannel)
+            .setSmallIcon(R.drawable.ic_stat_aa)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.notification_service_running))
+            .setFullScreenIntent(fullScreenPi, true)
+            .setContentIntent(fullScreenPi)
+            .setAutoCancel(true)
+            .build()
+
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.notify(BOOT_START_NOTIFICATION_ID, notification)
+
+        // Dismiss the boot notification after a short delay
+        serviceScope.launch {
+            delay(5000)
+            nm.cancel(BOOT_START_NOTIFICATION_ID)
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -1169,6 +1339,8 @@ class AapService : Service(), UsbReceiver.Listener {
          * Observed by `HomeFragment` via a lifecycle-aware flow collector.
          */
         val scanningState = MutableStateFlow(false)
+
+        private const val BOOT_START_NOTIFICATION_ID = 42
 
         // Service action strings used with startService() and sendBroadcast()
         const val ACTION_START_SELF_MODE           = "com.andrerinas.headunitrevived.ACTION_START_SELF_MODE"

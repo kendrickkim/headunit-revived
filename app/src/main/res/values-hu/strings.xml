@@ -142,7 +142,12 @@
     <string name="auto_start_bt_label">Bluetooth automatikus indítás</string>
     <string name="auto_start_bt_description">A Headunit Revived automatikus megnyitása, amikor egy adott Bluetooth-eszköz csatlakozik.</string>
     <string name="auto_start_usb_label">Automatikus indítás USB-n</string>
-    <string name="auto_start_usb_description">Az alkalmazás automatikus megnyitása USB-eszköz csatlakoztatásakor</string>
+    <string name="auto_start_usb_description">Az alkalmazás automatikus megnyitása és csatlakozási kísérlet USB-eszköz csatlakoztatásakor</string>
+    <string name="auto_start_settings">Automatikus indítás beállításai</string>
+    <string name="auto_start_settings_description">Adja meg, mikor induljon el az alkalmazás automatikusan</string>
+    <string name="auto_start_oem_warning">Egyes eszközökön (Xiaomi, Huawei, Samsung, OPPO, Vivo) az automatikus indítást manuálisan kell engedélyezni az eszköz akkumulátor- vagy indítási beállításaiban.</string>
+    <string name="auto_start_on_boot_label">Indítás rendszerindításkor</string>
+    <string name="auto_start_on_boot_description">Az alkalmazás automatikus megnyitása az eszköz indításakor. Android 10+-on szükséges a \'Megjelenítés más alkalmazások felett\' engedély</string>
     <string name="select_bt_device">Bluetooth eszköz kiválasztása</string>
     <string name="bt_device_not_set">Nincs beállítva</string>
     <string name="bt_permission_denied_title">Bluetooth-engedély szükséges</string>
@@ -345,9 +350,15 @@
     <string name="use_extreme_dark">Extrém sötét használata</string>
     <string name="use_extreme_dark_description">Tiszta fekete háttér használata sötét módban</string>
     <string name="show_fps_counter">FPS számláló megjelenítése</string>
+    <string name="overlay_permission_required">Az automatikus indításhoz szükséges a \'Megjelenítés más alkalmazások felett\' engedély</string>
+    <string name="usb_permission_denied">USB-engedély megtagadva. Kérjük, engedélyezze az USB-hozzáférést az automatikus csatlakozáshoz.</string>
+    <string name="overlay_permission_denied_auto_start_disabled">Az átfedési engedély nem lett megadva. Az automatikus indítás letiltásra került.</string>
+    <string name="use_white_background">Fehér főképernyő háttérkép használata</string>
+    <string name="reopen_on_reconnection_label">Újranyitás újracsatlakozáskor</string>
+    <string name="reopen_on_reconnection_description">A Kilépés gomb megnyomásakor az alkalmazás a háttérben fut tovább, és folyamatosan figyeli az USB-kapcsolatokat. Ha egy eszköz újracsatlakozik, az alkalmazás automatikusan megnyílik.</string>
     <string name="show_fps_counter_description">Valós idejű FPS overlay megjelenítése a bal felső sarokban a vetítés alatt.</string>
 
     <string name="category_input">Beviteli beállítások</string>
     <string name="enable_rotary">Forgókapcsoló (Rotary) engedélyezése</string>
     <string name="enable_rotary_description">Fizikai forgatógombok és kerekek támogatásának bejelentése. Kapcsolja ki, ha az érintőképernyő nem működik megfelelően.</string>
-    </resources>
+</resources>

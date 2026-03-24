@@ -110,6 +110,7 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener {
         assignTargetCode = item.keyCode
         val name = getString(item.nameResId)
         
+        // Using MaterialAlertDialogBuilder with DarkAlertDialog style for consistency and compatibility
         assignDialog = MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
             .setTitle(name)
             .setMessage(getString(R.string.press_key_to_assign, name))
@@ -123,6 +124,7 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener {
             }
             .create()
 
+        // Important: We need to set the listener on the dialog to catch keys like ENTER
         assignDialog?.setOnKeyListener { _, _, event ->
             onKeyEvent(event)
         }
@@ -193,28 +195,28 @@ class KeymapFragment : Fragment(), MainActivity.KeyListener {
 
         val keyName = try { KeyEvent.keyCodeToString(keyCode).replace("KEYCODE_", "") } catch (e: Exception) { "UNKNOWN" }
         val actionName = if (event.action == KeyEvent.ACTION_DOWN) "DOWN" else "UP"
-        val unicodeChar = event.unicodeChar
-        val charSuffix = if (unicodeChar != 0) " (Char: '${unicodeChar.toChar()}')" else ""
         
-        AppLog.i("KeymapFragment: Captured $keyName ($keyCode) $actionName$charSuffix")
+        AppLog.i("KeymapFragment: Captured $keyName ($keyCode) $actionName")
         
-        keypressDebuggerTextView.text = "Key: $keyName ($keyCode) - $actionName$charSuffix"
-        keypressDebuggerTextView.setTextColor(ContextCompat.getColor(requireContext(), R.color.material_green_700))
+        keypressDebuggerTextView.text = "Key: $keyName ($keyCode) - $actionName"
+        keypressDebuggerTextView.setTextColor(ContextCompat.getColor(requireContext(), R.color.brand_teal))
 
         if (assignTargetCode != KeyEvent.KEYCODE_UNKNOWN) {
-            val codesMap = settings.keyCodes
-            
-            // Map: Logical (AA) -> Physical (HW)
-            codesMap[assignTargetCode] = keyCode
-            
-            settings.keyCodes = codesMap
-            adapter.updateCodes(codesMap)
-            
-            val targetName = getString(keyList.find { it.keyCode == assignTargetCode }?.nameResId ?: R.string.keymap)
-            Toast.makeText(requireContext(), getString(R.string.key_assigned, keyName, targetName), Toast.LENGTH_SHORT).show()
-            
-            assignDialog?.dismiss()
-            // assignTargetCode reset in dismiss listener
+            // Only finalize assignment on ACTION_UP to avoid accidental multiple mappings
+            if (event.action == KeyEvent.ACTION_UP) {
+                val codesMap = settings.keyCodes
+                
+                // Map: Logical (AA) -> Physical (HW)
+                codesMap[assignTargetCode] = keyCode
+                
+                settings.keyCodes = codesMap
+                adapter.updateCodes(codesMap)
+                
+                val targetName = getString(keyList.find { it.keyCode == assignTargetCode }?.nameResId ?: R.string.keymap)
+                Toast.makeText(requireContext(), getString(R.string.key_assigned, keyName, targetName), Toast.LENGTH_SHORT).show()
+                
+                assignDialog?.dismiss()
+            }
             return true
         }
 

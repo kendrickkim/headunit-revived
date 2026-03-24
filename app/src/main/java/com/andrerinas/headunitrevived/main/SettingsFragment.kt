@@ -1,9 +1,7 @@
 package com.andrerinas.headunitrevived.main
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -25,7 +23,6 @@ import com.andrerinas.headunitrevived.main.settings.SettingsAdapter
 import com.andrerinas.headunitrevived.utils.Settings
 import com.andrerinas.headunitrevived.utils.LocaleHelper
 import com.andrerinas.headunitrevived.BuildConfig
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -36,24 +33,6 @@ class SettingsFragment : Fragment() {
     private lateinit var settingsAdapter: SettingsAdapter
     private lateinit var toolbar: MaterialToolbar
     private var saveButton: MaterialButton? = null
-
-    private val bluetoothPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            showBluetoothDeviceSelector()
-        } else {
-            showBluetoothPermissionDeniedDialog()
-        }
-    }
-
-    private val bluetoothEnableLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
-            showBluetoothDeviceSelector()
-        }
-    }
 
     // Local state to hold changes before saving
     private var pendingMicSampleRate: Int? = null
@@ -73,9 +52,6 @@ class SettingsFragment : Fragment() {
     private var pendingUseAacAudio: Boolean? = null
     private var pendingMicInputSource: Int? = null
     private var pendingUseNativeSsl: Boolean? = null
-    private var pendingAutoStartBtName: String? = null
-    private var pendingAutoStartBtMac: String? = null
-    private var pendingAutoStartOnUsb: Boolean? = null
     private var pendingEnableRotary: Boolean? = null
     private var pendingShowFpsCounter: Boolean? = null
     private var pendingScreenOrientation: Settings.ScreenOrientation? = null
@@ -125,9 +101,6 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio = settings.useAacAudio
         pendingMicInputSource = settings.micInputSource
         pendingUseNativeSsl = settings.useNativeSsl
-        pendingAutoStartBtName = settings.autoStartBluetoothDeviceName
-        pendingAutoStartBtMac = settings.autoStartBluetoothDeviceMac
-        pendingAutoStartOnUsb = settings.autoStartOnUsb
         pendingEnableRotary = settings.enableRotary
         pendingShowFpsCounter = settings.showFpsCounter
         pendingScreenOrientation = settings.screenOrientation
@@ -244,9 +217,6 @@ class SettingsFragment : Fragment() {
         pendingUseAacAudio?.let { settings.useAacAudio = it }
         pendingMicInputSource?.let { settings.micInputSource = it }
         pendingUseNativeSsl?.let { settings.useNativeSsl = it }
-        pendingAutoStartBtName?.let { settings.autoStartBluetoothDeviceName = it }
-        pendingAutoStartBtMac?.let { settings.autoStartBluetoothDeviceMac = it }
-        pendingAutoStartOnUsb?.let { settings.autoStartOnUsb = it }
         pendingEnableRotary?.let { settings.enableRotary = it }
         pendingShowFpsCounter?.let { settings.showFpsCounter = it }
         pendingScreenOrientation?.let { settings.screenOrientation = it }
@@ -290,24 +260,6 @@ class SettingsFragment : Fragment() {
 
         Toast.makeText(context, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
 
-        // Check for Overlay permission if BT or USB Auto-start is configured
-        if ((!pendingAutoStartBtMac.isNullOrEmpty() || pendingAutoStartOnUsb == true) && Build.VERSION.SDK_INT >= 23) {
-            if (!android.provider.Settings.canDrawOverlays(requireContext())) {
-                MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                    .setTitle(R.string.overlay_permission_title)
-                    .setMessage(R.string.overlay_permission_description)
-                    .setPositiveButton(R.string.open_settings) { _, _ ->
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            android.net.Uri.parse("package:${requireContext().packageName}")
-                        )
-                        startActivity(intent)
-                    }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
-            }
-        }
-
         if (languageChanged) {
             requireActivity().recreate()
         }
@@ -332,8 +284,6 @@ class SettingsFragment : Fragment() {
                         pendingUseAacAudio != settings.useAacAudio ||
                         pendingMicInputSource != settings.micInputSource ||
                         pendingUseNativeSsl != settings.useNativeSsl ||
-                        pendingAutoStartBtMac != settings.autoStartBluetoothDeviceMac ||
-                        pendingAutoStartOnUsb != settings.autoStartOnUsb ||
                         pendingEnableRotary != settings.enableRotary ||
                         pendingShowFpsCounter != settings.showFpsCounter ||
                         pendingScreenOrientation != settings.screenOrientation ||
@@ -360,6 +310,7 @@ class SettingsFragment : Fragment() {
                           pendingEnableAudioSink != settings.enableAudioSink ||
                           pendingUseAacAudio != settings.useAacAudio ||
                           pendingUseNativeSsl != settings.useNativeSsl ||
+                          pendingEnableRotary != settings.enableRotary ||
                           pendingInsetLeft != settings.insetLeft ||
                           pendingInsetTop != settings.insetTop ||
                           pendingInsetRight != settings.insetRight ||
@@ -442,23 +393,13 @@ class SettingsFragment : Fragment() {
         ))
 
         items.add(SettingItem.SettingEntry(
-            stableId = "autoStartBt",
-            nameResId = R.string.auto_start_bt_label,
-            value = if (pendingAutoStartBtName.isNullOrEmpty()) getString(R.string.bt_device_not_set) else pendingAutoStartBtName!!,
+            stableId = "autoStartSettings",
+            nameResId = R.string.auto_start_settings,
+            value = getString(R.string.auto_start_settings_description),
             onClick = {
-                showBluetoothDeviceSelector()
-            }
-        ))
-
-        items.add(SettingItem.ToggleSettingEntry(
-            stableId = "autoStartUsb",
-            nameResId = R.string.auto_start_usb_label,
-            descriptionResId = R.string.auto_start_usb_description,
-            isChecked = pendingAutoStartOnUsb!!,
-            onCheckedChanged = { isChecked ->
-                pendingAutoStartOnUsb = isChecked
-                checkChanges()
-                updateSettingsList()
+                try {
+                    findNavController().navigate(R.id.action_settingsFragment_to_autoStartFragment)
+                } catch (e: Exception) { }
             }
         ))
 
@@ -1109,49 +1050,6 @@ class SettingsFragment : Fragment() {
             .show()
     }
 
-    private fun showBluetoothDeviceSelector() {
-        if (Build.VERSION.SDK_INT >= 31 && ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            bluetoothPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
-            return
-        }
-
-        val bluetoothManager = requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
-        val adapter = bluetoothManager.adapter
-
-        if (adapter == null || !adapter.isEnabled) {
-            val enableIntent = Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            bluetoothEnableLauncher.launch(enableIntent)
-            return
-        }
-
-        val bondedDevices = adapter.bondedDevices.toList()
-
-        if (bondedDevices.isEmpty()) {
-            Toast.makeText(requireContext(), "No paired Bluetooth devices found", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        val deviceNames = bondedDevices.map { it.name ?: "Unknown Device" }.toTypedArray()
-
-        MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-            .setTitle(R.string.select_bt_device)
-            .setItems(deviceNames) { _, which ->
-                val device = bondedDevices[which]
-                pendingAutoStartBtMac = device.address
-                pendingAutoStartBtName = device.name
-                checkChanges()
-                updateSettingsList()
-            }
-            .setNeutralButton(R.string.remove) { _, _ ->
-                pendingAutoStartBtMac = ""
-                pendingAutoStartBtName = ""
-                checkChanges()
-                updateSettingsList()
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
     override fun onResume() {
         super.onResume()
         // Refresh settings list when returning from sub-screens (e.g. AutoConnectFragment, DarkModeFragment)
@@ -1184,21 +1082,6 @@ class SettingsFragment : Fragment() {
         } else {
             enabledNames.joinToString(" → ")
         }
-    }
-
-    private fun showBluetoothPermissionDeniedDialog() {
-        MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-            .setTitle(R.string.bt_permission_denied_title)
-            .setMessage(R.string.bt_permission_denied_message)
-            .setPositiveButton(R.string.open_settings) { _, _ ->
-                val intent = Intent(
-                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    android.net.Uri.parse("package:${requireContext().packageName}")
-                )
-                startActivity(intent)
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
     }
 
     private fun showNumericInputDialog(

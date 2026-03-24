@@ -375,12 +375,17 @@ class DarkModeFragment : Fragment(), SensorEventListener {
                 else -> R.string.use_gradient_background_description_off
             }
 
+            val gradientName = if (pendingAppTheme == Settings.AppTheme.CLEAR) {
+                getString(R.string.use_white_background)
+            } else null
+
             items.add(SettingItem.ToggleSettingEntry(
                 stableId = "useGradientBackground",
                 nameResId = R.string.use_gradient_background,
                 descriptionResId = descResId,
                 isChecked = pendingUseGradientBackground!!,
                 isEnabled = gradientEnabled,
+                nameOverride = gradientName,
                 onCheckedChanged = { isChecked ->
                     pendingUseGradientBackground = isChecked
                     checkChanges()

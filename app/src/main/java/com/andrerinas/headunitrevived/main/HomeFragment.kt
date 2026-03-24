@@ -225,10 +225,19 @@ class HomeFragment : Fragment() {
 
     private fun setupListeners() {
         exitButton.setOnClickListener {
-            val stopServiceIntent = Intent(requireContext(), AapService::class.java).apply {
-                action = AapService.ACTION_STOP_SERVICE
+            val appSettings = App.provide(requireContext()).settings
+            if (appSettings.autoStartOnUsb && appSettings.reopenOnReconnection) {
+                // Keep the service alive so the runtime UsbReceiver can detect reconnections
+                val disconnectIntent = Intent(requireContext(), AapService::class.java).apply {
+                    action = AapService.ACTION_DISCONNECT
+                }
+                ContextCompat.startForegroundService(requireContext(), disconnectIntent)
+            } else {
+                val stopServiceIntent = Intent(requireContext(), AapService::class.java).apply {
+                    action = AapService.ACTION_STOP_SERVICE
+                }
+                ContextCompat.startForegroundService(requireContext(), stopServiceIntent)
             }
-            ContextCompat.startForegroundService(requireContext(), stopServiceIntent)
             requireActivity().finishAffinity()
         }
 

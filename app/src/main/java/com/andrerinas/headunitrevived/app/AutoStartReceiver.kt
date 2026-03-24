@@ -13,8 +13,8 @@ class AutoStartReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-        val settings = Settings(context)
-        val targetMac = settings.autoStartBluetoothDeviceMac
+        // Use device-protected storage so the BT MAC is readable during locked boot
+        val targetMac = Settings.getAutoStartBtMac(context)
 
         if (targetMac.isEmpty()) return
 
@@ -42,6 +42,7 @@ class AutoStartReceiver : BroadcastReceiver() {
                 // Also attempt to start the UI (might be blocked on Android 10+ without special permission)
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(MainActivity.EXTRA_LAUNCH_SOURCE, "Bluetooth auto-start")
                 }
                 try {
                     context.startActivity(launchIntent)
