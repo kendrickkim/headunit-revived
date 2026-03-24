@@ -194,6 +194,11 @@ class AutoStartFragment : Fragment() {
 
         items.add(SettingItem.CategoryHeader("autoStart", R.string.auto_start_settings))
 
+        items.add(SettingItem.InfoBanner(
+            stableId = "autoStartOemWarning",
+            textResId = R.string.auto_start_oem_warning
+        ))
+
         items.add(SettingItem.ToggleSettingEntry(
             stableId = "autoStartOnBoot",
             nameResId = R.string.auto_start_on_boot_label,
