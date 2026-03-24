@@ -321,7 +321,7 @@ internal class AapControlService(
         } else {
             AppLog.w("Audio focus request NOT granted immediately ($result). Sending LOSS.")
             val msg = AapMessage(channel, Control.ControlMsgType.MESSAGE_AUDIO_FOCUS_NOTIFICATION_VALUE,
-                Control.AudioFocusNotification.newBuilder().setFocusState(Control.AudioFocusNotification.AudioFocusStateType.STATE_LOSS).build())
+                Control.AudioFocusNotification.newBuilder().setFocusState(Control.AudioFocusNotification.AudioFocusStateType.STATE_LOSS_TRANSIENT).build())
             aapTransport.send(msg)
             aapTransport.onAudioFocusStateChanged?.invoke(false)
         }

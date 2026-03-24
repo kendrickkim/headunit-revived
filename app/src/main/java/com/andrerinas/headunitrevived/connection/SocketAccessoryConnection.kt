@@ -12,6 +12,7 @@ import java.io.OutputStream
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketTimeoutException
 
 class SocketAccessoryConnection(private val ip: String, private val port: Int, private val context: Context) : AccessoryConnection {
     private var output: OutputStream? = null
@@ -51,6 +52,11 @@ class SocketAccessoryConnection(private val ip: String, private val port: Int, p
             } else {
                 inp.read(buf, 0, length)
             }
+        } catch (e: SocketTimeoutException) {
+            // Timeout is NOT a fatal error — the connection is still alive.
+            // Return 0 so the read loop retries instead of killing the transport.
+            AppLog.d("Socket read timeout (${timeout}ms) — connection still alive, retrying")
+            0
         } catch (e: IOException) {
             -1
         }

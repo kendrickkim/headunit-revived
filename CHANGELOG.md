@@ -1,4 +1,13 @@
 # Changelog
+### v.2.1.0-beta2
+- Fixed: Exit Intent not working. Thanks to benyjr
+- Added: Rotary Support
+- Fixed: Crash in Android < 5
+- Fixed: Double Button fire and enter/knob click as dpad center mapping
+- Enhanced: Android Auto start for selfmode now tries all methods always and catches errors
+- Fixed: Auto start, connection lost overlay, toasts and API17 Bluetooth crash. thanks to @andrecuellar
+- Added: Exit App on disconnect feature/setting thanks to @Tilak-03
+
 ### v.2.1.0-beta1
 - Fixed: Exit Intent not working. Thanks to benyjr
 - Added: Rotary Support
