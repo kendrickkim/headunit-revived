@@ -997,11 +997,11 @@ class AapService : Service(), UsbReceiver.Listener {
         }
 
         try {
-            AppLog.i("Launching AA Wireless Startup...")
+            AppLog.i("Launching AA Wireless Startup via Activity...")
             startActivity(magicalIntent)
         } catch (e: Exception) {
-            if (e is android.content.ActivityNotFoundException || e is SecurityException) {
-                AppLog.w("Activity launch failed (${e.message}). Trying hybrid broadcast fallback for AA 16.4+.")
+            AppLog.w("Activity launch failed (${e.message}). Attempting Broadcast fallback...")
+            try {
                 val receiverIntent = Intent().apply {
                     setClassName(
                         "com.google.android.projection.gearhead",
@@ -1013,8 +1013,9 @@ class AapService : Service(), UsbReceiver.Listener {
                     addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
                 }
                 sendBroadcast(receiverIntent)
-            } else {
-                AppLog.e("Failed to launch AA", e)
+                AppLog.i("Broadcast fallback sent successfully.")
+            } catch (e2: Exception) {
+                AppLog.e("Both Activity and Broadcast triggers failed", e2)
                 Toast.makeText(this, getString(R.string.failed_start_android_auto), Toast.LENGTH_SHORT).show()
             }
         }
