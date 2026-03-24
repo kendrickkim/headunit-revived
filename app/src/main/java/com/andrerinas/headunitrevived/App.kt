@@ -36,6 +36,10 @@ class App : Application() {
         val settings = Settings(this) // Create a Settings instance
         AppLog.init(settings) // Initialize AppLog with settings for conditional logging
 
+        // One-time migration: sync autoStartOnBoot to device-protected storage
+        // so that BootCompleteReceiver can read it during locked boot (before user unlock)
+        Settings.syncAutoStartOnBootToDeviceStorage(this, settings.autoStartOnBoot)
+
         // Apply app theme
         if (AppThemeManager.isStaticMode(settings.appTheme)) {
             AppThemeManager.applyStaticTheme(settings)
