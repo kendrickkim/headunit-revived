@@ -83,6 +83,8 @@ class SettingsFragment : Fragment() {
     
     // Flag to determine if the projection should stretch to fill the screen
     private var pendingStretchToFill: Boolean? = null
+
+    private var pendingKillOnDisconnect: Boolean? = null
     
     // Custom Insets
     private var pendingInsetLeft: Int? = null
@@ -135,6 +137,8 @@ class SettingsFragment : Fragment() {
         
         // Initialize local state for stretch to fill
         pendingStretchToFill = settings.stretchToFill
+
+        pendingKillOnDisconnect = settings.killOnDisconnect
         
         pendingInsetLeft = settings.insetLeft
         pendingInsetTop = settings.insetTop
@@ -259,6 +263,8 @@ class SettingsFragment : Fragment() {
 
         // Save the stretch to fill preference
         pendingStretchToFill?.let { settings.stretchToFill = it }
+
+        pendingKillOnDisconnect?.let { settings.killOnDisconnect = it }
         
         pendingInsetLeft?.let { settings.insetLeft = it }
         pendingInsetTop?.let { settings.insetTop = it }
@@ -345,7 +351,8 @@ class SettingsFragment : Fragment() {
                         pendingInsetBottom != settings.insetBottom ||
                         pendingMediaVolumeOffset != settings.mediaVolumeOffset ||
                         pendingAssistantVolumeOffset != settings.assistantVolumeOffset ||
-                        pendingNavigationVolumeOffset != settings.navigationVolumeOffset
+                        pendingNavigationVolumeOffset != settings.navigationVolumeOffset ||
+                        pendingKillOnDisconnect != settings.killOnDisconnect
 
         hasChanges = anyChange
 
@@ -457,6 +464,18 @@ class SettingsFragment : Fragment() {
             isChecked = pendingAutoStartOnUsb!!,
             onCheckedChanged = { isChecked ->
                 pendingAutoStartOnUsb = isChecked
+                checkChanges()
+                updateSettingsList()
+            }
+        ))
+
+        items.add(SettingItem.ToggleSettingEntry(
+            stableId = "killOnDisconnect",
+            nameResId = R.string.kill_on_disconnect,
+            descriptionResId = R.string.kill_on_disconnect_description,
+            isChecked = pendingKillOnDisconnect!!,
+            onCheckedChanged = { isChecked ->
+                pendingKillOnDisconnect = isChecked
                 checkChanges()
                 updateSettingsList()
             }
