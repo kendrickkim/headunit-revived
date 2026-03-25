@@ -369,6 +369,8 @@
     <string name="kill_on_disconnect_warning_title">Ostrzeżenie</string>
     <string name="kill_on_disconnect_warning">Następujące ustawienia ponownego łączenia będą kolidować z zamykaniem aplikacji po rozłączeniu:\n\n%1$s\n\nUstawienia połączenia początkowego (automatyczne łączenie, automatyczne uruchamianie) będą nadal działać po włączeniu radia. Jednak po pierwszym rozłączeniu aplikacja zostanie natychmiast zamknięta zamiast próbować się ponownie połączyć.\n\nUwaga: Niektóre radia aftermarket nigdy się całkowicie nie wyłączają — zamiast tego hibernują, podobnie jak telefon, który blokuje ekran, ale nigdy się naprawdę nie wyłącza. Z tą opcją aplikacja zamknie się po pierwszym rozłączeniu i może nie otworzyć się automatycznie przy następnym uruchomieniu.\n\nCzy chcesz wyłączyć wymienione powyżej ustawienia ponownego łączenia?</string>
     <string name="kill_on_disconnect_disable_and_enable">Wyłącz i włącz</string>
+    <string name="kill_on_disconnect_enable_anyway">Włącz mimo to</string>
+    <string name="kill_on_disconnect_boot_warning">Masz włączone \"Uruchom przy starcie\". Jeśli aplikacja zamknie się po rozłączeniu, a to urządzenie przejdzie w tryb hibernacji zamiast się wyłączyć, aplikacja może nie otworzyć się automatycznie przy następnym uruchomieniu, ponieważ nie zostanie wygenerowane zdarzenie rozruchu — urządzenie po prostu budzi się z trybu uśpienia.</string>
     <string name="kill_on_disconnect_conflicts_disabled">Kolidujące ustawienia zostały wyłączone</string>
     <string name="wifi_disabled_info">Info: Wi-Fi jest wyłączone.</string>
 </resources>

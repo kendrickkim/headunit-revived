@@ -369,6 +369,8 @@
     <string name="kill_on_disconnect_warning_title">Advertencia</string>
     <string name="kill_on_disconnect_warning">Los siguientes ajustes de reconexión entrarán en conflicto con el cierre de la app al desconectar:\n\n%1$s\n\nLos ajustes de conexión inicial (conexión automática, inicio automático) seguirán funcionando cuando la radio encienda. Sin embargo, tras la primera desconexión la app se cerrará inmediatamente en lugar de intentar reconectar.\n\nNota: Algunas radios aftermarket nunca se apagan completamente, solo hibernan, similar a un teléfono que bloquea la pantalla pero nunca se apaga realmente. Con esta opción activada, la app se cerrará tras la primera desconexión y podría no reabrirse automáticamente en el siguiente encendido.\n\n¿Deseas desactivar los ajustes de reconexión mencionados?</string>
     <string name="kill_on_disconnect_disable_and_enable">Desactivar y activar</string>
+    <string name="kill_on_disconnect_enable_anyway">Activar de todos modos</string>
+    <string name="kill_on_disconnect_boot_warning">Tienes \"Iniciar al arrancar\" activado. Si la app se cierra al desconectar y este dispositivo hiberna en lugar de apagarse, la app podría no reabrirse automáticamente en el siguiente encendido porque no se genera un evento de arranque — el dispositivo simplemente despierta del modo de reposo.</string>
     <string name="kill_on_disconnect_conflicts_disabled">Los ajustes en conflicto han sido desactivados</string>
     <string name="wifi_disabled_info">Info: El Wi-Fi está desactivado.</string>
 </resources>

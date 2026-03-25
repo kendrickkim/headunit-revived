@@ -368,6 +368,8 @@
     <string name="kill_on_disconnect_warning_title">Figyelmeztetés</string>
     <string name="kill_on_disconnect_warning">A következő újracsatlakozási beállítások ütköznek az alkalmazás leállításával leválasztáskor:\n\n%1$s\n\nA kezdeti csatlakozási beállítások (automatikus csatlakozás, automatikus indítás) továbbra is működnek a fejegység bekapcsolásakor. Az első leválasztás után azonban az alkalmazás azonnal bezárul az újracsatlakozás megkísérlése helyett.\n\nMegjegyzés: Egyes utólagos fejegységek soha nem kapcsolnak ki teljesen — ehelyett hibernálnak, hasonlóan egy telefonhoz, amely lezárja a képernyőjét, de soha nem kapcsol ki ténylegesen. Ezzel az opcióval az alkalmazás az első leválasztás után bezárul, és a következő indítási ciklusban nem biztos, hogy automatikusan újranyílik.\n\nSzeretné letiltani a fent felsorolt újracsatlakozási beállításokat?</string>
     <string name="kill_on_disconnect_disable_and_enable">Letiltás és engedélyezés</string>
+    <string name="kill_on_disconnect_enable_anyway">Engedélyezés mindenképp</string>
+    <string name="kill_on_disconnect_boot_warning">A \"Indítás rendszerindításkor\" be van kapcsolva. Ha az alkalmazás bezárul lecsatlakozáskor és ez az eszköz hibernálódik kikapcsolás helyett, az alkalmazás nem feltétlenül nyílik meg automatikusan a következő indításkor, mert nem jön létre rendszerindítási esemény — az eszköz egyszerűen felébred az alvó módból.</string>
     <string name="kill_on_disconnect_conflicts_disabled">Az ütköző beállítások letiltásra kerültek</string>
     <string name="wifi_disabled_info">Infó: A Wi-Fi ki van kapcsolva.</string>
 </resources>
