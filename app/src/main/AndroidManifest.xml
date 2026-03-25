@@ -63,6 +63,7 @@
         android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/title"
+        android:supportsRtl="true"
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity

@@ -43,7 +43,7 @@
     <string name="use_gradient_background_description_off_auto">يتم استخدام الخلفية الكلاسيكية للتطبيق. لا ينطبق على وضع الداكن المتطرف</string>
     <string name="category_dark_mode">الوضع الداكن</string>
     <string name="dark_mode_settings">إعدادات الوضع الداكن</string>
-    <string name="app_theme_short">App</string>
+    <string name="app_theme_short">التطبيق</string>
     <string name="night_mode_short">Android Auto</string>
     <string name="aa_monochrome">جعل Android Auto أحادي اللون</string>
     <string name="aa_monochrome_description">يقلل ألوان Android Auto للقيادة الليلية. يتطلب وضع عرض GLES. يسري فقط عند تفعيل الوضع الداكن</string>
@@ -90,8 +90,8 @@
     <string name="margin_right">يمين</string>
     <string name="margin_bottom">أسفل</string>
 
-    <string name="start_in_fullscreen_mode">البدء في وضع ملء الشاشة</string>
-    <string name="start_in_fullscreen_mode_description">تبديل وضع ملء الشاشة. يلزم إعادة تشغيل التطبيق لتطبيق التغييرات.</string>
+    <string name="start_in_fullscreen_mode">وضع الشاشة</string>
+    <string name="start_in_fullscreen_mode_description">اختر كيفية التعامل مع أشرطة النظام (الحالة والتنقل).</string>
 
     <string name="usb_status">حالة USB: %s</string>
     <string name="projection_status">حالة الإسقاط: %s</string>
@@ -314,15 +314,15 @@
     <string name="setup_widescreen_detected">تم اكتشاف شاشة عريضة.</string>
     <string name="auto_optimize">تحسين الإعدادات تلقائياً</string>
     <string name="auto_optimize_desc">قم بتشغيل فحص النظام للعثور على أفضل الإعدادات لجهازك.</string>
-    <string name="fullscreen_none">Normal (All bars visible)</string>
-    <string name="fullscreen_immersive">Immersive (All bars hidden)</string>
-    <string name="fullscreen_status_only">Hide status bar only</string>
-    <string name="log_level">Log Level</string>
-    <string name="log_level_description">Choose the detail level of log output for debugging.</string>
-    <string name="start_log_capture">Start log capture</string>
-    <string name="start_log_capture_description">Begins recording system logs to a file.</string>
-    <string name="stop_log_capture">Stop log capture</string>
-    <string name="stop_log_capture_description">Stops recording and saves the log file.</string>
+    <string name="fullscreen_none">عادي (جميع الأشرطة مرئية)</string>
+    <string name="fullscreen_immersive">غامر (جميع الأشرطة مخفية)</string>
+    <string name="fullscreen_status_only">إخفاء شريط الحالة فقط</string>
+    <string name="log_level">مستوى السجل</string>
+    <string name="log_level_description">اختر مستوى تفصيل مخرجات السجل للتصحيح.</string>
+    <string name="start_log_capture">بدء التقاط السجل</string>
+    <string name="start_log_capture_description">يبدأ تسجيل سجلات النظام في ملف.</string>
+    <string name="stop_log_capture">إيقاف التقاط السجل</string>
+    <string name="stop_log_capture_description">يوقف التسجيل ويحفظ ملف السجل.</string>
 
     <!-- Navigation notifications -->
     <string name="show_navigation_notifications">إشعارات الملاحة</string>
