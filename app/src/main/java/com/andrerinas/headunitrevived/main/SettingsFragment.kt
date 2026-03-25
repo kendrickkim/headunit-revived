@@ -454,10 +454,13 @@ class SettingsFragment : Fragment() {
         items.add(SettingItem.CategoryHeader("darkMode", R.string.category_dark_mode))
 
         val appThemeTitles = resources.getStringArray(R.array.app_theme)
+        val nightModeTitles = resources.getStringArray(R.array.night_mode)
+        val darkModeValue = "${getString(R.string.app_theme_short)}: ${appThemeTitles[settings.appTheme.value]} · " +
+                "${getString(R.string.night_mode_short)}: ${nightModeTitles[settings.nightMode.value]}"
         items.add(SettingItem.SettingEntry(
             stableId = "darkModeSettings",
             nameResId = R.string.dark_mode_settings,
-            value = appThemeTitles[settings.appTheme.value],
+            value = darkModeValue,
             onClick = {
                 try {
                     findNavController().navigate(R.id.action_settingsFragment_to_darkModeFragment)

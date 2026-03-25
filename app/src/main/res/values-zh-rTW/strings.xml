@@ -42,6 +42,8 @@
     <string name="use_gradient_background_description_off_auto">正在使用應用程式的傳統背景。不適用於極致深色模式</string>
     <string name="category_dark_mode">深色模式</string>
     <string name="dark_mode_settings">深色模式設定</string>
+    <string name="app_theme_short">App</string>
+    <string name="night_mode_short">AA</string>
     <string name="aa_monochrome">將 Android Auto 設為單色</string>
     <string name="aa_monochrome_description">減少 Android Auto 的色彩以適應夜間駕駛。需要 GLES 檢視模式。僅在深色模式啟用時生效</string>
     <string name="aa_desaturation">去飽和度</string>

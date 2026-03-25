@@ -331,27 +331,26 @@ class HomeFragment : Fragment() {
         val nightModeFlags = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         val isLightMode = nightModeFlags != Configuration.UI_MODE_NIGHT_YES
 
+        val labelViews = listOf(self_mode_text, wifi_text_view,
+            view?.findViewById<TextView>(R.id.usb_text),
+            view?.findViewById<TextView>(R.id.settings_text))
+
         if (appSettings.useGradientBackground && isLightMode) {
             val darkColor = Color.parseColor("#1a1a1a")
-            val textViews = listOf(self_mode_text, wifi_text_view,
-                view?.findViewById<TextView>(R.id.usb_text),
-                view?.findViewById<TextView>(R.id.settings_text),
-                exitButton)
-            textViews.filterNotNull().forEach { tv ->
+            labelViews.filterNotNull().forEach { tv ->
                 tv.setTextColor(darkColor)
                 tv.setShadowLayer(2f, 0f, 0f, Color.WHITE)
             }
         } else {
             val lightColor = Color.parseColor("#f7f7f7")
-            val textViews = listOf(self_mode_text, wifi_text_view,
-                view?.findViewById<TextView>(R.id.usb_text),
-                view?.findViewById<TextView>(R.id.settings_text),
-                exitButton)
-            textViews.filterNotNull().forEach { tv ->
+            labelViews.filterNotNull().forEach { tv ->
                 tv.setTextColor(lightColor)
                 tv.setShadowLayer(0f, 0f, 0f, Color.TRANSPARENT)
             }
         }
+
+        // Exit button always has a dark background, so text must always be white
+        exitButton.setTextColor(Color.WHITE)
     }
 
     companion object {

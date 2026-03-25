@@ -43,6 +43,8 @@
     <string name="use_gradient_background_description_off_auto">Se está usando el fondo clásico de la app. No aplica al modo Oscuro extremo</string>
     <string name="category_dark_mode">Modo oscuro</string>
     <string name="dark_mode_settings">Ajustes del modo oscuro</string>
+    <string name="app_theme_short">App</string>
+    <string name="night_mode_short">AA</string>
     <string name="aa_monochrome">Android Auto monocromático</string>
     <string name="aa_monochrome_description">Reduce los colores de Android Auto para la conducción nocturna. Requiere el modo de vista GLES. Solo tiene efecto cuando el modo oscuro está activado</string>
     <string name="aa_desaturation">Desaturación</string>
