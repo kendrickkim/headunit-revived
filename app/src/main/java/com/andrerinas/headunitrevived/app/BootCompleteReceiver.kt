@@ -16,16 +16,27 @@ class BootCompleteReceiver : BroadcastReceiver() {
 
         AppLog.i("Boot auto-start: received action=$action")
 
-        if (!Settings.isAutoStartOnBootEnabled(context)) {
-            AppLog.i("Boot auto-start: disabled, skipping")
-            return
-        }
+        val bootEnabled = Settings.isAutoStartOnBootEnabled(context)
+        val usbEnabled = Settings.isAutoStartOnUsbEnabled(context)
 
-        AppLog.i("Boot auto-start: starting AapService with BOOT_START (trigger=$action)")
-        val serviceIntent = Intent(context, AapService::class.java).apply {
-            putExtra(EXTRA_BOOT_START, true)
+        if (bootEnabled) {
+            AppLog.i("Boot auto-start: starting AapService with BOOT_START (trigger=$action)")
+            val serviceIntent = Intent(context, AapService::class.java).apply {
+                putExtra(EXTRA_BOOT_START, true)
+            }
+            ContextCompat.startForegroundService(context, serviceIntent)
+        } else if (usbEnabled) {
+            // On hibernating head units, USB_DEVICE_ATTACHED may not fire after wake.
+            // Start the service in the background so it can register its UsbReceiver
+            // and check for already-connected USB devices.
+            AppLog.i("Boot auto-start: USB auto-start enabled, starting AapService to check USB (trigger=$action)")
+            val serviceIntent = Intent(context, AapService::class.java).apply {
+                this.action = AapService.ACTION_CHECK_USB
+            }
+            ContextCompat.startForegroundService(context, serviceIntent)
+        } else {
+            AppLog.i("Boot auto-start: disabled, skipping")
         }
-        ContextCompat.startForegroundService(context, serviceIntent)
     }
 
     companion object {
