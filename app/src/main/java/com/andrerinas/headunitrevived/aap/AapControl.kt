@@ -288,6 +288,11 @@ internal class AapControlService(
     private fun audioFocusRequest(notification: Control.AudioFocusRequestNotification, channel: Int): Int {
         AppLog.i("Audio Focus Request: ${notification.request}")
 
+        if (notification.request?.number == 4) {
+            // Sync MediaSession
+            aapTransport.onAudioFocusStateChanged?.invoke(false)
+        }
+
         val result = aapAudio.requestFocusChange(AudioConfigs.stream(channel), notification.request.number, AudioManager.OnAudioFocusChangeListener {
             val response = Control.AudioFocusNotification.newBuilder()
 
