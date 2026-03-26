@@ -361,7 +361,7 @@
 
     <string name="category_input">Configurações de entrada</string>
     <string name="enable_rotary">Ativar controle giratório (Rotary)</string>
-    <string name="enable_rotary_description">Adiciona suporte para botões e knobs. Desative isso se sua tela sensível ao toque não estiver funcionando corretamente.</string>
+    <string name="enable_rotary_description">Adiciona suporte para botões e controles giratórios. Desative isso se sua tela sensível ao toque não estiver funcionando corretamente.</string>
     <string name="kill_on_disconnect">Fechar app ao desconectar</string>
     <string name="kill_on_disconnect_description">Fechar automaticamente o aplicativo quando o Android Auto desconectar</string>
     <string name="kill_on_disconnect_warning_title">Aviso</string>
