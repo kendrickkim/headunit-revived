@@ -17,6 +17,7 @@ class BootCompleteReceiver : BroadcastReceiver() {
         AppLog.i("Boot auto-start: received action=$action")
 
         val bootEnabled = Settings.isAutoStartOnBootEnabled(context)
+        val screenOnEnabled = Settings.isAutoStartOnScreenOnEnabled(context)
         val usbEnabled = Settings.isAutoStartOnUsbEnabled(context)
 
         if (bootEnabled) {
@@ -24,6 +25,13 @@ class BootCompleteReceiver : BroadcastReceiver() {
             val serviceIntent = Intent(context, AapService::class.java).apply {
                 putExtra(EXTRA_BOOT_START, true)
             }
+            ContextCompat.startForegroundService(context, serviceIntent)
+        } else if (screenOnEnabled) {
+            // "Start on screen on" needs the service alive to register its dynamic
+            // SCREEN_ON receiver. On Quick Boot devices this is a real reboot, so
+            // the service must be started after boot to listen for future SCREEN_ON.
+            AppLog.i("Boot auto-start: screen-on auto-start enabled, starting AapService to register SCREEN_ON receiver (trigger=$action)")
+            val serviceIntent = Intent(context, AapService::class.java)
             ContextCompat.startForegroundService(context, serviceIntent)
         } else if (usbEnabled) {
             // On hibernating head units, USB_DEVICE_ATTACHED may not fire after wake.

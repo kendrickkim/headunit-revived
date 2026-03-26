@@ -85,6 +85,16 @@ class HomeFragment : Fragment() {
 
         val appSettings = App.provide(requireContext()).settings
 
+        // Ensure the foreground service is running when wake-detection settings
+        // are enabled. The service must be alive to catch SCREEN_ON broadcasts
+        // (which can only be received by dynamically registered receivers).
+        // Without this, turning off the car and back on won't auto-start the app
+        // because no one is listening for SCREEN_ON.
+        if (appSettings.autoStartOnScreenOn || appSettings.autoStartOnBoot) {
+            ContextCompat.startForegroundService(requireContext(),
+                Intent(requireContext(), AapService::class.java))
+        }
+
         // Execute auto-connect methods in user-defined priority order
         for (methodId in appSettings.autoConnectPriorityOrder) {
             if (commManager.isConnected) break

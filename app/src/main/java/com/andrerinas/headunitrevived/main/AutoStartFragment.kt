@@ -20,6 +20,7 @@ import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.main.settings.SettingItem
 import com.andrerinas.headunitrevived.main.settings.SettingsAdapter
+import com.andrerinas.headunitrevived.aap.AapService
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
 import com.google.android.material.appbar.MaterialToolbar
@@ -146,7 +147,10 @@ class AutoStartFragment : Fragment() {
             settings.autoStartOnBoot = it
             Settings.syncAutoStartOnBootToDeviceStorage(requireContext(), it)
         }
-        pendingAutoStartOnScreenOn?.let { settings.autoStartOnScreenOn = it }
+        pendingAutoStartOnScreenOn?.let {
+            settings.autoStartOnScreenOn = it
+            Settings.syncAutoStartOnScreenOnToDeviceStorage(requireContext(), it)
+        }
         pendingAutoStartOnUsb?.let {
             settings.autoStartOnUsb = it
             Settings.syncAutoStartOnUsbToDeviceStorage(requireContext(), it)
@@ -174,6 +178,13 @@ class AutoStartFragment : Fragment() {
                     .setNegativeButton(R.string.cancel, null)
                     .show()
             }
+        }
+
+        // Start the foreground service immediately when wake-detection settings
+        // are enabled so it can register the dynamic SCREEN_ON receiver.
+        if (settings.autoStartOnScreenOn || settings.autoStartOnBoot) {
+            ContextCompat.startForegroundService(requireContext(),
+                Intent(requireContext(), AapService::class.java))
         }
 
         hasChanges = false
@@ -279,6 +290,7 @@ class AutoStartFragment : Fragment() {
             }
             if (settings.autoStartOnScreenOn) {
                 settings.autoStartOnScreenOn = false
+                Settings.syncAutoStartOnScreenOnToDeviceStorage(requireContext(), false)
                 pendingAutoStartOnScreenOn = false
                 disabled = true
             }

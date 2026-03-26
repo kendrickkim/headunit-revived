@@ -181,7 +181,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="16dp"
         android:text="@string/exit"
-        android:backgroundTint="@color/material_grey_700"
+        app:backgroundTint="@color/material_grey_700"
         android:textColor="@android:color/white"
         app:cornerRadius="8dp" />
 
