@@ -289,7 +289,7 @@ internal class AapControlService(
         AppLog.i("Audio Focus Request: ${notification.request}")
 
         // Always respond with the mapped focus state to AA — never deny.
-        // This mirrors HUR behavior: the phone must always believe the headunit
+        // the phone must always believe the headunit
         // has audio focus, otherwise it keeps audio output on the phone itself.
         val mappedState = focusResponse[notification.request]
         if (mappedState != null) {

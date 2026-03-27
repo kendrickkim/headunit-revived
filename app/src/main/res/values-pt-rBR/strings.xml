@@ -258,7 +258,7 @@
     <string name="scanning_network">Escaneando rede…</string>
     <string name="found_connecting">Encontrado %s, conectando…</string>
     <string name="no_devices_found">Nenhum dispositivo encontrado</string>
-    <string name="unsaved_changes">Alterações nicht salvas</string>
+    <string name="unsaved_changes">Alterações não salvas</string>
     <string name="unsaved_changes_message">Você tem alterações não salvas. Deseja descartá-las?</string>
     <string name="discard">Descartar</string>
     <string name="stopping_service">Parando serviço para aplicar alterações…</string>
@@ -289,7 +289,7 @@
     <string name="shortcut_disconnect_title">Desconectar</string>
     <string name="shortcut_disconnect_desc">Encerrar sessão atual</string>
     <string name="shortcut_exit_title">Sair do aplicativo</string>
-    <string name="shortcut_exit_desc">Parar todos os servicios e fechar o aplicativo</string>
+    <string name="shortcut_exit_desc">Parar todos os serviços e fechar o aplicativo</string>
     <string name="shortcut_night_mode_auto_title">Modo: Auto</string>
     <string name="shortcut_night_mode_auto_desc">Restaurar modo noturno automático</string>
     <string name="shortcut_night_mode_day_title">Modo: Dia</string>
@@ -361,7 +361,7 @@
 
     <string name="category_input">Configurações de entrada</string>
     <string name="enable_rotary">Ativar controle giratório (Rotary)</string>
-    <string name="enable_rotary_description">Anuncia suporte para botões e rodas giratórias físicas. Desative isso se sua tela sensível au toque não estiver funcionando corretamente.</string>
+    <string name="enable_rotary_description">Adiciona suporte para botões e controles giratórios. Desative isso se sua tela sensível ao toque não estiver funcionando corretamente.</string>
     <string name="kill_on_disconnect">Fechar app ao desconectar</string>
     <string name="kill_on_disconnect_description">Fechar automaticamente o aplicativo quando o Android Auto desconectar</string>
     <string name="kill_on_disconnect_warning_title">Aviso</string>
