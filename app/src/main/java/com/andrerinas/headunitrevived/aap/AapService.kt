@@ -55,6 +55,7 @@ import android.provider.Settings as AndroidSettings
 import android.view.View
 import android.view.WindowManager
 import com.andrerinas.headunitrevived.app.UsbAttachedActivity
+import android.media.AudioManager
 import com.andrerinas.headunitrevived.utils.HotspotManager
 import java.net.ServerSocket
 
@@ -86,6 +87,7 @@ class AapService : Service(), UsbReceiver.Listener {
     private var wirelessServer: WirelessServer? = null
     private var networkDiscovery: NetworkDiscovery? = null
     private var mediaSession: MediaSessionCompat? = null
+    private var permanentFocusRequest: android.media.AudioFocusRequest? = null
     private var lastMediaButtonClickTime = 0L
 
     /**
@@ -210,6 +212,35 @@ class AapService : Service(), UsbReceiver.Listener {
         initWifiMode()
         checkAlreadyConnectedUsb()
         registerNetworkMonitor()
+
+        // Grab permanent AUDIOFOCUS_GAIN at service start (like HUR).
+        // This ensures the headunit owns system audio focus before any AA connection,
+        // preventing other apps from stealing it and causing AA to keep audio on the phone.
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val attrs = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+            permanentFocusRequest = android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(attrs)
+                .setWillPauseWhenDucked(false)
+                .setOnAudioFocusChangeListener(AudioManager.OnAudioFocusChangeListener { focusChange ->
+                    AppLog.d("Permanent audio focus changed: $focusChange")
+                })
+                .build()
+            audioManager.requestAudioFocus(permanentFocusRequest!!)
+        } else {
+            @Suppress("DEPRECATION")
+            audioManager.requestAudioFocus(
+                AudioManager.OnAudioFocusChangeListener { focusChange ->
+                    AppLog.d("Permanent audio focus changed: $focusChange")
+                },
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN
+            )
+        }
+        AppLog.i("Grabbed permanent AUDIOFOCUS_GAIN at service start")
     }
 
     /** Enables Android Automotive UI mode so the system uses car-optimised layouts. */

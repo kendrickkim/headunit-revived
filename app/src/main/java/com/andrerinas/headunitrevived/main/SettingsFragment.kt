@@ -403,8 +403,8 @@ class SettingsFragment : Fragment() {
             }
         ))
 
-        // Auto-Enable Hotspot Toggle (only visible in Helper Mode)
-        if (pendingWifiConnectionMode == 2) {
+        // Auto-Enable Hotspot Toggle (only visible if not in Manual Mode)
+        if (pendingWifiConnectionMode != 0) {
             items.add(SettingItem.ToggleSettingEntry(
                 stableId = "autoEnableHotspot",
                 nameResId = R.string.auto_enable_hotspot,

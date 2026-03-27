@@ -370,7 +370,7 @@
     <string name="kill_on_disconnect_conflicts_disabled">Конфликтующие настройки были отключены</string>
     <string name="wifi_disabled_info">Инфо: Wi-Fi отключен.</string>
     <string name="auto_enable_hotspot">Автоматически включать точку доступа</string>
-    <string name="auto_enable_hotspot_description">Автоматически включает Wi-Fi точку доступа на этом устройстве. (Требуется режим Helper)</string>
+    <string name="auto_enable_hotspot_description">Автоматически включает Wi-Fi точку доступа на этом устройстве. (Будет работать не на всех устройствах)</string>
     <string name="hotspot_warning_title">Экспериментальная функция</string>
     <string name="hotspot_warning_message">Эта функция использует рефлексию и может не работать на всех устройствах. Возможно, потребуется вручную предоставить разрешение \"Изменение системных настроек\".</string>
     <string name="hotspot_permission_title">Требуется разрешение</string>
