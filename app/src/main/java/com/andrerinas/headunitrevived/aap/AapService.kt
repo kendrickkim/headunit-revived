@@ -973,6 +973,7 @@ class AapService : Service(), UsbReceiver.Listener {
         wirelessServer?.stopServer()
         wirelessServer = null
         scanningState.value = false
+        startService(Intent(this, DummyVpnService::class.java).apply { action = DummyVpnService.ACTION_STOP_VPN })
     }
 
     // -------------------------------------------------------------------------
@@ -1168,45 +1169,57 @@ class AapService : Service(), UsbReceiver.Listener {
         selfMode = true
         startWirelessServer()
 
-        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            connectivityManager.activeNetwork else null
-        val networkToUse = activeNetwork ?: createFakeNetwork(0)
-        val fakeWifiInfo = createFakeWifiInfo()
-
-        val magicalIntent = Intent().apply {
-            setClassName(
-                "com.google.android.projection.gearhead",
-                "com.google.android.apps.auto.wireless.setup.service.impl.WirelessStartupActivity"
-            )
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra("PARAM_HOST_ADDRESS", "127.0.0.1")
-            putExtra("PARAM_SERVICE_PORT", 5288)
-            networkToUse?.let { putExtra("PARAM_SERVICE_WIFI_NETWORK", it) }
-            fakeWifiInfo?.let { putExtra("wifi_info", it) }
-        }
-
-        try {
-            AppLog.i("Launching AA Wireless Startup via Activity...")
-            startActivity(magicalIntent)
-        } catch (e: Exception) {
-            AppLog.w("Activity launch failed (${e.message}). Attempting Broadcast fallback...")
-            try {
-                val receiverIntent = Intent().apply {
-                    setClassName(
-                        "com.google.android.projection.gearhead",
-                        "com.google.android.apps.auto.wireless.setup.receiver.WirelessStartupReceiver"
-                    )
-                    action = "com.google.android.apps.auto.wireless.setup.receiver.wirelessstartup.START"
-                    putExtra("ip_address", "127.0.0.1")
-                    putExtra("projection_port", 5288)
-                    addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+        serviceScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && connectivityManager.activeNetwork == null) {
+                // Wait up to 1 second for the Dummy VPN to become the active network
+                for (i in 1..10) {
+                    if (connectivityManager.activeNetwork != null) break
+                    kotlinx.coroutines.delay(100)
                 }
-                sendBroadcast(receiverIntent)
-                AppLog.i("Broadcast fallback sent successfully.")
-            } catch (e2: Exception) {
-                AppLog.e("Both Activity and Broadcast triggers failed", e2)
-                Toast.makeText(this, getString(R.string.failed_start_android_auto), Toast.LENGTH_SHORT).show()
+            }
+
+            val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                connectivityManager.activeNetwork else null
+            val networkToUse = activeNetwork ?: createFakeNetwork(0)
+            val fakeWifiInfo = createFakeWifiInfo()
+
+            val magicalIntent = Intent().apply {
+                setClassName(
+                    "com.google.android.projection.gearhead",
+                    "com.google.android.apps.auto.wireless.setup.service.impl.WirelessStartupActivity"
+                )
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("PARAM_HOST_ADDRESS", "127.0.0.1")
+                putExtra("PARAM_SERVICE_PORT", 5288)
+                networkToUse?.let { putExtra("PARAM_SERVICE_WIFI_NETWORK", it) }
+                fakeWifiInfo?.let { putExtra("wifi_info", it) }
+            }
+
+            try {
+                AppLog.i("Launching AA Wireless Startup via Activity...")
+                startActivity(magicalIntent)
+            } catch (e: Exception) {
+                AppLog.w("Activity launch failed (${e.message}). Attempting Broadcast fallback...")
+                try {
+                    val receiverIntent = Intent().apply {
+                        setClassName(
+                            "com.google.android.projection.gearhead",
+                            "com.google.android.apps.auto.wireless.setup.receiver.WirelessStartupReceiver"
+                        )
+                        action = "com.google.android.apps.auto.wireless.setup.receiver.wirelessstartup.START"
+                        putExtra("ip_address", "127.0.0.1")
+                        putExtra("projection_port", 5288)
+                        networkToUse?.let { putExtra("PARAM_SERVICE_WIFI_NETWORK", it) }
+                        fakeWifiInfo?.let { putExtra("wifi_info", it) }
+                        addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+                    }
+                    sendBroadcast(receiverIntent)
+                    AppLog.i("Broadcast fallback sent successfully.")
+                } catch (e2: Exception) {
+                    AppLog.e("Both Activity and Broadcast triggers failed", e2)
+                    Toast.makeText(this@AapService, getString(R.string.failed_start_android_auto), Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
