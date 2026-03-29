@@ -1,6 +1,5 @@
 package com.andrerinas.headunitrevived.main
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -92,7 +91,7 @@ class VehicleInfoFragment : Fragment() {
 
     private fun handleBackPress() {
         if (hasChanges) {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                 .setTitle(R.string.unsaved_changes)
                 .setMessage(R.string.unsaved_changes_message)
                 .setPositiveButton(R.string.discard) { _, _ ->
@@ -154,6 +153,11 @@ class VehicleInfoFragment : Fragment() {
         val scrollState = recyclerView.layoutManager?.onSaveInstanceState()
         val items = mutableListOf<SettingItem>()
 
+        items.add(SettingItem.InfoBanner(
+            stableId = "vehicleInfoRestartNote",
+            textResId = R.string.vehicle_info_restart_note
+        ))
+
         items.add(SettingItem.CategoryHeader("vehicle", R.string.category_vehicle))
 
         items.add(SettingItem.SettingEntry(
@@ -208,17 +212,16 @@ class VehicleInfoFragment : Fragment() {
             }
         ))
 
-        items.add(SettingItem.InfoBanner(
-            stableId = "vehicleIdDescription",
-            textResId = R.string.vehicle_id_description
-        ))
-
         items.add(SettingItem.SettingEntry(
             stableId = "vehicleId",
             nameResId = R.string.vehicle_id_label,
             value = pendingVehicleId ?: "",
             onClick = {
-                showTextInputDialog(R.string.vehicle_id_label, pendingVehicleId ?: "") { value ->
+                showTextInputDialogWithMessage(
+                    R.string.vehicle_id_label,
+                    R.string.vehicle_id_description,
+                    pendingVehicleId ?: ""
+                ) { value ->
                     pendingVehicleId = value
                     checkChanges()
                     updateSettingsList()
@@ -265,26 +268,42 @@ class VehicleInfoFragment : Fragment() {
             }
         ))
 
-        items.add(SettingItem.InfoBanner(
-            stableId = "vehicleInfoRestartNote",
-            textResId = R.string.vehicle_info_restart_note
-        ))
-
         settingsAdapter.submitList(items) {
             scrollState?.let { recyclerView.layoutManager?.onRestoreInstanceState(it) }
         }
     }
 
     private fun showTextInputDialog(titleResId: Int, currentValue: String, onResult: (String) -> Unit) {
+        showTextInputDialogWithMessage(titleResId, null, currentValue, onResult)
+    }
+
+    private fun showTextInputDialogWithMessage(titleResId: Int, messageResId: Int?, currentValue: String, onResult: (String) -> Unit) {
+        val container = android.widget.LinearLayout(requireContext()).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(48, 16, 48, 0)
+        }
+
+        if (messageResId != null) {
+            val messageText = android.widget.TextView(requireContext()).apply {
+                setText(messageResId)
+                val textColorAttr = android.util.TypedValue()
+                context.theme.resolveAttribute(android.R.attr.textColorSecondary, textColorAttr, true)
+                setTextColor(context.resources.getColor(textColorAttr.resourceId, context.theme))
+                textSize = 13f
+                setPadding(0, 0, 0, 24)
+            }
+            container.addView(messageText)
+        }
+
         val editText = android.widget.EditText(requireContext()).apply {
             setText(currentValue)
             setSelection(text.length)
-            setPadding(48, 32, 48, 16)
         }
+        container.addView(editText)
 
         MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
             .setTitle(titleResId)
-            .setView(editText)
+            .setView(container)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 val value = editText.text.toString().trim()
                 if (value.isNotEmpty()) {

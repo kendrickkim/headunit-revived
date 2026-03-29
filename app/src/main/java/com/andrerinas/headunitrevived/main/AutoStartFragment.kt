@@ -113,7 +113,7 @@ class AutoStartFragment : Fragment() {
 
     private fun handleBackPress() {
         if (hasChanges) {
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                 .setTitle(R.string.unsaved_changes)
                 .setMessage(R.string.unsaved_changes_message)
                 .setPositiveButton(R.string.discard) { _, _ ->
