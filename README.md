@@ -64,6 +64,7 @@ adb shell am start -a android.intent.action.VIEW -d "headunit://connect?ip=192.1
 - Added: Fake VPN Handler for new Android Auto in offline mode. It is no longer possible to send a network to AA, so we need this hack, if your device is offline
 - Enhanced: Audio-Focus is now more aggressive to hopefully fix the audio is not coming from my tablet/headunit errors
 - Added: Auto-Boot Functionality. Thanks to @andrecuellar
+- Attention: Needed to split Github and Playstore Release. Google does not allow using Fake VPN for offline selfmode. This is now not included in the playstore release!
 
 ### v.2.1.0
 - Fixed: Exit Intent not working. Thanks to benyjr

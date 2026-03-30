@@ -32,6 +32,7 @@ import com.andrerinas.headunitrevived.utils.AppLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.andrerinas.headunitrevived.utils.Settings
+import com.andrerinas.headunitrevived.utils.VpnControl
 
 class HomeFragment : Fragment() {
 
@@ -40,7 +41,7 @@ class HomeFragment : Fragment() {
     private val vpnPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
             AppLog.i("VPN permission granted. Starting DummyVpnService and Self Mode.")
-            requireContext().startService(Intent(requireContext(), com.andrerinas.headunitrevived.aap.DummyVpnService::class.java))
+            VpnControl.startVpn(requireContext());
             startSelfModeInternal()
         } else {
             AppLog.w("VPN permission denied. Offline Self Mode might fail.")
@@ -150,16 +151,18 @@ class HomeFragment : Fragment() {
             connectivityManager.activeNetwork
         } else null
 
-        if (activeNetwork == null) {
+        if (activeNetwork == null && VpnControl.isVpnAvailable()) {
             AppLog.i("Device is offline. Preparing Dummy VPN for Self Mode.")
             val vpnIntent = VpnService.prepare(requireContext())
             if (vpnIntent != null) {
                 vpnPermissionLauncher.launch(vpnIntent)
                 return
             } else {
-                AppLog.i("VPN permission already granted. Starting DummyVpnService.")
-                requireContext().startService(Intent(requireContext(), com.andrerinas.headunitrevived.aap.DummyVpnService::class.java))
+                AppLog.i("VPN permission already granted. Starting VPN service.")
+                VpnControl.startVpn(requireContext());
             }
+        } else if (activeNetwork == null) {
+            AppLog.i("Device is offline and VPN is not available in this build. Self Mode may fail.")
         }
         startSelfModeInternal()
     }

@@ -97,9 +97,8 @@ android {
     defaultConfig {
         applicationId = "com.andrerinas.headunitrevived"
         minSdk = 16
-//        minSdk = 21 // 21 only for google play console. App should work in minSDK 16
         targetSdk = 36
-        versionCode = 54
+        versionCode = 55
         versionName = "2.1.1"
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -113,6 +112,18 @@ android {
             cmake {
                 cppFlags("")
             }
+        }
+    }
+
+    flavorDimensions.add("distribution")
+    productFlavors {
+        create("playstore") {
+            dimension = "distribution"
+            minSdk = 21
+        }
+        create("github") {
+            dimension = "distribution"
+            // Default minSdk 16 from defaultConfig is used
         }
     }
 

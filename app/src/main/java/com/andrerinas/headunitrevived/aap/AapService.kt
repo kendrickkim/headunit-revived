@@ -36,7 +36,6 @@ import com.andrerinas.headunitrevived.connection.WifiDirectManager
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.media.VolumeProviderCompat
 import androidx.media.session.MediaButtonReceiver
 import com.andrerinas.headunitrevived.connection.UsbAccessoryMode
 import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
@@ -59,6 +58,7 @@ import android.view.WindowManager
 import com.andrerinas.headunitrevived.app.UsbAttachedActivity
 import android.media.AudioManager
 import com.andrerinas.headunitrevived.utils.HotspotManager
+import com.andrerinas.headunitrevived.utils.VpnControl
 import java.net.ServerSocket
 
 /**
@@ -1345,7 +1345,7 @@ class AapService : Service(), UsbReceiver.Listener {
         wirelessServer?.stopServer()
         wirelessServer = null
         scanningState.value = false
-        startService(Intent(this, DummyVpnService::class.java).apply { action = DummyVpnService.ACTION_STOP_VPN })
+        VpnControl.stopVpn(this)
     }
 
     // -------------------------------------------------------------------------
