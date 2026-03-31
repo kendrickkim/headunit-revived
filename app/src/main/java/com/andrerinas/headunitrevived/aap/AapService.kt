@@ -807,28 +807,33 @@ class AapService : Service(), UsbReceiver.Listener {
         }
     }
 
-    /** Starts [WirelessServer] if the user has configured server WiFi mode (mode == 2). */
+    /** Starts [WirelessServer] and configures WiFi Hotspot/Direct based on the selected mode. */
     private fun initWifiMode() {
         val settings = App.provide(this).settings
-        if (settings.wifiConnectionMode == 2 || settings.wifiConnectionMode == 3) {
+        val mode = settings.wifiConnectionMode
+        
+        // Mode 1: Auto (Headunit Server), Mode 2: Helper (Wireless Launcher), Mode 3: Native AA
+        if (mode == 1 || mode == 2 || mode == 3) {
             startWirelessServer()
-            if (settings.autoEnableHotspot) {
-                // Run on background thread since hotspot enable may sleep briefly
+            
+            // 1. Hotspot Logic (Only for Mode 1 and 2)
+            if ((mode == 1 || mode == 2) && settings.autoEnableHotspot) {
                 Thread {
                     AppLog.i("AapService: Auto-enabling hotspot...")
                     HotspotManager.setHotspotEnabled(this, true)
                 }.start()
-            } else {
-                val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-                if (wifiManager.isWifiEnabled) {
-                    if (settings.wifiConnectionMode == 3) {
-                        wifiDirectManager?.startNativeAaQuietHost()
-                    } else {
-                        wifiDirectManager?.makeVisible()
-                    }
-                } else {
-                    AppLog.i("AapService: WiFi is disabled, skipping Wi-Fi Direct visibility.")
+            }
+
+            // 2. WiFi Direct Logic (Mode 3 needs Quiet Host, Mode 1/2 needs Visibility)
+            val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+            if (wifiManager.isWifiEnabled) {
+                if (mode == 3) {
+                    wifiDirectManager?.startNativeAaQuietHost()
+                } else if (mode == 1 || mode == 2) {
+                    wifiDirectManager?.makeVisible()
                 }
+            } else {
+                AppLog.i("AapService: WiFi is disabled, skipping Wi-Fi Direct initialization.")
             }
         }
     }
@@ -982,6 +987,8 @@ class AapService : Service(), UsbReceiver.Listener {
                 val mac = intent?.getStringExtra(EXTRA_MAC)
                 if (mac != null) {
                     AppLog.i("AapService: Received manual Native-AA poke request for $mac")
+                    // Ensure WiFi Direct is ready before poking
+                    initWifiMode()
                     nativeAaHandshakeManager?.manualPoke(mac)
                 }
             }
@@ -1677,16 +1684,17 @@ class AapService : Service(), UsbReceiver.Listener {
                     logLocalNetworkInterfaces()
 
                     while (isActive) {
+                        AppLog.d("WirelessServer: Waiting for TCP connection on port 5288...")
                         val clientSocket = serverSocket?.accept() ?: break
-                        AppLog.i("Wireless client connected: ${clientSocket.inetAddress}")
+                        AppLog.i("WirelessServer: Incoming connection detected from ${clientSocket.inetAddress}")
                         serviceScope.launch {
                             if (commManager.isConnected) {
-                                AppLog.w("Already connected, dropping wireless client")
+                                AppLog.w("WirelessServer: Already connected, dropping client from ${clientSocket.inetAddress}")
                                 withContext(Dispatchers.IO) {
                                     try { clientSocket.close() } catch (e: Exception) {}
                                 }
                             } else {
-                                AppLog.i("Wireless client accepted from ${clientSocket.inetAddress}. Initializing connection...")
+                                AppLog.i("WirelessServer: Accepted client connection from ${clientSocket.inetAddress}. Passing to CommManager...")
                                 commManager.connect(clientSocket)
                             }
                         }

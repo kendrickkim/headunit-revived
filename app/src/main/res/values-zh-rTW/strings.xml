@@ -53,6 +53,7 @@
     <string name="gles_required_message">單色模式需要 GLES 渲染才能在視訊輸出上套用灰階濾鏡。是否啟用 GLES？</string>
     <string name="enable_gles">啟用 GLES</string>
     <string name="category_navigation">導航</string>
+    <string name="category_wireless">無線連接</string>
 
     <string name="reconnection_required_title">需要重新連接</string>
     <string name="reconnection_required_message">設備處於等待狀態。請拔下並重新插入 USB 電纜以重新啟動 Android Auto。</string>

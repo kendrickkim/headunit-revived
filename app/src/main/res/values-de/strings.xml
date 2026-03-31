@@ -54,6 +54,7 @@
     <string name="gles_required_message">Der Monochrom-Modus benötigt GLES-Rendering, um einen Graustufen-Filter auf die Videoausgabe anzuwenden. GLES aktivieren?</string>
     <string name="enable_gles">GLES aktivieren</string>
     <string name="category_navigation">Navigation</string>
+    <string name="category_wireless">Kabellose Verbindung</string>
 
     <string name="reconnection_required_title">Neuverbindung erforderlich</string>
     <string name="reconnection_required_message">Das Gerät befindet sich in einem Wartezustand. Bitte ziehen Sie das USB-Kabel ab und stecken Sie es wieder ein, um Android Auto neu zu starten.</string>

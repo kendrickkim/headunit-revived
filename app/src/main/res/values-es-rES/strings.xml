@@ -54,6 +54,7 @@
     <string name="gles_required_message">El modo monocromático necesita renderizado GLES para aplicar un filtro de escala de grises a la salida de vídeo. ¿Activar GLES?</string>
     <string name="enable_gles">Activar GLES</string>
     <string name="category_navigation">Navegación</string>
+    <string name="category_wireless">Conexión inalámbrica</string>
 
     <string name="reconnection_required_title">Reconexión necesaria</string>
     <string name="reconnection_required_message">El dispositivo está en espera. Desconecte y vuelva a conectar el cable USB para reiniciar Android Auto.</string>

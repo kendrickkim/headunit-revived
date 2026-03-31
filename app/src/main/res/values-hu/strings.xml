@@ -54,6 +54,7 @@
     <string name="gles_required_message">A monokróm mód GLES renderelést igényel a szürkeárnyalatos szűrő alkalmazásához a videokimeneten. Engedélyezed a GLES-t?</string>
     <string name="enable_gles">GLES engedélyezése</string>
     <string name="category_navigation">Navigáció</string>
+    <string name="category_wireless">Vezeték nélküli kapcsolat</string>
 
     <string name="reconnection_required_title">Újrakapcsolódás szükséges</string>
     <string name="reconnection_required_message">Az eszköz várakozó állapotban van. Kérlek húzd ki, majd dugd vissza az USB-kábelt az Android Auto újraindításához.</string>

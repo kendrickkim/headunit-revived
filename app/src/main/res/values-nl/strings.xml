@@ -53,6 +53,7 @@
     <string name="gles_required_message">Monochrome modus heeft GLES-rendering nodig om een grijstintenfilter toe te passen op de video-uitvoer. GLES inschakelen?</string>
     <string name="enable_gles">GLES inschakelen</string>
     <string name="category_navigation">Navigatie</string>
+    <string name="category_wireless">Draadloze verbinding</string>
 
     <string name="reconnection_required_title">Opnieuw verbinden vereist</string>
     <string name="reconnection_required_message">Het apparaat staat in de wachtstand. Koppel de USB-kabel los en sluit deze opnieuw aan om Android Auto opnieuw te starten.</string>

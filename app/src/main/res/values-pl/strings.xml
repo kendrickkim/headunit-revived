@@ -54,6 +54,7 @@
     <string name="gles_required_message">Tryb monochromatyczny wymaga renderowania GLES, aby zastosować filtr skali szarości na wyjściu wideo. Włączyć GLES?</string>
     <string name="enable_gles">Włącz GLES</string>
     <string name="category_navigation">Nawigacja</string>
+    <string name="category_wireless">Połączenie bezprzewodowe</string>
 
     <string name="reconnection_required_title">Wymagane ponowne połączenie</string>
     <string name="reconnection_required_message">Urządzenie jest w stanie oczekiwania. Odłącz i podłącz ponownie kabel USB, aby zrestartować Android Auto.</string>

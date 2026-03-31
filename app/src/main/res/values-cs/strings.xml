@@ -54,6 +54,7 @@
     <string name="gles_required_message">Monochromatický režim potřebuje vykreslování GLES pro použití filtru ve stupních šedi na video výstup. Povolit GLES?</string>
     <string name="enable_gles">Povolit GLES</string>
     <string name="category_navigation">Navigace</string>
+    <string name="category_wireless">Bezdrátové připojení</string>
 
     <string name="reconnection_required_title">Vyžadováno opětovné připojení</string>
     <string name="reconnection_required_message">Zařízení čeká. Odpojte a znovu připojte kabel USB pro restart Android Auto.</string>

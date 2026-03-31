@@ -43,7 +43,6 @@ class SettingsFragment : Fragment() {
     private var pendingFullscreenMode: Settings.FullscreenMode? = null
     private var pendingViewMode: Settings.ViewMode? = null
     private var pendingForceSoftware: Boolean? = null
-    private var pendingWifiConnectionMode: Int? = null
     private var pendingVideoCodec: String? = null
     private var pendingFpsLimit: Int? = null
     private var pendingBluetoothAddress: String? = null
@@ -60,7 +59,6 @@ class SettingsFragment : Fragment() {
     private var pendingStretchToFill: Boolean? = null
 
     private var pendingKillOnDisconnect: Boolean? = null
-    private var pendingAutoEnableHotspot: Boolean? = null
     
     // Custom Insets
     private var pendingInsetLeft: Int? = null
@@ -94,7 +92,6 @@ class SettingsFragment : Fragment() {
         pendingFullscreenMode = settings.fullscreenMode
         pendingViewMode = settings.viewMode
         pendingForceSoftware = settings.forceSoftwareDecoding
-        pendingWifiConnectionMode = settings.wifiConnectionMode
         pendingVideoCodec = settings.videoCodec
         pendingFpsLimit = settings.fpsLimit
         pendingBluetoothAddress = settings.bluetoothAddress
@@ -111,7 +108,6 @@ class SettingsFragment : Fragment() {
         pendingStretchToFill = settings.stretchToFill
 
         pendingKillOnDisconnect = settings.killOnDisconnect
-        pendingAutoEnableHotspot = settings.autoEnableHotspot
         
         pendingInsetLeft = settings.insetLeft
         pendingInsetTop = settings.insetTop
@@ -234,14 +230,13 @@ class SettingsFragment : Fragment() {
         pendingStretchToFill?.let { settings.stretchToFill = it }
 
         pendingKillOnDisconnect?.let { settings.killOnDisconnect = it }
-        pendingAutoEnableHotspot?.let { settings.autoEnableHotspot = it }
         
         pendingInsetLeft?.let { settings.insetLeft = it }
         pendingInsetTop?.let { settings.insetTop = it }
         pendingInsetRight?.let { settings.insetRight = it }
         pendingInsetBottom?.let { settings.insetBottom = it }
 
-        pendingWifiConnectionMode?.let { settings.wifiConnectionMode = it }
+        settings.commit()
 
         if (requiresRestart) {
             if (App.provide(requireContext()).commManager.isConnected) {
@@ -257,6 +252,7 @@ class SettingsFragment : Fragment() {
         hasChanges = false
         requiresRestart = false
         updateSaveButtonState()
+        updateSettingsList()
 
         Toast.makeText(context, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
 
@@ -275,7 +271,6 @@ class SettingsFragment : Fragment() {
                         pendingFullscreenMode != settings.fullscreenMode ||
                         pendingViewMode != settings.viewMode ||
                         pendingForceSoftware != settings.forceSoftwareDecoding ||
-                        pendingWifiConnectionMode != settings.wifiConnectionMode ||
                         pendingVideoCodec != settings.videoCodec ||
                         pendingFpsLimit != settings.fpsLimit ||
                         pendingBluetoothAddress != settings.bluetoothAddress ||
@@ -295,8 +290,7 @@ class SettingsFragment : Fragment() {
                         pendingMediaVolumeOffset != settings.mediaVolumeOffset ||
                         pendingAssistantVolumeOffset != settings.assistantVolumeOffset ||
                         pendingNavigationVolumeOffset != settings.navigationVolumeOffset ||
-                        pendingKillOnDisconnect != settings.killOnDisconnect ||
-                        pendingAutoEnableHotspot != settings.autoEnableHotspot
+                        pendingKillOnDisconnect != settings.killOnDisconnect
 
         hasChanges = anyChange
 
@@ -310,12 +304,10 @@ class SettingsFragment : Fragment() {
                           pendingEnableAudioSink != settings.enableAudioSink ||
                           pendingUseAacAudio != settings.useAacAudio ||
                           pendingUseNativeSsl != settings.useNativeSsl ||
-                          pendingEnableRotary != settings.enableRotary ||
                           pendingInsetLeft != settings.insetLeft ||
                           pendingInsetTop != settings.insetTop ||
                           pendingInsetRight != settings.insetRight ||
-                          pendingInsetBottom != settings.insetBottom ||
-                          pendingWifiConnectionMode != settings.wifiConnectionMode
+                          pendingInsetBottom != settings.insetBottom
 
         updateSaveButtonState()
     }
@@ -375,78 +367,6 @@ class SettingsFragment : Fragment() {
             }
         ))
 
-        val wifiModes = resources.getStringArray(R.array.wireless_connection_modes)
-        items.add(SettingItem.SettingEntry(
-            stableId = "wifiConnectionMode",
-            nameResId = R.string.wireless_mode,
-            value = wifiModes.getOrElse(pendingWifiConnectionMode!!) { "" },
-            onClick = { _ ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.wireless_mode)
-                    .setSingleChoiceItems(wifiModes, pendingWifiConnectionMode!!) { dialog, which ->
-                        pendingWifiConnectionMode = which
-                        checkChanges()
-                        dialog.dismiss()
-                        updateSettingsList()
-                    }
-                    .show()
-            }
-        ))
-
-        // Auto-Enable Hotspot Toggle (only visible if not in Manual Mode)
-        if (pendingWifiConnectionMode != 0) {
-            items.add(SettingItem.ToggleSettingEntry(
-                stableId = "autoEnableHotspot",
-                nameResId = R.string.auto_enable_hotspot,
-                descriptionResId = R.string.auto_enable_hotspot_description,
-                isChecked = pendingAutoEnableHotspot ?: false,
-                onCheckedChanged = { isChecked ->
-                    if (isChecked) {
-                        // Check WRITE_SETTINGS permission (required for hotspot on API 23+)
-                        if (android.os.Build.VERSION.SDK_INT >= 23 &&
-                            !android.provider.Settings.System.canWrite(requireContext())) {
-                            pendingAutoEnableHotspot = true // Mark intent so onResume can finalize
-                            checkChanges()
-                            updateSettingsList()
-                            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                                .setTitle(R.string.hotspot_permission_title)
-                                .setMessage(R.string.hotspot_permission_message)
-                                .setPositiveButton(R.string.open_settings) { dialog, _ ->
-                                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                                        data = android.net.Uri.parse("package:${requireContext().packageName}")
-                                    }
-                                    startActivity(intent)
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton(android.R.string.cancel) { _, _ ->
-                                    pendingAutoEnableHotspot = false
-                                    checkChanges()
-                                    updateSettingsList()
-                                }
-                                .show()
-                        } else {
-                            // Permission granted or not needed — show experimental warning
-                            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                                .setTitle(R.string.hotspot_warning_title)
-                                .setMessage(R.string.hotspot_warning_message)
-                                .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                    pendingAutoEnableHotspot = true
-                                    checkChanges()
-                                    updateSettingsList()
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                        }
-                    } else {
-                        pendingAutoEnableHotspot = false
-                        checkChanges()
-                        updateSettingsList()
-                    }
-                }
-            ))
-        }
-
         items.add(SettingItem.SettingEntry(
             stableId = "vehicleInfoSettings",
             nameResId = R.string.vehicle_info_settings,
@@ -454,6 +374,20 @@ class SettingsFragment : Fragment() {
             onClick = {
                 try {
                     findNavController().navigate(R.id.action_settingsFragment_to_vehicleInfoFragment)
+                } catch (e: Exception) { }
+            }
+        ))
+
+        // --- Wireless Connection ---
+        items.add(SettingItem.CategoryHeader("wirelessConnection", R.string.category_wireless))
+
+        items.add(SettingItem.SettingEntry(
+            stableId = "wirelessConnectionSettings",
+            nameResId = R.string.wireless_connection_settings,
+            value = getString(R.string.wireless_mode_description),
+            onClick = {
+                try {
+                    findNavController().navigate(R.id.action_settingsFragment_to_wirelessConnectionFragment)
                 } catch (e: Exception) { }
             }
         ))
@@ -1149,16 +1083,6 @@ class SettingsFragment : Fragment() {
         // Refresh settings list when returning from sub-screens (e.g. AutoConnectFragment, DarkModeFragment)
         if (::settingsAdapter.isInitialized) {
             settings = App.provide(requireContext()).settings
-
-            // Re-check WRITE_SETTINGS after returning from system settings
-            if (pendingAutoEnableHotspot == true &&
-                android.os.Build.VERSION.SDK_INT >= 23 &&
-                !android.provider.Settings.System.canWrite(requireContext())) {
-                // Permission still not granted — revert toggle
-                pendingAutoEnableHotspot = false
-                checkChanges()
-            }
-
             updateSettingsList()
         }
     }
@@ -1170,10 +1094,6 @@ class SettingsFragment : Fragment() {
         // self mode, auto-start on USB) should keep working when the car starts.
         if (settings.reopenOnReconnection) {
             conflicts.add(getString(R.string.reopen_on_reconnection_label))
-        }
-        if (pendingWifiConnectionMode == 1) {
-            val wifiModes = resources.getStringArray(R.array.wireless_connection_modes)
-            conflicts.add(wifiModes[1])
         }
         return conflicts
     }
@@ -1258,10 +1178,6 @@ class SettingsFragment : Fragment() {
         // Only disable reconnection-related settings.
         // Initial connection settings are kept so they work when the car starts.
         settings.reopenOnReconnection = false
-        // WiFi mode is a pending var on this screen, update both
-        if (pendingWifiConnectionMode == 1) {
-            pendingWifiConnectionMode = 0
-        }
     }
 
     private fun getAutoConnectSummary(): String {
@@ -1320,9 +1236,7 @@ class SettingsFragment : Fragment() {
                 onConfirm(newVal)
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                dialog.cancel()
-            }
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 

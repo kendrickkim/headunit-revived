@@ -54,6 +54,7 @@
     <string name="gles_required_message">يحتاج الوضع أحادي اللون إلى عرض GLES لتطبيق مرشح التدرج الرمادي على مخرجات الفيديو. هل تريد تفعيل GLES؟</string>
     <string name="enable_gles">تفعيل GLES</string>
     <string name="category_navigation">الملاحة</string>
+    <string name="category_wireless">اتصال لاسلكي</string>
 
     <string name="reconnection_required_title">يلزم إعادة الاتصال</string>
     <string name="reconnection_required_message">الجهاز في حالة انتظار. يرجى فصل كابل USB وإعادة توصيله لبدء Android Auto مجددا.</string>

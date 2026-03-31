@@ -96,16 +96,17 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
         if (info.groupFormed) {
             isConnected = true
             isGroupOwner = info.isGroupOwner
-            AppLog.i("WifiDirectManager: Group formed. Owner: $isGroupOwner, GO IP: ${info.groupOwnerAddress?.hostAddress}")
+            val goIp = info.groupOwnerAddress?.hostAddress ?: "unknown"
+            AppLog.i("WifiDirectManager: Group formed. Owner: $isGroupOwner, GO IP: $goIp")
 
             if (isGroupOwner) {
-                // Request group info to get SSID and Passphrase
+                // Request group info to get SSID and Passphrase, and check for connected clients
                 manager?.requestGroupInfo(channel, this)
             } else if (info.groupOwnerAddress != null) {
                 Thread {
                     var socket: Socket? = null
                     try {
-                        AppLog.i("WifiDirectManager: Pinging Phone (GO) to announce tablet...")
+                        AppLog.i("WifiDirectManager: Pinging Phone (GO) at $goIp to announce tablet...")
                         socket = Socket()
                         socket.connect(InetSocketAddress(info.groupOwnerAddress, 5289), 2000)
                     } catch (e: Exception) {
@@ -115,6 +116,8 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
                     }
                 }.start()
             }
+        } else {
+            AppLog.d("WifiDirectManager: onConnectionInfoAvailable: group not formed yet")
         }
     }
 
@@ -122,16 +125,31 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
 
     @SuppressLint("MissingPermission")
     override fun onGroupInfoAvailable(group: android.net.wifi.p2p.WifiP2pGroup?) {
-        AppLog.i("WifiDirectManager: onGroupInfoAvailable called. group is null? ${group == null}")
         if (group != null) {
             groupInfoRetries = 0
             val ssid = group.networkName
             val psk = group.passphrase ?: ""
-            // When we are GO, our IP is always the gateway .1 in the P2P range
-            val ip = "192.168.49.1" 
+            // Dynamically determine the GO IP if possible, fallback to standard P2P range
+            val ip = if (isGroupOwner) "192.168.49.1" else "unknown" // We'll rely on onConnectionInfoAvailable for real IP
             val bssid = getWifiDirectMac(group.`interface`)
-            AppLog.i("WifiDirectManager: Group credentials READY! SSID: $ssid, BSSID: $bssid, IP: $ip")
-            onCredentialsReady?.invoke(ssid, psk, ip, bssid)
+            
+            AppLog.i("WifiDirectManager: onGroupInfoAvailable: SSID: $ssid, BSSID: $bssid, GO: ${group.isGroupOwner}")
+            
+            val clients = group.clientList
+            if (clients.isNotEmpty()) {
+                AppLog.i("WifiDirectManager: Connected Clients (${clients.size}):")
+                for (client in clients) {
+                    AppLog.i("  - Client: ${client.deviceName} [${client.deviceAddress}] Status: ${client.status}")
+                }
+            } else {
+                AppLog.d("WifiDirectManager: No clients connected to the group yet.")
+            }
+
+            if (isGroupOwner && ssid.isNotEmpty()) {
+                // If we are the GO, we provide the credentials to the handshake manager
+                AppLog.i("WifiDirectManager: Providing credentials to HandshakeManager. SSID=$ssid, IP=$ip")
+                onCredentialsReady?.invoke(ssid, psk, ip, bssid)
+            }
         } else {
             if (groupInfoRetries < 20) {
                 groupInfoRetries++
@@ -140,7 +158,7 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
                     manager?.requestGroupInfo(channel, this)
                 }, 1000L)
             } else {
-                AppLog.e("WifiDirectManager: FATAL: Group info remained null after 20 retries. Cannot start Native AA properly.")
+                AppLog.e("WifiDirectManager: FATAL: Group info remained null after 20 retries.")
             }
         }
     }

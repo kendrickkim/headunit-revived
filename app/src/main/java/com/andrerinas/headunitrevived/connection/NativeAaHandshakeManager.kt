@@ -214,24 +214,35 @@ class NativeAaHandshakeManager(
             val psk = currentPsk ?: ""
             val bssid = currentBssid ?: ""
 
+            AppLog.i("NativeAA: Initializing Handshake Sequence...")
+            AppLog.i("  - Group SSID: $ssid")
+            AppLog.i("  - Group IP: $ip")
+            AppLog.i("  - Group BSSID: $bssid")
+            AppLog.i("  - Group PSK: ${if (psk.isNotEmpty()) "****" else "<empty>"}")
+
             AppLog.i("NativeAA: Sending WifiStartRequest (Type 1) to $ip:5288")
             sendWifiStartRequest(output, ip, 5288)
 
+            AppLog.i("NativeAA: Waiting for response from phone...")
             val response = readProtobuf(input)
+            AppLog.i("NativeAA: Received response Type ${response.type} from phone (size: ${response.payload.size})")
+
             if (response.type == 2) {
-                AppLog.i("NativeAA: Phone requested security info. Sending SSID=$ssid, BSSID=$bssid")
+                AppLog.i("NativeAA: Phone requested security info (Ready for WiFi association).")
+                AppLog.i("NativeAA: Sending WifiInfoResponse (Type 3) with full credentials...")
                 sendWifiSecurityResponse(output, ssid, psk, bssid)
-                AppLog.i("NativeAA: Handshake success. Keeping BT socket alive for transition...")
+                AppLog.i("NativeAA: Handshake completed successfully on Bluetooth side.")
+                AppLog.i("NativeAA: Keeping Bluetooth socket alive for 20s to allow WiFi transition...")
                 
                 // Keep the socket open for 20 seconds so the phone feels "stable" 
                 // during the WiFi switch
                 delay(20000)
             } else {
-                AppLog.w("NativeAA: Unexpected response type: ${response.type}")
+                AppLog.w("NativeAA: Unexpected response type from phone: ${response.type}. Expected Type 2.")
             }
 
         } catch (e: Exception) {
-            AppLog.e("NativeAA: Handshake error: ${e.message}")
+            AppLog.e("NativeAA: Handshake error: ${e.message}", e)
         } finally {
             try { socket.close() } catch (e: Exception) {}
             AppLog.i("NativeAA: BT Handshake socket closed.")

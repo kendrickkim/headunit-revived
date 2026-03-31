@@ -193,6 +193,12 @@ class MainActivity : BaseActivity() {
                     action = AapService.ACTION_DISCONNECT
                 }
                 ContextCompat.startForegroundService(this, stopIntent)
+            } else if (data?.scheme == "headunit" && data.host == "selfmode") {
+                AppLog.i("Received start-in-selfmode intent")
+                val selfModeIntent = Intent(this, AapService::class.java).apply {
+                    action = AapService.ACTION_START_SELF_MODE
+                }
+                ContextCompat.startForegroundService(this, selfModeIntent)
             } else if (data?.scheme == "headunit" && data.host == "exit") {
                 AppLog.i("Received full exit intent")
                 val exitIntent = Intent(this, AapService::class.java).apply {

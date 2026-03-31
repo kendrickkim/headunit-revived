@@ -58,6 +58,7 @@
     <string name="gles_required_message">Monochrome mode needs GLES rendering to apply a grayscale filter on the video output. Enable GLES?</string>
     <string name="enable_gles">Enable GLES</string>
     <string name="category_navigation">Navigation</string>
+    <string name="category_wireless">Wireless Connection</string>
 
     <string name="reconnection_required_title">Reconnection Required</string>
     <string name="reconnection_required_message">The device is in a waiting state. Please unplug and re-plug the USB cable to start Android Auto again.</string>
@@ -176,6 +177,7 @@
     <string name="open_settings">Settings</string>
     <string name="right_hand_drive">Right-hand drive</string>
     <string name="right_hand_drive_description">Position UI for right-side driving</string>
+    <string name="wireless_connection_settings">Wireless Connection</string>
     <string name="category_graphic">Graphic</string>
     <string name="custom_insets">Custom Insets (Margins)</string>
     <string name="inset_top">Top</string>

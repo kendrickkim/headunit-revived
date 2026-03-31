@@ -54,6 +54,7 @@
     <string name="gles_required_message">Modul monocrom necesită randare GLES pentru a aplica un filtru de tonuri de gri pe ieșirea video. Activezi GLES?</string>
     <string name="enable_gles">Activează GLES</string>
     <string name="category_navigation">Navigare</string>
+    <string name="category_wireless">Conexiune wireless</string>
 
     <string name="reconnection_required_title">Reconectare necesară</string>
     <string name="reconnection_required_message">Dispozitivul este în așteptare. Te rog să deconectezi și să reconectezi cablul USB pentru a reporni Android Auto.</string>

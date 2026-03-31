@@ -54,6 +54,7 @@
     <string name="gles_required_message">Монохромный режим требует рендеринг GLES для применения фильтра оттенков серого к видеовыходу. Включить GLES?</string>
     <string name="enable_gles">Включить GLES</string>
     <string name="category_navigation">Навигация</string>
+    <string name="category_wireless">Беспроводное соединение</string>
 
     <string name="reconnection_required_title">Требуется переподключение</string>
     <string name="reconnection_required_message">Устройство находится в режиме ожидания. Отсоедините и снова подключите USB-кабель для перезапуска Android Auto.</string>
