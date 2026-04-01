@@ -38,7 +38,7 @@ class ProjectionView @JvmOverloads constructor(
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        AppLog.i("holder %s, format: %d, width: %d, height: %d", holder, format, width, height)
+        AppLog.i("holder $holder, format: $format, width: $width, height: $height")
         callbacks.forEach { it.onSurfaceChanged(holder.surface, width, height) }
         ProjectionViewScaler.updateScale(this, videoWidth, videoHeight)
     }
@@ -63,7 +63,7 @@ class ProjectionView @JvmOverloads constructor(
 
     override fun setVideoSize(width: Int, height: Int) {
         if (videoWidth == width && videoHeight == height) return
-        AppLog.i("ProjectionView", "Video size set to ${width}x$height")
+        AppLog.i("Video size set to ${width}x$height")
         videoWidth = width
         videoHeight = height
         ProjectionViewScaler.updateScale(this, videoWidth, videoHeight)
@@ -72,13 +72,5 @@ class ProjectionView @JvmOverloads constructor(
     override fun setVideoScale(scaleX: Float, scaleY: Float) {
         this.scaleX = scaleX
         this.scaleY = scaleY
-
-        if (com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig.forcedScale) {
-            this.translationX = -(this.width - (this.width * scaleX)) / 2.0f
-            this.translationY = -(this.height - (this.height * scaleY)) / 2.0f
-        } else {
-            this.translationX = 0f
-            this.translationY = 0f
-        }
     }
 }

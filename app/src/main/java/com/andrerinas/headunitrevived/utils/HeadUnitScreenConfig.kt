@@ -215,7 +215,7 @@ object HeadUnitScreenConfig {
 
     fun getScaleX(): Float {
         if (forcedScale) {
-            return divideOrOne(getNegotiatedWidth().toFloat(), realScreenWidthPx.toFloat())
+            return 1.0f
         }
 
         if (getNegotiatedWidth() > screenWidthPx) {
@@ -229,7 +229,7 @@ object HeadUnitScreenConfig {
         // Stretch option PR #259
         fun getScaleY(): Float {
         if (forcedScale) {
-            return divideOrOne(getNegotiatedHeight().toFloat(), realScreenHeightPx.toFloat())
+            return 1.0f
         }
 
         if (getNegotiatedHeight() > screenHeightPx) {
@@ -273,4 +273,7 @@ object HeadUnitScreenConfig {
         val fIntValue = (getNegotiatedHeight() - getHeightMargin()).toFloat() / screenHeightPx.toFloat()
         return fIntValue
     }
+
+    fun getUsableWidth(): Int = screenWidthPx
+    fun getUsableHeight(): Int = screenHeightPx
 }

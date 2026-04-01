@@ -43,6 +43,7 @@ import com.andrerinas.headunitrevived.view.OverlayTouchView
 import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import com.andrerinas.headunitrevived.utils.SystemUI
 import android.content.IntentFilter
+import com.andrerinas.headunitrevived.view.ProjectionViewScaler
 
 class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, VideoDimensionsListener {
 
@@ -453,7 +454,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             AppLog.i("[AapProjectionActivity] Decoder already has dimensions: ${currentVideoWidth}x$currentVideoHeight. Applying to view.")
             runOnUiThread {
                 projectionView.setVideoSize(currentVideoWidth, currentVideoHeight)
-                projectionView.setVideoScale(HeadUnitScreenConfig.getScaleX(), HeadUnitScreenConfig.getScaleY())
+                com.andrerinas.headunitrevived.view.ProjectionViewScaler.updateScale(projectionView as android.view.View, currentVideoWidth, currentVideoHeight)
             }
         }
     }
@@ -469,7 +470,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         AppLog.i("[AapProjectionActivity] Received video dimensions: ${width}x$height")
         runOnUiThread {
             projectionView.setVideoSize(width, height)
-            projectionView.setVideoScale(HeadUnitScreenConfig.getScaleX(), HeadUnitScreenConfig.getScaleY())
+            com.andrerinas.headunitrevived.view.ProjectionViewScaler.updateScale(projectionView as android.view.View, width, height)
         }
     }
 
