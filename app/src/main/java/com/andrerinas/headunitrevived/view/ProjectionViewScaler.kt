@@ -23,20 +23,30 @@ object ProjectionViewScaler {
 
         if (HeadUnitScreenConfig.forcedScale && view is ProjectionView) {
             val lp = view.layoutParams
+            var paramsChanged = false
             
             if (settings.stretchToFill) {
                 // Mode A: Preserve aspect ratio using Adjusted dimensions
                 val targetW = HeadUnitScreenConfig.getAdjustedWidth()
                 val targetH = HeadUnitScreenConfig.getAdjustedHeight()
 
-                lp.width = targetW
-                lp.height = targetH
+                if (lp.width != targetW || lp.height != targetH) {
+                    lp.width = targetW
+                    lp.height = targetH
+                    paramsChanged = true
+                }
 
                 // Center the view in the usable area
                 if (lp is FrameLayout.LayoutParams) {
-                    lp.gravity = Gravity.CENTER
+                    if (lp.gravity != Gravity.CENTER) {
+                        lp.gravity = Gravity.CENTER
+                        paramsChanged = true
+                    }
                 }
-                view.layoutParams = lp
+                
+                if (paramsChanged) {
+                    view.layoutParams = lp
+                }
 
                 view.scaleX = 1.0f
                 view.scaleY = 1.0f
@@ -46,12 +56,23 @@ object ProjectionViewScaler {
                 AppLog.i("FORCED & STRETCH On: Resized view to ${targetW}x${targetH} (centered)")
             } else {
                 // Mode B: Stretch to fill the usable area exactly (ignores aspect ratio)
-                lp.width = usableW
-                lp.height = usableH
-                if (lp is FrameLayout.LayoutParams) {
-                    lp.gravity = Gravity.TOP or Gravity.START
+                if (lp.width != usableW || lp.height != usableH) {
+                    lp.width = usableW
+                    lp.height = usableH
+                    paramsChanged = true
                 }
-                view.layoutParams = lp
+                
+                if (lp is FrameLayout.LayoutParams) {
+                    val targetGravity = Gravity.TOP or Gravity.START
+                    if (lp.gravity != targetGravity) {
+                        lp.gravity = targetGravity
+                        paramsChanged = true
+                    }
+                }
+                
+                if (paramsChanged) {
+                    view.layoutParams = lp
+                }
 
                 view.scaleX = 1.0f
                 view.scaleY = 1.0f
@@ -65,14 +86,24 @@ object ProjectionViewScaler {
             val finalScaleX = HeadUnitScreenConfig.getScaleX()
             val finalScaleY = HeadUnitScreenConfig.getScaleY()
 
-            if (view.layoutParams.width != ViewGroup.LayoutParams.MATCH_PARENT || 
-                view.layoutParams.height != ViewGroup.LayoutParams.MATCH_PARENT) {
-                val lp = view.layoutParams
+            val lp = view.layoutParams
+            var paramsChanged = false
+            
+            if (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || 
+                lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
                 lp.width = ViewGroup.LayoutParams.MATCH_PARENT
                 lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-                if (lp is FrameLayout.LayoutParams) {
+                paramsChanged = true
+            }
+            
+            if (lp is FrameLayout.LayoutParams) {
+                if (lp.gravity != Gravity.NO_GRAVITY) {
                     lp.gravity = Gravity.NO_GRAVITY
+                    paramsChanged = true
                 }
+            }
+            
+            if (paramsChanged) {
                 view.layoutParams = lp
             }
 

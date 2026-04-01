@@ -104,8 +104,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             } else {
                 AppLog.e("Watchdog: TextureView NOT available. Vis=${tv.visibility}, W=${tv.width}, H=${tv.height}")
             }
-        } else if (projectionView is com.andrerinas.headunitrevived.view.GlProjectionView) {
-             val gles = projectionView as com.andrerinas.headunitrevived.view.GlProjectionView
+        } else if (projectionView is GlProjectionView) {
+             val gles = projectionView as GlProjectionView
              if (gles.isSurfaceValid()) {
                  AppLog.w("Watchdog: GlProjectionView IS valid. Forcing onSurfaceChanged.")
                  onSurfaceChanged(gles.getSurface()!!, gles.width, gles.height)
@@ -267,11 +267,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
             projectionView = glView
-            container.setBackgroundColor(android.graphics.Color.BLACK)
+            container.setBackgroundColor(Color.BLACK)
         } else {
             AppLog.i("Using SurfaceView")
             projectionView = ProjectionView(this)
-            (projectionView as android.view.View).layoutParams = FrameLayout.LayoutParams(
+            (projectionView as View).layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
@@ -279,7 +279,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         // Use the same screen conf for both views for negotiation
         HeadUnitScreenConfig.init(this, displayMetrics, settings)
 
-        val view = projectionView as android.view.View
+        val view = projectionView as View
         container.addView(view)
 
         projectionView.addCallback(this)
@@ -460,7 +460,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             AppLog.i("[AapProjectionActivity] Decoder already has dimensions: ${currentVideoWidth}x$currentVideoHeight. Applying to view.")
             runOnUiThread {
                 projectionView.setVideoSize(currentVideoWidth, currentVideoHeight)
-                com.andrerinas.headunitrevived.view.ProjectionViewScaler.updateScale(projectionView as android.view.View, currentVideoWidth, currentVideoHeight)
+                ProjectionViewScaler.updateScale(projectionView as View, currentVideoWidth, currentVideoHeight)
             }
         }
     }
@@ -476,7 +476,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         AppLog.i("[AapProjectionActivity] Received video dimensions: ${width}x$height")
         runOnUiThread {
             projectionView.setVideoSize(width, height)
-            com.andrerinas.headunitrevived.view.ProjectionViewScaler.updateScale(projectionView as android.view.View, width, height)
+            ProjectionViewScaler.updateScale(projectionView as View, width, height)
         }
     }
 

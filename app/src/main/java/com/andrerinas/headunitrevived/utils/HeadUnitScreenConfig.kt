@@ -227,7 +227,7 @@ object HeadUnitScreenConfig {
         return 1.0f
     }
         // Stretch option PR #259
-        fun getScaleY(): Float {
+    fun getScaleY(): Float {
         if (forcedScale) {
             return 1.0f
         }

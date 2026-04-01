@@ -7,6 +7,7 @@ import android.view.SurfaceView
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.decoder.VideoDecoder
 import com.andrerinas.headunitrevived.utils.AppLog
+import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 
 class ProjectionView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -67,8 +68,8 @@ class ProjectionView @JvmOverloads constructor(
         videoWidth = width
         videoHeight = height
 
-        if (com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig.forcedScale) {
-            val settings = com.andrerinas.headunitrevived.App.provide(context).settings
+        if (HeadUnitScreenConfig.forcedScale) {
+            val settings = App.provide(context).settings
             if (settings.stretchToFill) {
                 holder.setSizeFromLayout()
             } else {
