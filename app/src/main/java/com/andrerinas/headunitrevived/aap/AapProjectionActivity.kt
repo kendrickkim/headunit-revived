@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -43,6 +44,7 @@ import com.andrerinas.headunitrevived.view.OverlayTouchView
 import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import com.andrerinas.headunitrevived.utils.SystemUI
 import android.content.IntentFilter
+import com.andrerinas.headunitrevived.view.ProjectionViewScaler
 
 class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, VideoDimensionsListener {
 
@@ -67,7 +69,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
     private val reconnectingWatchdog = object : Runnable {
         override fun run() {
-            if (!commManager.isConnected) return
+            // Only run watchdog if we are actually supposed to be connected
+            if (commManager.connectionState.value !is CommManager.ConnectionState.HandshakeComplete) {
+                return
+            }
             val lastFrame = videoDecoder.lastFrameRenderedMs
             if (lastFrame == 0L) {
                 // First frame hasn't arrived yet — handled by the starting overlay
@@ -99,8 +104,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             } else {
                 AppLog.e("Watchdog: TextureView NOT available. Vis=${tv.visibility}, W=${tv.width}, H=${tv.height}")
             }
-        } else if (projectionView is com.andrerinas.headunitrevived.view.GlProjectionView) {
-             val gles = projectionView as com.andrerinas.headunitrevived.view.GlProjectionView
+        } else if (projectionView is GlProjectionView) {
+             val gles = projectionView as GlProjectionView
              if (gles.isSurfaceValid()) {
                  AppLog.w("Watchdog: GlProjectionView IS valid. Forcing onSurfaceChanged.")
                  onSurfaceChanged(gles.getSurface()!!, gles.width, gles.height)
@@ -167,6 +172,20 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
 
         setContentView(R.layout.activity_headunit)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastBackPressTime < 2000) {
+                    AppLog.i("AapProjectionActivity: Double back press detected. Disconnecting...")
+                    commManager.disconnect()
+                    finish()
+                } else {
+                    lastBackPressTime = currentTime
+                    Toast.makeText(this@AapProjectionActivity, getString(R.string.press_back_again_to_exit), Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
 
         if (settings.showFpsCounter) {
             val container = findViewById<FrameLayout>(R.id.container)
@@ -248,11 +267,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
             projectionView = glView
-            container.setBackgroundColor(android.graphics.Color.BLACK)
+            container.setBackgroundColor(Color.BLACK)
         } else {
             AppLog.i("Using SurfaceView")
             projectionView = ProjectionView(this)
-            (projectionView as android.view.View).layoutParams = FrameLayout.LayoutParams(
+            (projectionView as View).layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
@@ -260,7 +279,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         // Use the same screen conf for both views for negotiation
         HeadUnitScreenConfig.init(this, displayMetrics, settings)
 
-        val view = projectionView as android.view.View
+        val view = projectionView as View
         container.addView(view)
 
         projectionView.addCallback(this)
@@ -377,7 +396,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN)
         }
 
-        SystemUI.apply(window, container, settings.fullscreenMode)
+        SystemUI.apply(window, container, settings.fullscreenMode) {
+            if (::projectionView.isInitialized) {
+                ProjectionViewScaler.updateScale(projectionView as View, videoDecoder.videoWidth, videoDecoder.videoHeight)
+            }
+        }
 
         // Workaround for API < 19 (Jelly Bean) where Sticky Immersive Mode doesn't exist.
         // If bars appear (e.g. on touch), hide them again after a delay.
@@ -386,7 +409,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
                     // Bars are visible. Hide them again.
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                        SystemUI.apply(window, container, settings.fullscreenMode)
+                        SystemUI.apply(window, container, settings.fullscreenMode) {
+            if (::projectionView.isInitialized) {
+                ProjectionViewScaler.updateScale(projectionView as View, videoDecoder.videoWidth, videoDecoder.videoHeight)
+            }
+        }
                     }, 2000)
                 }
             }
@@ -394,18 +421,6 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     private var lastBackPressTime = 0L
-
-    override fun onBackPressed() {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastBackPressTime < 2000) {
-            AppLog.i("AapProjectionActivity: Double back press detected. Disconnecting...")
-            commManager.disconnect()
-            super.onBackPressed()
-        } else {
-            lastBackPressTime = currentTime
-            Toast.makeText(this, getString(R.string.press_back_again_to_exit), Toast.LENGTH_SHORT).show()
-        }
-    }
 
     private val commManager get() = App.provide(this).commManager
 
@@ -453,7 +468,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             AppLog.i("[AapProjectionActivity] Decoder already has dimensions: ${currentVideoWidth}x$currentVideoHeight. Applying to view.")
             runOnUiThread {
                 projectionView.setVideoSize(currentVideoWidth, currentVideoHeight)
-                projectionView.setVideoScale(HeadUnitScreenConfig.getScaleX(), HeadUnitScreenConfig.getScaleY())
+                ProjectionViewScaler.updateScale(projectionView as View, currentVideoWidth, currentVideoHeight)
             }
         }
     }
@@ -469,7 +484,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         AppLog.i("[AapProjectionActivity] Received video dimensions: ${width}x$height")
         runOnUiThread {
             projectionView.setVideoSize(width, height)
-            projectionView.setVideoScale(HeadUnitScreenConfig.getScaleX(), HeadUnitScreenConfig.getScaleY())
+            ProjectionViewScaler.updateScale(projectionView as View, width, height)
         }
     }
 

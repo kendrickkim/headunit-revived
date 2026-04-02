@@ -7,6 +7,7 @@ import android.view.SurfaceView
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.decoder.VideoDecoder
 import com.andrerinas.headunitrevived.utils.AppLog
+import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 
 class ProjectionView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -38,7 +39,7 @@ class ProjectionView @JvmOverloads constructor(
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        AppLog.i("holder %s, format: %d, width: %d, height: %d", holder, format, width, height)
+        AppLog.i("holder $holder, format: $format, width: $width, height: $height")
         callbacks.forEach { it.onSurfaceChanged(holder.surface, width, height) }
         ProjectionViewScaler.updateScale(this, videoWidth, videoHeight)
     }
@@ -63,9 +64,22 @@ class ProjectionView @JvmOverloads constructor(
 
     override fun setVideoSize(width: Int, height: Int) {
         if (videoWidth == width && videoHeight == height) return
-        AppLog.i("ProjectionView", "Video size set to ${width}x$height")
+        AppLog.i("Video size set to ${width}x$height")
         videoWidth = width
         videoHeight = height
+
+        if (HeadUnitScreenConfig.forcedScale) {
+            val settings = App.provide(context).settings
+            if (settings.stretchToFill) {
+                holder.setSizeFromLayout()
+            } else {
+                AppLog.i("FORCED SCALE: Setting fixed size to ${width}x$height")
+                holder.setFixedSize(width, height)
+            }
+        } else {
+            holder.setSizeFromLayout()
+        }
+
         ProjectionViewScaler.updateScale(this, videoWidth, videoHeight)
     }
 

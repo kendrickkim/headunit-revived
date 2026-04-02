@@ -10,10 +10,11 @@ import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.andrerinas.headunitrevived.utils.AppLog
 
 object SystemUI {
 
-    fun apply(window: Window, root: View, mode: Settings.FullscreenMode) {
+    fun apply(window: Window, root: View, mode: Settings.FullscreenMode, onInsetsChanged: (() -> Unit)? = null) {
         // Always keep screen on for Headunit functionality
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
@@ -30,7 +31,7 @@ object SystemUI {
             val controller = window.insetsController
             if (controller != null) {
                 when (mode) {
-                    Settings.FullscreenMode.IMMERSIVE -> {
+                    Settings.FullscreenMode.IMMERSIVE, Settings.FullscreenMode.IMMERSIVE_WITH_NOTCH -> {
                         controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
                         controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                     }
@@ -48,7 +49,7 @@ object SystemUI {
             // Legacy Flags (Jelly Bean API 16 and above)
             @Suppress("DEPRECATION")
             when (mode) {
-                Settings.FullscreenMode.IMMERSIVE -> {
+                Settings.FullscreenMode.IMMERSIVE, Settings.FullscreenMode.IMMERSIVE_WITH_NOTCH -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
                         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -90,7 +91,7 @@ object SystemUI {
         }
 
         // Fix for Non-Immersive: Force black bars on older devices
-        if (mode != Settings.FullscreenMode.IMMERSIVE) {
+        if (mode != Settings.FullscreenMode.IMMERSIVE && mode != Settings.FullscreenMode.IMMERSIVE_WITH_NOTCH) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                 if (Build.VERSION.SDK_INT < 35) {
@@ -127,7 +128,6 @@ object SystemUI {
                     val rect = android.graphics.Rect()
                     window.decorView.getWindowVisibleDisplayFrame(rect)
                     
-                    // The difference between real screen size and visible frame are our insets
                     @Suppress("DEPRECATION")
                     val display = window.windowManager.defaultDisplay
                     val size = android.graphics.Point()
@@ -140,8 +140,7 @@ object SystemUI {
                     
                     AppLog.d("Legacy SystemUI: Detected Insets L$insetL T$insetT R$insetR B$insetB")
                     HeadUnitScreenConfig.updateInsets(manualL + insetL, manualT + insetT, manualR + insetR, manualB + insetB)
-                    
-                    // Remove listener to avoid infinite loops if padding causes layout changes
+                    onInsetsChanged?.invoke()
                     root.viewTreeObserver.removeGlobalOnLayoutListener(this)
                 }
             })
@@ -149,18 +148,42 @@ object SystemUI {
 
         // Set up listener for dynamic system bars (API 21+)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insetsCompat ->
-            if (mode == Settings.FullscreenMode.IMMERSIVE) {
-                v.setPadding(manualL, manualT, manualR, manualB)
-                HeadUnitScreenConfig.updateInsets(manualL, manualT, manualR, manualB)
-            } else if (mode == Settings.FullscreenMode.STATUS_ONLY) {
-                val bars = insetsCompat.getInsets(WindowInsetsCompat.Type.navigationBars())
-                v.setPadding(manualL + bars.left, manualT, manualR + bars.right, manualB + bars.bottom)
-                HeadUnitScreenConfig.updateInsets(manualL + bars.left, manualT, manualR + bars.right, manualB + bars.bottom)
-            } else {
-                val bars = insetsCompat.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.setPadding(bars.left + manualL, bars.top + manualT, bars.right + manualR, bars.bottom + manualB)
-                HeadUnitScreenConfig.updateInsets(bars.left + manualL, bars.top + manualT, bars.right + manualR, bars.bottom + manualB)
+            var typeMask = 0
+            
+            when (mode) {
+                Settings.FullscreenMode.IMMERSIVE -> {
+                    typeMask = 0 // Standard Immersive: Overlay everything (Notch included)
+                }
+                Settings.FullscreenMode.IMMERSIVE_WITH_NOTCH -> {
+                    // This is now the "Avoid Notch" mode (ID 3)
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        typeMask = WindowInsetsCompat.Type.displayCutout()
+                    }
+                }
+                Settings.FullscreenMode.STATUS_ONLY -> {
+                    typeMask = WindowInsetsCompat.Type.navigationBars()
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        typeMask = typeMask or WindowInsetsCompat.Type.displayCutout()
+                    }
+                }
+                else -> {
+                    typeMask = WindowInsetsCompat.Type.systemBars()
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        typeMask = typeMask or WindowInsetsCompat.Type.displayCutout()
+                    }
+                }
             }
+
+            val bars = if (typeMask != 0) {
+                insetsCompat.getInsets(typeMask)
+            } else {
+                androidx.core.graphics.Insets.NONE
+            }
+            
+            v.setPadding(bars.left + manualL, bars.top + manualT, bars.right + manualR, bars.bottom + manualB)
+            HeadUnitScreenConfig.updateInsets(bars.left + manualL, bars.top + manualT, bars.right + manualR, bars.bottom + manualB)
+            
+            onInsetsChanged?.invoke()
             WindowInsetsCompat.CONSUMED
         }
 

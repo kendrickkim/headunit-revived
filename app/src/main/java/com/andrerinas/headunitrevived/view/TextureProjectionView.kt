@@ -36,6 +36,8 @@ class TextureProjectionView @JvmOverloads constructor(
     override fun setVideoScale(scaleX: Float, scaleY: Float) {
         this.scaleX = scaleX
         this.scaleY = scaleY
+        this.translationX = 0f
+        this.translationY = 0f
     }
 
     // ----------------------------------------------------------------

@@ -20,6 +20,10 @@ object HeadUnitScreenConfig {
     // Flag to determine if the projection should stretch and ignore aspect ratio
     private var stretchToFill: Boolean = false 
     
+    // Forced scale for older devices (Legacy fix)
+    var forcedScale: Boolean = false
+        private set
+
     var negotiatedResolutionType: Control.Service.MediaSinkService.VideoConfiguration.VideoCodecResolutionType? = null
     private lateinit var currentSettings: Settings // Store settings instance
 
@@ -41,6 +45,8 @@ object HeadUnitScreenConfig {
     fun init(context: Context, displayMetrics: DisplayMetrics, settings: Settings) {
         // Read user preference for stretching the screen from the app's Settings
         stretchToFill = settings.stretchToFill
+        // Only allow forcedScale if viewMode is SURFACE (0)
+        forcedScale = settings.forcedScale && settings.viewMode == Settings.ViewMode.SURFACE
 
         val screenWidth: Int
         val screenHeight: Int
@@ -208,6 +214,10 @@ object HeadUnitScreenConfig {
     }
 
     fun getScaleX(): Float {
+        if (forcedScale) {
+            return 1.0f
+        }
+
         if (getNegotiatedWidth() > screenWidthPx) {
             return divideOrOne(getNegotiatedWidth().toFloat(), screenWidthPx.toFloat())
         }
@@ -217,7 +227,11 @@ object HeadUnitScreenConfig {
         return 1.0f
     }
         // Stretch option PR #259
-        fun getScaleY(): Float {
+    fun getScaleY(): Float {
+        if (forcedScale) {
+            return 1.0f
+        }
+
         if (getNegotiatedHeight() > screenHeightPx) {
             return if (stretchToFill) {
                 // Before PR #233 Fix scaler Y
@@ -259,4 +273,7 @@ object HeadUnitScreenConfig {
         val fIntValue = (getNegotiatedHeight() - getHeightMargin()).toFloat() / screenHeightPx.toFloat()
         return fIntValue
     }
+
+    fun getUsableWidth(): Int = screenWidthPx
+    fun getUsableHeight(): Int = screenHeightPx
 }

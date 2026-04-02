@@ -1,6 +1,9 @@
 package com.andrerinas.headunitrevived.view
 
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.view.Gravity
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
@@ -12,20 +15,109 @@ object ProjectionViewScaler {
             return
         }
 
-        // The dimensions of the content area we want to display
-        val displayMetrics = view.resources.displayMetrics
-        val contentWidth = displayMetrics.widthPixels
-        val contentHeight = displayMetrics.heightPixels
+        val settings = App.provide(view.context).settings
+        HeadUnitScreenConfig.init(view.context, view.resources.displayMetrics, settings)
 
-        HeadUnitScreenConfig.init(view.context, displayMetrics, App.provide(view.context).settings)
+        val usableW = HeadUnitScreenConfig.getUsableWidth()
+        val usableH = HeadUnitScreenConfig.getUsableHeight()
 
-        // The dimensions of the content area we want to display
-        val finalScaleX = HeadUnitScreenConfig.getScaleX()
-        val finalScaleY = HeadUnitScreenConfig.getScaleY()
+        if (HeadUnitScreenConfig.forcedScale && view is ProjectionView) {
+            val lp = view.layoutParams
+            var paramsChanged = false
+            
+            if (settings.stretchToFill) {
+                // Mode A: Preserve aspect ratio using Adjusted dimensions
+                val targetW = HeadUnitScreenConfig.getAdjustedWidth()
+                val targetH = HeadUnitScreenConfig.getAdjustedHeight()
 
-        view.scaleX = finalScaleX
-        view.scaleY = finalScaleY
-        AppLog.i("ProjectionViewScaler: Dimensions: Video: ${videoWidth}x$videoHeight, Content: ${contentWidth}x$contentHeight, View: ${view.width}x${view.height}")
-        AppLog.i("ProjectionViewScaler: Scale updated for view ${view.javaClass.simpleName}. scaleX: $finalScaleX, scaleY: $finalScaleY")
+                if (lp.width != targetW || lp.height != targetH) {
+                    lp.width = targetW
+                    lp.height = targetH
+                    paramsChanged = true
+                }
+
+                // Center the view in the usable area
+                if (lp is FrameLayout.LayoutParams) {
+                    if (lp.gravity != Gravity.CENTER) {
+                        lp.gravity = Gravity.CENTER
+                        paramsChanged = true
+                    }
+                }
+                
+                if (paramsChanged) {
+                    view.layoutParams = lp
+                }
+
+                view.scaleX = 1.0f
+                view.scaleY = 1.0f
+                view.translationX = 0f
+                view.translationY = 0f
+
+                AppLog.i("FORCED & STRETCH On: Resized view to ${targetW}x${targetH} (centered)")
+            } else {
+                // Mode B: Stretch to fill the usable area exactly (ignores aspect ratio)
+                if (lp.width != usableW || lp.height != usableH) {
+                    lp.width = usableW
+                    lp.height = usableH
+                    paramsChanged = true
+                }
+                
+                if (lp is FrameLayout.LayoutParams) {
+                    val targetGravity = Gravity.TOP or Gravity.START
+                    if (lp.gravity != targetGravity) {
+                        lp.gravity = targetGravity
+                        paramsChanged = true
+                    }
+                }
+                
+                if (paramsChanged) {
+                    view.layoutParams = lp
+                }
+
+                view.scaleX = 1.0f
+                view.scaleY = 1.0f
+                view.translationX = 0f
+                view.translationY = 0f
+
+                AppLog.i("FORCED & STRETCH Off: Resized view to match screen exactly: ${usableW}x${usableH}")
+            }
+        } else {
+            // Modern way / TextureView: Use View scaling properties on a full-screen view
+            val finalScaleX = HeadUnitScreenConfig.getScaleX()
+            val finalScaleY = HeadUnitScreenConfig.getScaleY()
+
+            val lp = view.layoutParams
+            var paramsChanged = false
+            
+            if (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || 
+                lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+                lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+                paramsChanged = true
+            }
+            
+            if (lp is FrameLayout.LayoutParams) {
+                if (lp.gravity != Gravity.NO_GRAVITY) {
+                    lp.gravity = Gravity.NO_GRAVITY
+                    paramsChanged = true
+                }
+            }
+            
+            if (paramsChanged) {
+                view.layoutParams = lp
+            }
+
+            // Normal centering for non-forced modes
+            view.translationX = 0f
+            view.translationY = 0f
+
+            if (view is IProjectionView) {
+                view.setVideoScale(finalScaleX, finalScaleY)
+            } else {
+                view.scaleX = finalScaleX
+                view.scaleY = finalScaleY
+            }
+            AppLog.i("Normal Scale. scaleX: $finalScaleX, scaleY: $finalScaleY")
+        }
     }
 }
