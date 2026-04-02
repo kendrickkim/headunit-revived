@@ -518,7 +518,7 @@ private class BitReader(private val buffer: ByteArray, private val offset: Int, 
     fun readUE(): Int {
         var zeros = 0
         while (readBit() == 0 && bitPosition < bitLimit) zeros++
-        return if (zeros == 0) 0 else (2.0.pow(zeros.toDouble()) - 1 + readBits(zeros)).toInt()
+        return if (zeros == 0) 0 else (1 shl zeros) - 1 + readBits(zeros)
     }
 }
 
