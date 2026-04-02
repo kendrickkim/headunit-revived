@@ -49,15 +49,13 @@ class CarKeyReceiver : BroadcastReceiver() {
         if (!commManager.isConnected) return
 
         var keyCode = -1
-        var isLongPress = false
 
         // 1. Standard Media Button extraction
         if (action == "android.intent.action.MEDIA_BUTTON" || action == "hy.intent.action.MEDIA_BUTTON") {
             val event = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
             if (event != null) {
                 keyCode = event.keyCode
-                isLongPress = event.repeatCount > 0
-                
+
                 // If it's just a down event, wait for up or handle immediately
                 if (event.action == KeyEvent.ACTION_DOWN) {
                     if (event.repeatCount == 0) {
@@ -83,6 +81,7 @@ class CarKeyReceiver : BroadcastReceiver() {
             "com.nwd.action.ACTION_KEY_VALUE" -> {
                 keyCode = intent.getByteExtra("extra_key_value", 0).toInt()
                 handleNwdKey(keyCode, commManager)
+            }
             "com.winca.service.Setting.KEY_ACTION" -> {
                 keyCode = intent.getIntExtra("com.winca.service.Setting.KEY_ACTION_EXTRA", -1)
                 if (keyCode != -1) handleGenericKey(keyCode, commManager)
