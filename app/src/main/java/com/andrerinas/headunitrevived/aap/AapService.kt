@@ -59,6 +59,10 @@ import com.andrerinas.headunitrevived.app.UsbAttachedActivity
 import android.media.AudioManager
 import com.andrerinas.headunitrevived.utils.HotspotManager
 import com.andrerinas.headunitrevived.utils.VpnControl
+import com.andrerinas.headunitrevived.utils.SilentAudioPlayer
+import com.andrerinas.headunitrevived.connection.CarKeyReceiver
+import com.andrerinas.headunitrevived.connection.NativeAaHandshakeManager
+import com.andrerinas.headunitrevived.utils.Settings
 import java.net.ServerSocket
 
 /**
@@ -86,7 +90,9 @@ class AapService : Service(), UsbReceiver.Listener {
     private lateinit var usbReceiver: UsbReceiver
     private var nightModeManager: NightModeManager? = null
     private var wifiDirectManager: WifiDirectManager? = null
-    private var nativeAaHandshakeManager: com.andrerinas.headunitrevived.connection.NativeAaHandshakeManager? = null
+    private var nativeAaHandshakeManager: NativeAaHandshakeManager? = null
+    private var carKeyReceiver: CarKeyReceiver? = null
+    private var silentAudioPlayer: SilentAudioPlayer? = null
     private var wirelessServer: WirelessServer? = null
     private var networkDiscovery: NetworkDiscovery? = null
     private var mediaSession: MediaSessionCompat? = null
@@ -417,18 +423,21 @@ class AapService : Service(), UsbReceiver.Listener {
         AppLog.i("Auto-started continuous log capture")
 
         startService(GpsLocationService.intent(this))
-        
-        nativeAaHandshakeManager = com.andrerinas.headunitrevived.connection.NativeAaHandshakeManager(this, serviceScope)
+
+        nativeAaHandshakeManager = NativeAaHandshakeManager(this, serviceScope)
         wifiDirectManager = WifiDirectManager(this)
         wifiDirectManager?.setCredentialsListener { ssid, psk, ip, bssid ->
             AppLog.i("AapService: Received WiFi credentials from manager (SSID=$ssid, IP=$ip). Updating HandshakeManager.")
             nativeAaHandshakeManager?.updateWifiCredentials(ssid, psk, ip, bssid)
         }
-        
+
         // Start the BT handshake server if enabled
         if (App.provide(this).settings.wifiConnectionMode == 3) {
             nativeAaHandshakeManager?.start()
         }
+
+        carKeyReceiver = CarKeyReceiver()
+        silentAudioPlayer = SilentAudioPlayer(this)
 
         initWifiMode()
         checkAlreadyConnectedUsb()
@@ -535,6 +544,20 @@ class AapService : Service(), UsbReceiver.Listener {
         updateNotification()
         acquireWifiLock()
 
+        // Start silent audio hack to keep media focus (helps with steering wheel buttons)
+        silentAudioPlayer?.start()
+
+        // Register the comprehensive steering wheel key receiver
+        val filter = android.content.IntentFilter().apply {
+            priority = 1000
+            CarKeyReceiver.ACTIONS.forEach { addAction(it) }
+        }
+        try {
+            registerReceiver(carKeyReceiver, filter)
+        } catch (e: Exception) {
+            AppLog.e("AapService: Failed to register CarKeyReceiver", e)
+        }
+
         // Reactivate the existing MediaSession (created in onCreate, kept alive across disconnects)
         mediaSession?.isActive = true
         updateMediaSessionState(true)
@@ -639,6 +662,13 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun onDisconnected(state: CommManager.ConnectionState.Disconnected) {
         isSwitchingToAccessory.set(false)
         releaseWifiLock()
+
+        // Cleanup steering wheel and audio focus hacks
+        silentAudioPlayer?.stop()
+        try {
+            unregisterReceiver(carKeyReceiver)
+        } catch (e: Exception) {}
+
         if (!isDestroying) updateNotification()
         // Keep MediaSession alive across disconnect/reconnect cycles.
         // Only deactivate it — do NOT release it. A released session can no longer
@@ -686,7 +716,7 @@ class AapService : Service(), UsbReceiver.Listener {
         // Skip if the user voluntarily exited AA — the dongle is likely still connected with
         // stale data, and reconnecting immediately just causes handshake failures. The next
         // USB attach event will re-trigger the flow cleanly.
-        if (lastType == com.andrerinas.headunitrevived.utils.Settings.CONNECTION_TYPE_USB &&
+        if (lastType == Settings.CONNECTION_TYPE_USB &&
             (settings.autoConnectLastSession || settings.autoConnectSingleUsbDevice)) {
             if (state.isUserExit && !(settings.autoStartOnUsb && settings.reopenOnReconnection)) {
                 AppLog.i("AapService: USB disconnect after user Exit. Skipping auto-reconnect (waiting for dongle re-enumeration).")
@@ -706,7 +736,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
         if (!state.isClean) {
             val mode = settings.wifiConnectionMode
-            if (mode == 1 && lastType != com.andrerinas.headunitrevived.utils.Settings.CONNECTION_TYPE_USB) {
+            if (mode == 1 && lastType != Settings.CONNECTION_TYPE_USB) {
                 AppLog.i("AapService: Unclean WiFi disconnect in Auto Mode. Retrying discovery in 2s...")
                 serviceScope.launch {
                     delay(2000)
@@ -813,13 +843,13 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun initWifiMode() {
         val settings = App.provide(this).settings
         val mode = settings.wifiConnectionMode
-        
+
         AppLog.i("AapService: Initializing WiFi Mode: $mode")
-        
+
         // Mode 1: Auto (Headunit Server), Mode 2: Helper (Wireless Launcher), Mode 3: Native AA
         if (mode == 1 || mode == 2 || mode == 3) {
             startWirelessServer()
-            
+
             // 1. Hotspot Logic (Only for Mode 1 and 2)
             if ((mode == 1 || mode == 2) && settings.autoEnableHotspot) {
                 Thread {
@@ -910,7 +940,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
         if (App.provide(this).settings.autoEnableHotspot) {
             AppLog.i("AapService: Auto-disabling hotspot...")
-            com.andrerinas.headunitrevived.utils.HotspotManager.setHotspotEnabled(this, false)
+            HotspotManager.setHotspotEnabled(this, false)
         }
 
         releaseWifiLock()
@@ -1395,7 +1425,7 @@ class AapService : Service(), UsbReceiver.Listener {
                 addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             } to 100
         } else {
-            Intent(this, com.andrerinas.headunitrevived.main.MainActivity::class.java).apply {
+            Intent(this, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             } to 101
         }
