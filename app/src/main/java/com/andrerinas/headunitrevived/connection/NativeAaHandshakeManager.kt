@@ -237,11 +237,12 @@ class NativeAaHandshakeManager(
                 AppLog.i("NativeAA: Sending WifiInfoResponse (Type 3) with full credentials...")
                 sendWifiSecurityResponse(output, ssid, psk, bssid)
                 AppLog.i("NativeAA: Handshake completed successfully on Bluetooth side.")
-                AppLog.i("NativeAA: Keeping Bluetooth socket alive for 20s to allow WiFi transition...")
-                
-                // Keep the socket open for 20 seconds so the phone feels "stable" 
-                // during the WiFi switch
-                delay(20000)
+                AppLog.i("NativeAA: Handshake completed! Keeping Bluetooth socket alive indefinitely...")
+
+                // Instead of closing after 20 seconds, keep the socket open indefinitely.
+                while (isRunning && isActive) {
+                    delay(1000)
+                }
             } else {
                 AppLog.w("NativeAA: Unexpected response type from phone: ${response.type}. Expected Type 2.")
             }
