@@ -31,6 +31,8 @@ class WirelessConnectionFragment : Fragment(R.layout.fragment_wireless_connectio
 
     private var pendingWifiConnectionMode: Int? = null
     private var pendingAutoEnableHotspot: Boolean? = null
+    private var pendingWaitForWifi: Boolean? = null
+    private var pendingWaitForWifiTimeout: Int? = null
     
     private var hasChanges = false
     private val SAVE_ITEM_ID = 1001
@@ -41,6 +43,8 @@ class WirelessConnectionFragment : Fragment(R.layout.fragment_wireless_connectio
 
         pendingWifiConnectionMode = settings.wifiConnectionMode
         pendingAutoEnableHotspot = settings.autoEnableHotspot
+        pendingWaitForWifi = settings.waitForWifiBeforeWifiDirect
+        pendingWaitForWifiTimeout = settings.waitForWifiTimeout
 
         toolbar = view.findViewById(R.id.toolbar)
         recyclerView = view.findViewById(R.id.settingsRecyclerView)
@@ -153,6 +157,37 @@ class WirelessConnectionFragment : Fragment(R.layout.fragment_wireless_connectio
             ))
         }
 
+        if (pendingWifiConnectionMode == 2) {
+            items.add(SettingItem.ToggleSettingEntry(
+                stableId = "waitForWifi",
+                nameResId = R.string.wait_for_wifi,
+                descriptionResId = R.string.wait_for_wifi_description,
+                isChecked = pendingWaitForWifi ?: false,
+                onCheckedChanged = { isChecked ->
+                    pendingWaitForWifi = isChecked
+                    checkChanges()
+                    updateSettingsList()
+                }
+            ))
+
+            if (pendingWaitForWifi == true) {
+                items.add(SettingItem.SliderSettingEntry(
+                    stableId = "waitForWifiTimeout",
+                    nameResId = R.string.wait_for_wifi_timeout,
+                    value = "${pendingWaitForWifiTimeout}s",
+                    sliderValue = (pendingWaitForWifiTimeout ?: 10).toFloat(),
+                    valueFrom = 5f,
+                    valueTo = 30f,
+                    stepSize = 1f,
+                    onValueChanged = { value ->
+                        pendingWaitForWifiTimeout = value.toInt()
+                        checkChanges()
+                        updateSettingsList()
+                    }
+                ))
+            }
+        }
+
         // Add bottom save button
         if (hasChanges) {
             items.add(SettingItem.ActionButton(
@@ -204,7 +239,9 @@ class WirelessConnectionFragment : Fragment(R.layout.fragment_wireless_connectio
 
     private fun checkChanges() {
         val anyChange = pendingWifiConnectionMode != settings.wifiConnectionMode ||
-                        pendingAutoEnableHotspot != settings.autoEnableHotspot
+                        pendingAutoEnableHotspot != settings.autoEnableHotspot ||
+                        pendingWaitForWifi != settings.waitForWifiBeforeWifiDirect ||
+                        pendingWaitForWifiTimeout != settings.waitForWifiTimeout
         
         if (hasChanges != anyChange) {
             hasChanges = anyChange
@@ -217,6 +254,9 @@ class WirelessConnectionFragment : Fragment(R.layout.fragment_wireless_connectio
         val oldMode = settings.wifiConnectionMode
         settings.wifiConnectionMode = pendingWifiConnectionMode!!
         settings.autoEnableHotspot = pendingAutoEnableHotspot!!
+        settings.waitForWifiBeforeWifiDirect = pendingWaitForWifi!!
+        settings.waitForWifiTimeout = pendingWaitForWifiTimeout!!
+
         settings.commit()
 
         if (oldMode != settings.wifiConnectionMode) {

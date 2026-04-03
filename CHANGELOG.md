@@ -6,6 +6,7 @@
 - Added: Force Scale Option for older devices on surface view
 - Added: New Immersive Fullscreen with avoided notch area. This should fix problems for eg. Pixel Phones
 - Enhanced: Video Decoder Error Handling
+- Added: 2 new WiFi-Options for a WiFi-Direct. Thanks to @andrecuellar
 - More to come...
 
 ### v.2.1.1

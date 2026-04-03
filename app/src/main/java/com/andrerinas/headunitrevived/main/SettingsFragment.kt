@@ -61,8 +61,6 @@ class SettingsFragment : Fragment() {
 
     private var pendingKillOnDisconnect: Boolean? = null
     private var pendingAutoEnableHotspot: Boolean? = null
-    private var pendingWaitForWifi: Boolean? = null
-    private var pendingWaitForWifiTimeout: Int? = null
     
     // Custom Insets
     private var pendingInsetLeft: Int? = null
@@ -114,8 +112,6 @@ class SettingsFragment : Fragment() {
 
         pendingKillOnDisconnect = settings.killOnDisconnect
         pendingAutoEnableHotspot = settings.autoEnableHotspot
-        pendingWaitForWifi = settings.waitForWifiBeforeWifiDirect
-        pendingWaitForWifiTimeout = settings.waitForWifiTimeout
         
         pendingInsetLeft = settings.insetLeft
         pendingInsetTop = settings.insetTop
@@ -240,8 +236,6 @@ class SettingsFragment : Fragment() {
 
         pendingKillOnDisconnect?.let { settings.killOnDisconnect = it }
         pendingAutoEnableHotspot?.let { settings.autoEnableHotspot = it }
-        pendingWaitForWifi?.let { settings.waitForWifiBeforeWifiDirect = it }
-        pendingWaitForWifiTimeout?.let { settings.waitForWifiTimeout = it }
         
         pendingInsetLeft?.let { settings.insetLeft = it }
         pendingInsetTop?.let { settings.insetTop = it }
@@ -304,9 +298,7 @@ class SettingsFragment : Fragment() {
                         pendingAssistantVolumeOffset != settings.assistantVolumeOffset ||
                         pendingNavigationVolumeOffset != settings.navigationVolumeOffset ||
                         pendingKillOnDisconnect != settings.killOnDisconnect ||
-                        pendingAutoEnableHotspot != settings.autoEnableHotspot ||
-                        pendingWaitForWifi != settings.waitForWifiBeforeWifiDirect ||
-                        pendingWaitForWifiTimeout != settings.waitForWifiTimeout
+                        pendingAutoEnableHotspot != settings.autoEnableHotspot
 
         hasChanges = anyChange
 
@@ -382,109 +374,6 @@ class SettingsFragment : Fragment() {
                     .show()
             }
         ))
-
-        val wifiModes = resources.getStringArray(R.array.wireless_connection_modes)
-        items.add(SettingItem.SettingEntry(
-            stableId = "wifiConnectionMode",
-            nameResId = R.string.wireless_mode,
-            value = wifiModes.getOrElse(pendingWifiConnectionMode!!) { "" },
-            onClick = { _ ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.wireless_mode)
-                    .setSingleChoiceItems(wifiModes, pendingWifiConnectionMode!!) { dialog, which ->
-                        pendingWifiConnectionMode = which
-                        checkChanges()
-                        dialog.dismiss()
-                        updateSettingsList()
-                    }
-                    .show()
-            }
-        ))
-
-        // Auto-Enable Hotspot Toggle (only visible if not in Manual Mode)
-        if (pendingWifiConnectionMode != 0) {
-            items.add(SettingItem.ToggleSettingEntry(
-                stableId = "autoEnableHotspot",
-                nameResId = R.string.auto_enable_hotspot,
-                descriptionResId = R.string.auto_enable_hotspot_description,
-                isChecked = pendingAutoEnableHotspot ?: false,
-                onCheckedChanged = { isChecked ->
-                    if (isChecked) {
-                        // Check WRITE_SETTINGS permission (required for hotspot on API 23+)
-                        if (android.os.Build.VERSION.SDK_INT >= 23 &&
-                            !android.provider.Settings.System.canWrite(requireContext())) {
-                            pendingAutoEnableHotspot = true // Mark intent so onResume can finalize
-                            checkChanges()
-                            updateSettingsList()
-                            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                                .setTitle(R.string.hotspot_permission_title)
-                                .setMessage(R.string.hotspot_permission_message)
-                                .setPositiveButton(R.string.open_settings) { dialog, _ ->
-                                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
-                                        data = android.net.Uri.parse("package:${requireContext().packageName}")
-                                    }
-                                    startActivity(intent)
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton(android.R.string.cancel) { _, _ ->
-                                    pendingAutoEnableHotspot = false
-                                    checkChanges()
-                                    updateSettingsList()
-                                }
-                                .show()
-                        } else {
-                            // Permission granted or not needed — show experimental warning
-                            MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                                .setTitle(R.string.hotspot_warning_title)
-                                .setMessage(R.string.hotspot_warning_message)
-                                .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                                    pendingAutoEnableHotspot = true
-                                    checkChanges()
-                                    updateSettingsList()
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                        }
-                    } else {
-                        pendingAutoEnableHotspot = false
-                        checkChanges()
-                        updateSettingsList()
-                    }
-                }
-            ))
-        }
-
-        if (pendingWifiConnectionMode == 2) {
-            items.add(SettingItem.ToggleSettingEntry(
-                stableId = "waitForWifi",
-                nameResId = R.string.wait_for_wifi,
-                descriptionResId = R.string.wait_for_wifi_description,
-                isChecked = pendingWaitForWifi ?: false,
-                onCheckedChanged = { isChecked ->
-                    pendingWaitForWifi = isChecked
-                    checkChanges()
-                    updateSettingsList()
-                }
-            ))
-
-            if (pendingWaitForWifi == true) {
-                items.add(SettingItem.SliderSettingEntry(
-                    stableId = "waitForWifiTimeout",
-                    nameResId = R.string.wait_for_wifi_timeout,
-                    value = "${pendingWaitForWifiTimeout}s",
-                    sliderValue = (pendingWaitForWifiTimeout ?: 10).toFloat(),
-                    valueFrom = 5f,
-                    valueTo = 30f,
-                    stepSize = 1f,
-                    onValueChanged = { value ->
-                        pendingWaitForWifiTimeout = value.toInt()
-                        checkChanges()
-                        updateSettingsList()
-                    }
-                ))
-            }
-        }
 
         items.add(SettingItem.SettingEntry(
             stableId = "vehicleInfoSettings",
