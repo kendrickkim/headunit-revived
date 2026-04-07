@@ -40,6 +40,14 @@ class CarKeyReceiver : BroadcastReceiver() {
         val action = intent?.action ?: return
         AppLog.d("CarKeyReceiver: Received action: $action")
 
+        // Broadcast for KeymapFragment debugger
+        context.sendBroadcast(Intent("com.andrerinas.headunitrevived.DEBUG_KEY").apply {
+            setPackage(context.packageName)
+            putExtra("action", action)
+            // Copy all extras to the debug intent
+            intent.extras?.let { putExtras(it) }
+        })
+
         // Try to abort broadcast to prevent other apps (like built-in radio) from reacting
         if (isOrderedBroadcast) {
             abortBroadcast()
