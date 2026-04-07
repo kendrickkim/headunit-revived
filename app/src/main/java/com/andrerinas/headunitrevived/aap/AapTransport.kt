@@ -141,7 +141,9 @@ class AapTransport(
     init {
         micRecorder.listener = this
         aapAudio = AapAudio(audioDecoder, audioManager, settings)
-        aapVideo = AapVideo(videoDecoder, settings)
+        aapVideo = AapVideo(videoDecoder, settings) {
+            send(com.andrerinas.headunitrevived.aap.protocol.messages.VideoFocusEvent(gain = true, unsolicited = true))
+        }
     }
 
     internal fun startSensor(type: Int) {

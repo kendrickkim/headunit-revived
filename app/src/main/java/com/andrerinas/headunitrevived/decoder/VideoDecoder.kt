@@ -320,11 +320,11 @@ class VideoDecoder(private val settings: Settings) {
                 if (combined.isNotEmpty()) {
                     format.setByteBuffer("csd-0", ByteBuffer.wrap(combined))
                 }
-                format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 4 * 1024 * 1024)
+                format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 8 * 1024 * 1024)
             } else {
                 if (sps != null) format.setByteBuffer("csd-0", ByteBuffer.wrap(sps!!))
                 if (pps != null) format.setByteBuffer("csd-1", ByteBuffer.wrap(pps!!))
-                format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 1024 * 1024)
+                format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 2 * 1024 * 1024)
             }
 
             if (!mSurface!!.isValid) throw IllegalStateException("Surface not valid")

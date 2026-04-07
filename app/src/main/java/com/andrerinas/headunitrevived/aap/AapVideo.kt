@@ -6,11 +6,30 @@ import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
 import java.nio.ByteBuffer
 
-internal class AapVideo(private val videoDecoder: VideoDecoder, private val settings: Settings) {
+internal class AapVideo(private val videoDecoder: VideoDecoder, private val settings: Settings, private val onFrameCorrupted: () -> Unit) {
 
-    private val messageBuffer = ByteBuffer.allocate(Messages.DEF_BUFFER_LENGTH * 32) // ~4MB for H.265 support
+    private val messageBuffer = ByteBuffer.allocate(
+        if (settings.videoCodec == VideoDecoder.CodecType.H265.mimeType) {
+            Messages.DEF_BUFFER_LENGTH * 64 // ~8MB for H.265 support
+        } else {
+            Messages.DEF_BUFFER_LENGTH * 16 // ~2MB for H.264 legacy support
+        }
+    )
     private var legacyAssembledBuffer: ByteArray? = null
     private var isFrameCorrupt = false
+    private var lastKeyframeRequestMs = 0L
+
+    private fun markCorruptAndRequestRecovery() {
+        if (!isFrameCorrupt) {
+            val now = android.os.SystemClock.elapsedRealtime()
+            if (now - lastKeyframeRequestMs > 1000) {
+                lastKeyframeRequestMs = now
+                AppLog.w("AapVideo: Frame corrupted, requesting keyframe to recover stream")
+                onFrameCorrupted()
+            }
+        }
+        isFrameCorrupt = true
+    }
 
     fun process(message: AapMessage): Boolean {
 
@@ -59,7 +78,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
                     messageBuffer.put(message.data, 0, message.size)
                 } else {
                     AppLog.e("AapVideo: Fragment overflow (Flag 8)! Size ${message.size} exceeds remaining ${messageBuffer.remaining()}. Invalidating frame.")
-                    isFrameCorrupt = true
+                    markCorruptAndRequestRecovery()
                     messageBuffer.clear()
                 }
                 return true
@@ -72,7 +91,7 @@ internal class AapVideo(private val videoDecoder: VideoDecoder, private val sett
                     messageBuffer.put(message.data, 0, message.size)
                 } else {
                     AppLog.e("AapVideo: Final fragment overflow (Flag 10)! Invalidating frame.")
-                    isFrameCorrupt = true
+                    markCorruptAndRequestRecovery()
                     messageBuffer.clear()
                     return true
                 }
