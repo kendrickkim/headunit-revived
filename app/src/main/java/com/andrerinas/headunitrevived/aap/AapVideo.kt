@@ -4,7 +4,6 @@ import com.andrerinas.headunitrevived.aap.protocol.messages.Messages
 import com.andrerinas.headunitrevived.decoder.VideoDecoder
 import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.utils.Settings
-import com.andrerinas.headunitrevived.utils.LegacyOptimizer
 import java.nio.ByteBuffer
 
 internal class AapVideo(private val videoDecoder: VideoDecoder, private val settings: Settings) {

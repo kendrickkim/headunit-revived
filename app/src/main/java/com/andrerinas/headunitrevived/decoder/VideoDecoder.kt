@@ -11,7 +11,6 @@ import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import android.os.SystemClock
 import java.nio.ByteBuffer
 import java.util.Locale
-import kotlin.math.pow
 
 interface VideoDimensionsListener {
     fun onVideoDimensionsChanged(width: Int, height: Int)
@@ -203,18 +202,25 @@ class VideoDecoder(private val settings: Settings) {
 
     private fun detectCodecType(buffer: ByteArray, offset: Int, size: Int): CodecType? {
         if (size < 5) return null
-        val length = offset + (size.coerceAtMost(100)) - 5
-        for (i in offset until length) {
+        val limit = offset + size
+        // Need at least 5 bytes visible from position i: [0, 0, 0/1, 1, NAL_HEADER]
+        for (i in offset until limit - 4) {
             if (buffer[i].toInt() == 0 && buffer[i+1].toInt() == 0) {
-                if ((buffer[i+2].toInt() == 0 && buffer[i+3].toInt() == 1) || (buffer[i+2].toInt() == 1)) {
-                    val headerPos = if (buffer[i+2].toInt() == 1) i + 3 else i + 4
-                    val b = buffer[headerPos].toInt()
-                    val hevcType = (b and 0x7E) shr 1
-                    if (hevcType in 32..34) return CodecType.H265
-                    val avcType = b and 0x1F
-                    if (avcType == 7 || avcType == 8) return CodecType.H264
-                }
+                val headerPos: Int
+                if (buffer[i+2].toInt() == 0 && buffer[i+3].toInt() == 1) {
+                    headerPos = i + 4
+                } else if (buffer[i+2].toInt() == 1) {
+                    headerPos = i + 3
+                } else continue
+                if (headerPos >= limit) return null
+                val b = buffer[headerPos].toInt()
+                val hevcType = (b and 0x7E) shr 1
+                if (hevcType in 32..34) return CodecType.H265
+                val avcType = b and 0x1F
+                if (avcType == 7 || avcType == 8) return CodecType.H264
             }
+            // Only scan the first ~100 bytes for performance
+            if (i - offset >= 96) break
         }
         return null
     }
