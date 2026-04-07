@@ -63,14 +63,14 @@ android {
     val resDir = file("src/main/res")
     val availableLocales = resDir.listFiles { file ->
         file.isDirectory && file.name.startsWith("values-") &&
-        // Filter out non-language qualifiers (night mode, screen size, etc.)
-        !file.name.contains("night") &&
-        !file.name.contains("land") &&
-        !file.name.contains("port") &&
-        !file.name.matches(Regex("values-[whsml]\\d+.*")) &&
-        !file.name.matches(Regex("values-v\\d+")) &&
-        // Check that it contains strings.xml (actual translation)
-        file.resolve("strings.xml").exists()
+                // Filter out non-language qualifiers (night mode, screen size, etc.)
+                !file.name.contains("night") &&
+                !file.name.contains("land") &&
+                !file.name.contains("port") &&
+                !file.name.matches(Regex("values-[whsml]\\d+.*")) &&
+                !file.name.matches(Regex("values-v\\d+")) &&
+                // Check that it contains strings.xml (actual translation)
+                file.resolve("strings.xml").exists()
     }?.map { dir ->
         // Extract locale code from directory name (e.g., "values-es" -> "es", "values-pt-rBR" -> "pt-rBR")
         dir.name.removePrefix("values-")
@@ -98,8 +98,8 @@ android {
         applicationId = "com.andrerinas.headunitrevived"
         minSdk = 16
         targetSdk = 36
-        versionCode = 55
-        versionName = "2.1.1"
+        versionCode = 57
+        versionName = "2.2.0-beta2"
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
