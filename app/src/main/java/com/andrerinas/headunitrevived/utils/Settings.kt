@@ -1,11 +1,14 @@
 package com.andrerinas.headunitrevived.utils
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import com.andrerinas.headunitrevived.aap.protocol.proto.Control
+import com.andrerinas.headunitrevived.app.UsbAttachedActivity
 import com.andrerinas.headunitrevived.connection.UsbDeviceCompat
 
 class Settings(context: Context) {
@@ -570,6 +573,17 @@ class Settings(context: Context) {
                     .putBoolean(KEY_AUTO_START_ON_USB, enabled)
                     .apply()
             }
+        }
+
+        fun setUsbAttachedActivityEnabled(context: Context, enabled: Boolean) {
+            val component = ComponentName(context, UsbAttachedActivity::class.java)
+            val newState = if (enabled)
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            else
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            context.packageManager.setComponentEnabledSetting(
+                component, newState, PackageManager.DONT_KILL_APP
+            )
         }
 
         /**
