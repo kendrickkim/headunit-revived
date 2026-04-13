@@ -4,7 +4,7 @@
     <string name="menu">Menü</string>
     <string name="settings">Ayarlar</string>
 
-    <string name="title_activity_settings">AyarlarEtkinliği</string>
+    <string name="title_activity_settings">Ayarlar</string>
     <string name="dummy_button">Taslak Buton</string>
     <string name="dummy_content">TASLAK\nİÇERİK</string>
     <string name="allowed">İzin Verildi</string>
