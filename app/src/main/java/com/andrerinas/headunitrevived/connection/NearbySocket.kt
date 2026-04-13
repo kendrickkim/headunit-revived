@@ -39,7 +39,7 @@ class NearbySocket : Socket() {
         return object : InputStream() {
             private fun waitForStream(): InputStream {
                 if (inputLatch.count > 0L) {
-                    com.andrerinas.headunitrevived.utils.AppLog.d("NearbySocket: Waiting for inputLatch...")
+                    com.andrerinas.headunitrevived.utils.AppLog.i("NearbySocket: Blocking read until InputStream is AVAILABLE via Nearby Payload...")
                 }
                 inputLatch.await()
                 return internalInputStream!!

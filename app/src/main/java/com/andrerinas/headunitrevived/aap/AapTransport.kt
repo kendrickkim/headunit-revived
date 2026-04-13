@@ -268,21 +268,25 @@ class AapTransport(
 
     private fun handshake(connection: AccessoryConnection): Boolean {
         try {
-            // Increased delay for AA 16.4+ stability
-            SystemClock.sleep(500)
+            // Increased delay for AA 16.4+ stability - skip for Nearby (single message)
+            if (!connection.isSingleMessage) {
+                SystemClock.sleep(500)
+            }
+            
             val buffer = ByteArray(Messages.DEF_BUFFER_LENGTH)
 
             // Drain any stale data left in the USB pipe from a previous session
-            // (e.g. old TLS records after a dongle reconnect). Short timeout so we
-            // don't block if the pipe is already clean.
+            // Skip for Nearby (Socket) connections where every byte from the start is important.
             var drained = 0
-            while (true) {
-                val n = connection.recvBlocking(buffer, buffer.size, 50, false)
-                if (n <= 0) break
-                drained += n
-            }
-            if (drained > 0) {
-                AppLog.i("Handshake: Drained $drained bytes of stale data before version request")
+            if (!connection.isSingleMessage) {
+                while (true) {
+                    val n = try { connection.recvBlocking(buffer, buffer.size, 50, false) } catch (e: Exception) { -1 }
+                    if (n <= 0) break
+                    drained += n
+                }
+                if (drained > 0) {
+                    AppLog.i("Handshake: Drained $drained bytes of stale data before version request")
+                }
             }
 
             AppLog.d("Handshake: Starting version request. TS: ${SystemClock.elapsedRealtime()}")

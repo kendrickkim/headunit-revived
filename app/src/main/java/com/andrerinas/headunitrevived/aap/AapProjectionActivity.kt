@@ -455,28 +455,49 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
     }
 
+    private data class ExitOption(val titleResId: Int, val iconResId: Int, val iconColor: Int)
+
     private fun showExitDialog() {
-        val items = mutableListOf(getString(R.string.exit_dialog_stop))
+        val options = mutableListOf<ExitOption>()
+        options.add(ExitOption(R.string.exit_dialog_stop, R.drawable.ic_stop, Color.RED))
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            items.add(getString(R.string.exit_dialog_pip))
+            options.add(ExitOption(R.string.exit_dialog_pip, R.drawable.ic_pip, Color.LTGRAY))
         }
         
-        items.add(getString(R.string.exit_dialog_background))
+        options.add(ExitOption(R.string.exit_dialog_background, R.drawable.ic_home, Color.LTGRAY))
+
+        val adapter = object : android.widget.BaseAdapter() {
+            override fun getCount(): Int = options.size
+            override fun getItem(position: Int): Any = options[position]
+            override fun getItemId(position: Int): Long = position.toLong()
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = convertView ?: layoutInflater.inflate(R.layout.dialog_exit_item, parent, false)
+                val option = options[position]
+                val iconView = view.findViewById<android.widget.ImageView>(R.id.icon)
+                val textView = view.findViewById<android.widget.TextView>(R.id.text)
+                
+                textView.setText(option.titleResId)
+                iconView.setImageResource(option.iconResId)
+                iconView.setColorFilter(option.iconColor)
+                
+                return view
+            }
+        }
 
         MaterialAlertDialogBuilder(this, R.style.DarkAlertDialog)
             .setTitle(R.string.exit_dialog_title)
-            .setItems(items.toTypedArray()) { _, which ->
-                val selected = items[which]
-                when {
-                    selected == getString(R.string.exit_dialog_stop) -> {
+            .setAdapter(adapter) { _, which ->
+                val selected = options[which]
+                when (selected.titleResId) {
+                    R.string.exit_dialog_stop -> {
                         commManager.disconnect(sendByeBye = true)
                         finish()
                     }
-                    selected == getString(R.string.exit_dialog_pip) -> {
+                    R.string.exit_dialog_pip -> {
                         enterPiP()
                     }
-                    selected == getString(R.string.exit_dialog_background) -> {
+                    R.string.exit_dialog_background -> {
                         moveToBackground()
                     }
                 }
@@ -520,7 +541,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onUserLeaveHint() {
-        // Optional: Auto-enter PiP if user presses home (like HUR 8)
+        // Optional: Auto-enter PiP if user presses home
+        
         // For now, we only enter via dialog as requested.
         super.onUserLeaveHint()
     }
