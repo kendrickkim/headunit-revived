@@ -82,9 +82,48 @@ object ProjectionViewScaler {
                 AppLog.i("FORCED & STRETCH Off: Resized view to match screen exactly: ${usableW}x${usableH}")
             }
         } else {
-            // Modern way / TextureView: Use View scaling properties on a full-screen view
-            val finalScaleX = HeadUnitScreenConfig.getScaleX()
-            val finalScaleY = HeadUnitScreenConfig.getScaleY()
+            val videoW = HeadUnitScreenConfig.getNegotiatedWidth().toFloat()
+            val videoH = HeadUnitScreenConfig.getNegotiatedHeight().toFloat()
+            val marginW = HeadUnitScreenConfig.getWidthMargin().toFloat()
+            val marginH = HeadUnitScreenConfig.getHeightMargin().toFloat()
+            
+            val uiW = videoW - marginW
+            val uiH = videoH - marginH
+
+            val viewW = view.width.toFloat()
+            val viewH = view.height.toFloat()
+
+            var finalScaleX = 1.0f
+            var finalScaleY = 1.0f
+
+            if (settings.stretchToFill) {
+                // Stretch to Fill: Make the active UI box (uiW x uiH) completely fill the View (viewW x viewH).
+                // The TextureView default scales videoW -> viewW. 
+                // To scale uiW -> viewW, we apply targetScale / defaultScale.
+                finalScaleX = videoW / uiW
+                finalScaleY = videoH / uiH
+                AppLog.i("ProjectionViewScaler: STRETCH - Scaling UI (${uiW}x${uiH}) to fill View (${viewW}x${viewH}). ScaleX=$finalScaleX, ScaleY=$finalScaleY")
+            } else {
+                // Letterbox / Fit Center: Keep the UI aspect ratio intact, max out at View dimensions.
+                val uiRatio = uiW / uiH
+                val viewRatio = viewW / viewH
+
+                if (viewRatio > uiRatio) {
+                    // View is wider than UI. Pillarboxing (black bars left/right). Limit by Height.
+                    val displayedUiH = viewH
+                    val displayedUiW = viewH * uiRatio
+                    finalScaleX = (displayedUiW * videoW) / (viewW * uiW)
+                    finalScaleY = videoH / uiH 
+                    AppLog.i("ProjectionViewScaler: FIT - Pillarboxed UI (${displayedUiW}x${displayedUiH}) into View (${viewW}x${viewH}). ScaleX=$finalScaleX, ScaleY=$finalScaleY")
+                } else {
+                    // View is taller than UI. Letterboxing (black bars top/bottom). Limit by Width.
+                    val displayedUiW = viewW
+                    val displayedUiH = viewW / uiRatio
+                    finalScaleX = videoW / uiW
+                    finalScaleY = (displayedUiH * videoH) / (viewH * uiH)
+                    AppLog.i("ProjectionViewScaler: FIT - Letterboxed UI (${displayedUiW}x${displayedUiH}) into View (${viewW}x${viewH}). ScaleX=$finalScaleX, ScaleY=$finalScaleY")
+                }
+            }
 
             val lp = view.layoutParams
             var paramsChanged = false
@@ -97,8 +136,8 @@ object ProjectionViewScaler {
             }
             
             if (lp is FrameLayout.LayoutParams) {
-                if (lp.gravity != Gravity.NO_GRAVITY) {
-                    lp.gravity = Gravity.NO_GRAVITY
+                if (lp.gravity != Gravity.CENTER) {
+                    lp.gravity = Gravity.CENTER
                     paramsChanged = true
                 }
             }
@@ -107,7 +146,6 @@ object ProjectionViewScaler {
                 view.layoutParams = lp
             }
 
-            // Normal centering for non-forced modes
             view.translationX = 0f
             view.translationY = 0f
 
@@ -117,7 +155,6 @@ object ProjectionViewScaler {
                 view.scaleX = finalScaleX
                 view.scaleY = finalScaleY
             }
-            AppLog.i("Normal Scale. scaleX: $finalScaleX, scaleY: $finalScaleY")
         }
     }
 }

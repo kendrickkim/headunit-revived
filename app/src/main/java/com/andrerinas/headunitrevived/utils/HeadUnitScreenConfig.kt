@@ -67,8 +67,22 @@ object HeadUnitScreenConfig {
             screenHeight = size.y
         }
 
+        // Proactively predict system insets for background negotiations (race-condition prevention)
+        var predictedInsetsChanged = false
+        if (settings.fullscreenMode == Settings.FullscreenMode.STATUS_ONLY || settings.fullscreenMode == Settings.FullscreenMode.NONE) {
+            val navId = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (navId > 0) {
+                val navHeight = context.resources.getDimensionPixelSize(navId)
+                if (systemInsetBottom == 0) {
+                    systemInsetBottom = navHeight
+                    predictedInsetsChanged = true
+                    AppLog.i("HeadUnitScreenConfig: Proactively predicted Navigation Bar height: $navHeight")
+                }
+            }
+        }
+
         // Only update if dimensions or settings changed (and we are already initialized)
-        if (isInitialized && realScreenWidthPx == screenWidth && realScreenHeightPx == screenHeight && this::currentSettings.isInitialized && currentSettings == settings) {
+        if (isInitialized && !predictedInsetsChanged && realScreenWidthPx == screenWidth && realScreenHeightPx == screenHeight && this::currentSettings.isInitialized && currentSettings == settings) {
             return
         }
 
@@ -84,14 +98,17 @@ object HeadUnitScreenConfig {
     }
 
     fun updateInsets(left: Int, top: Int, right: Int, bottom: Int) {
-        if (systemInsetLeft == left && systemInsetTop == top && systemInsetRight == right && systemInsetBottom == bottom) {
+        val newBottom = if (bottom == 0 && systemInsetBottom > 0) systemInsetBottom else bottom
+        val newRight = if (right == 0 && systemInsetRight > 0) systemInsetRight else right
+
+        if (systemInsetLeft == left && systemInsetTop == top && systemInsetRight == newRight && systemInsetBottom == newBottom) {
             return
         }
         
         systemInsetLeft = left
         systemInsetTop = top
-        systemInsetRight = right
-        systemInsetBottom = bottom
+        systemInsetRight = newRight
+        systemInsetBottom = newBottom
         
         if (isInitialized) {
             recalculate()
@@ -171,7 +188,7 @@ object HeadUnitScreenConfig {
             }
         }
         
-        AppLog.i("CarScreen isSmallScreen: $isSmallScreen, scaleFactor: $scaleFactor, scales: scaleX: ${getScaleX()}, scaleY: ${getScaleY()}")
+        AppLog.i("CarScreen isSmallScreen: $isSmallScreen, scaleFactor: $scaleFactor, margins: w=${getWidthMargin()}, h=${getHeightMargin()}")
     }
 
     fun getAdjustedHeight(): Int {
@@ -206,61 +223,12 @@ object HeadUnitScreenConfig {
         return margin.coerceAtLeast(0)
     }
 
-    private fun divideOrOne(numerator: Float, denominator: Float): Float {
-        return if (denominator == 0.0f) 1.0f else numerator / denominator
-    }
-
-    fun getScaleX(): Float {
-        if (forcedScale) {
-            return 1.0f
-        }
-
-        if (getNegotiatedWidth() > screenWidthPx) {
-            return divideOrOne(getNegotiatedWidth().toFloat(), screenWidthPx.toFloat())
-        }
-        if (isPortraitScaled) {
-            return divideOrOne(getAspectRatio(), (screenWidthPx.toFloat() / screenHeightPx.toFloat()))
-        }
-        return 1.0f
-    }
-        // Stretch option PR #259
-    fun getScaleY(): Float {
-        if (forcedScale) {
-            return 1.0f
-        }
-
-        if (getNegotiatedHeight() > screenHeightPx) {
-            return if (stretchToFill) {
-                // Before PR #233 Fix scaler Y
-                divideOrOne(getNegotiatedHeight().toFloat(), screenHeightPx.toFloat())
-            } else {
-                // After PR #233 Fix scaler Y
-                divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
-            }
-        }
-
-        if (isPortraitScaled) {
-            return 1.0f
-        }
-
-        return divideOrOne((screenWidthPx.toFloat() / screenHeightPx.toFloat()), getAspectRatio())
-    }
-
     fun getDensityDpi(): Int {
         return if (this::currentSettings.isInitialized && currentSettings.dpiPixelDensity != 0) {
             currentSettings.dpiPixelDensity
         } else {
             densityDpi
         }
-    }
-
-    fun getHorizontalCorrection(): Float {
-        return (getNegotiatedWidth() - getWidthMargin()).toFloat() / screenWidthPx.toFloat()
-    }
-
-    fun getVerticalCorrection(): Float {
-        val fIntValue = (getNegotiatedHeight() - getHeightMargin()).toFloat() / screenHeightPx.toFloat()
-        return fIntValue
     }
 
     fun getUsableWidth(): Int = screenWidthPx
