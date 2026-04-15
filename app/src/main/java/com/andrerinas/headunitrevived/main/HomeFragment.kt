@@ -445,6 +445,17 @@ class HomeFragment : Fragment() {
         val searchingText = dialogView.findViewById<TextView>(R.id.searchingText)
         val connectingContainer = dialogView.findViewById<View>(R.id.connectingContainer)
         val connectingText = dialogView.findViewById<TextView>(R.id.connectingText)
+        val connectionProgress = dialogView.findViewById<ProgressBar>(R.id.connectionProgress)
+
+        // Ensure the loading spinner is visible in both Light and Dark modes by forcing our brand color.
+        val brandTeal = ContextCompat.getColor(requireContext(), R.color.brand_teal)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            connectionProgress.indeterminateTintList = ColorStateList.valueOf(brandTeal)
+            connectionProgress.indeterminateTintMode = android.graphics.PorterDuff.Mode.SRC_IN
+        } else {
+            @Suppress("DEPRECATION")
+            connectionProgress.indeterminateDrawable?.setColorFilter(brandTeal, android.graphics.PorterDuff.Mode.SRC_IN)
+        }
 
         // Custom adapter to handle rounded backgrounds like in USB/Network lists
         val listAdapter = object : ArrayAdapter<NearbyManager.DiscoveredEndpoint>(requireContext(), R.layout.list_item_nearby) {
