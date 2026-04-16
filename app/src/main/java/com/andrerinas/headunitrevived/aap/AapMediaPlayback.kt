@@ -3,13 +3,14 @@ package com.andrerinas.headunitrevived.aap
 import com.andrerinas.headunitrevived.aap.protocol.messages.Messages
 import com.andrerinas.headunitrevived.aap.protocol.proto.MediaPlayback
 import com.andrerinas.headunitrevived.utils.AppLog
+import com.andrerinas.headunitrevived.utils.protoUint32ToLong
 import java.nio.ByteBuffer
 
 class AapMediaPlayback(
     private val onAaMediaMetadata: ((MediaPlayback.MediaMetaData) -> Unit)?,
     private val onAaPlaybackStatus: ((MediaPlayback.MediaPlaybackStatus) -> Unit)?
 ) {
-    private val messageBuffer = ByteBuffer.allocate(Messages.DEF_BUFFER_LENGTH * 2)
+    private val messageBuffer = ByteBuffer.allocate(1024 * 1024) // 1MB to handle large album art
     private var started = false
 
     fun process(message: AapMessage) {
@@ -35,7 +36,8 @@ class AapMediaPlayback(
             val status = message.parse(MediaPlayback.MediaPlaybackStatus.newBuilder()).build()
             onAaPlaybackStatus?.invoke(status)
             AppLog.d(
-                "AapMediaPlayback: status mediaSource='${status.mediaSource}', playbackSeconds=${status.playbackSeconds}, state=${status.state}"
+                "AapMediaPlayback: status mediaSource='${status.mediaSource}', " +
+                    "playbackSeconds(u32)=${status.playbackSeconds.protoUint32ToLong()}, state=${status.state}"
             )
         } catch (e: Exception) {
             AppLog.w("AapMediaPlayback: Failed to parse playback status: ${e.message}")

@@ -70,6 +70,7 @@ import com.andrerinas.headunitrevived.connection.NativeAaHandshakeManager
 import com.andrerinas.headunitrevived.connection.NearbyManager
 import com.andrerinas.headunitrevived.main.BackgroundNotification
 import com.andrerinas.headunitrevived.utils.Settings
+import com.andrerinas.headunitrevived.utils.protoUint32ToLong
 import java.net.ServerSocket
 
 /**
@@ -112,6 +113,8 @@ class AapService : Service(), UsbReceiver.Listener {
     private var lastAaPlaybackIsPlaying: Boolean? = null
     private var mediaSessionIsPlaying = false
     private var mediaMetadataDecodeJob: Job? = null
+    /** Decoded on a background thread in [scheduleApplyAaMediaMetadata]; reused for notification updates on position ticks. */
+    private var cachedAaAlbumArtBitmap: Bitmap? = null
     private var settingsPrefs: SharedPreferences? = null
     private val mediaNotification by lazy { BackgroundNotification(this) }
 
@@ -229,14 +232,15 @@ class AapService : Service(), UsbReceiver.Listener {
         val sync = App.provide(this).settings.syncMediaSessionWithAaMetadata
         if (!sync) {
             applyPlaceholderMediaMetadata()
+            cachedAaAlbumArtBitmap = null
             mediaNotification.cancel()
         } else {
             val last = lastAaMediaMetadata
             if (last != null) {
                 scheduleApplyAaMediaMetadata(last)
-                updateMediaNotification(last)
             } else {
                 applyPlaceholderMediaMetadata()
+                cachedAaAlbumArtBitmap = null
                 mediaNotification.cancel()
             }
         }
@@ -246,14 +250,15 @@ class AapService : Service(), UsbReceiver.Listener {
         if (isDestroying) return
         lastAaMediaMetadata = meta
         if (!App.provide(this).settings.syncMediaSessionWithAaMetadata) return
+        // Avoid showing a previous track's art with new title/artist until decode finishes.
+        cachedAaAlbumArtBitmap = null
         scheduleApplyAaMediaMetadata(meta)
-        updateMediaNotification(meta)
     }
 
     private fun onAaPlaybackStatusFromPhone(status: MediaPlayback.MediaPlaybackStatus) {
         if (isDestroying) return
         if (status.hasPlaybackSeconds()) {
-            lastAaPlaybackPositionMs = status.playbackSeconds * 1000L
+            lastAaPlaybackPositionMs = status.playbackSeconds.protoUint32ToLong() * 1000L
         }
         val isPlayingFromStatus = resolveIsPlayingFromStatus(status)
         lastAaPlaybackIsPlaying = isPlayingFromStatus
@@ -267,7 +272,6 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun resolveIsPlayingFromStatus(status: MediaPlayback.MediaPlaybackStatus): Boolean {
         if (!status.hasState()) return lastAaPlaybackIsPlaying ?: mediaSessionIsPlaying
         return when (val s = status.state) {
-            null -> lastAaPlaybackIsPlaying ?: mediaSessionIsPlaying
             MediaPlayback.MediaPlaybackStatus.State.PLAYING -> true
             MediaPlayback.MediaPlaybackStatus.State.STOPPED,
             MediaPlayback.MediaPlaybackStatus.State.PAUSED -> false
@@ -279,7 +283,8 @@ class AapService : Service(), UsbReceiver.Listener {
         mediaNotification.notify(
             metadata = meta,
             playbackSeconds = lastAaPlaybackPositionMs / 1000L,
-            isPlaying = lastAaPlaybackIsPlaying ?: mediaSessionIsPlaying
+            isPlaying = lastAaPlaybackIsPlaying ?: mediaSessionIsPlaying,
+            albumArtBitmap = cachedAaAlbumArtBitmap
         )
     }
 
@@ -292,7 +297,11 @@ class AapService : Service(), UsbReceiver.Listener {
             withContext(Dispatchers.Main) {
                 if (isDestroying) return@withContext
                 if (!App.provide(this@AapService).settings.syncMediaSessionWithAaMetadata) return@withContext
+                // Drop stale decode results if newer metadata arrived while we were decoding.
+                if (lastAaMediaMetadata !== meta) return@withContext
+                cachedAaAlbumArtBitmap = bitmap
                 applyAaMediaMetadataToSession(meta, bitmap)
+                updateMediaNotification(meta)
             }
         }
     }
@@ -300,22 +309,22 @@ class AapService : Service(), UsbReceiver.Listener {
     private fun decodeAlbumArt(bytes: ByteArray): Bitmap? {
         if (bytes.isEmpty()) return null
         return try {
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-                return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            val opts = BitmapFactory.Options()
+            opts.inJustDecodeBounds = true
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
+            if (opts.outWidth <= 0 || opts.outHeight <= 0) {
+                opts.inJustDecodeBounds = false
+                opts.inSampleSize = 1
+                return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
             }
             var sampleSize = 1
             val maxDim = 720
-            while (bounds.outWidth / sampleSize > maxDim || bounds.outHeight / sampleSize > maxDim) {
+            while (opts.outWidth / sampleSize > maxDim || opts.outHeight / sampleSize > maxDim) {
                 sampleSize *= 2
             }
-            BitmapFactory.decodeByteArray(
-                bytes,
-                0,
-                bytes.size,
-                BitmapFactory.Options().apply { inSampleSize = sampleSize }
-            )
+            opts.inJustDecodeBounds = false
+            opts.inSampleSize = sampleSize
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
         } catch (_: OutOfMemoryError) {
             null
         }
@@ -337,8 +346,11 @@ class AapService : Service(), UsbReceiver.Listener {
         if (meta.hasAlbum() && meta.album.isNotBlank()) {
             b.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, meta.album)
         }
-        if (meta.hasDurationSeconds() && meta.durationSeconds > 0) {
-            b.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, meta.durationSeconds * 1000L)
+        if (meta.hasDurationSeconds()) {
+            val durationSec = meta.durationSeconds.protoUint32ToLong()
+            if (durationSec > 0L) {
+                b.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationSec * 1000L)
+            }
         }
         if (albumArt != null) {
             b.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
@@ -867,6 +879,7 @@ class AapService : Service(), UsbReceiver.Listener {
         lastAaMediaMetadata = null
         lastAaPlaybackPositionMs = 0L
         lastAaPlaybackIsPlaying = null
+        cachedAaAlbumArtBitmap = null
         mediaNotification.cancel()
         applyPlaceholderMediaMetadata()
         // Keep MediaSession alive across disconnect/reconnect cycles.
@@ -1263,6 +1276,7 @@ class AapService : Service(), UsbReceiver.Listener {
         AppLog.i("AapService destroying... (wakeLock held=${bootWakeLock?.isHeld == true})")
         isDestroying = true
         mediaMetadataDecodeJob?.cancel()
+        cachedAaAlbumArtBitmap = null
         mediaNotification.cancel()
         commManager.onAaMediaMetadata = null
         commManager.onAaPlaybackStatus = null

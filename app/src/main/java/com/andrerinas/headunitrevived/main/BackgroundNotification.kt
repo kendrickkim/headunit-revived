@@ -2,7 +2,7 @@ package com.andrerinas.headunitrevived.main
 
 import android.app.PendingIntent
 import android.content.Context
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.os.Build
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
@@ -11,6 +11,7 @@ import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.AapProjectionActivity
 import com.andrerinas.headunitrevived.aap.protocol.proto.MediaPlayback
 import com.andrerinas.headunitrevived.contract.MediaKeyIntent
+import com.andrerinas.headunitrevived.utils.protoUint32ToLong
 
 class BackgroundNotification(private val context: Context) {
 
@@ -22,7 +23,8 @@ class BackgroundNotification(private val context: Context) {
     fun notify(
         metadata: MediaPlayback.MediaMetaData,
         playbackSeconds: Long = 0L,
-        isPlaying: Boolean = false
+        isPlaying: Boolean = false,
+        albumArtBitmap: Bitmap? = null
     ) {
 
         val playPauseKey = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
@@ -38,7 +40,7 @@ class BackgroundNotification(private val context: Context) {
         val playPause = PendingIntent.getBroadcast(context, 1, MediaKeyIntent(playPauseKey), broadcastFlags)
         val next = PendingIntent.getBroadcast(context, 2, MediaKeyIntent(nextKey), broadcastFlags)
         val prev = PendingIntent.getBroadcast(context, 3, MediaKeyIntent(prevKey), broadcastFlags)
-        val durationSeconds = if (metadata.hasDurationSeconds()) metadata.durationSeconds.toLong() else 0L
+        val durationSeconds = if (metadata.hasDurationSeconds()) metadata.durationSeconds.protoUint32ToLong() else 0L
         val clampedPlayback = playbackSeconds.coerceAtLeast(0L).coerceAtMost(durationSeconds.takeIf { it > 0 } ?: playbackSeconds.coerceAtLeast(0L))
         val progressText = if (durationSeconds > 0) {
             "${formatAsMmSs(clampedPlayback)} / ${formatAsMmSs(durationSeconds)}"
@@ -65,11 +67,10 @@ class BackgroundNotification(private val context: Context) {
                 .addAction(R.drawable.ic_skip_next_black_24dp, context.getString(R.string.media_action_next), next)
 
 
-        if (metadata.hasAlbumArt() && !metadata.albumArt.isEmpty) {
-            val image = BitmapFactory.decodeByteArray(metadata.albumArt.toByteArray(), 0, metadata.albumArt.size())
+        if (albumArtBitmap != null) {
             notification
-                    .setStyle(NotificationCompat.BigPictureStyle().bigPicture(image))
-                    .setLargeIcon(image)
+                .setStyle(NotificationCompat.BigPictureStyle().bigPicture(albumArtBitmap))
+                .setLargeIcon(albumArtBitmap)
         }
         App.provide(context).notificationManager.notify(NOTIFICATION_MEDIA, notification.build())
     }
