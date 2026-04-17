@@ -1533,7 +1533,7 @@ class AapService : Service(), UsbReceiver.Listener {
             usbManager.requestPermission(device, permissionIntent)
         } catch (e: Exception) {
             AppLog.e("Failed to request USB permission: ${e.message}. This device might not support USB permission dialogs.", e)
-            Toast.makeText(this, "System error: Failed to request USB permission dialog.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.error_usb_permission_failed), Toast.LENGTH_LONG).show()
         }
     }
 
