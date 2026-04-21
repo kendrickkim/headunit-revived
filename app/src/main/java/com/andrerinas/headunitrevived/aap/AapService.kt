@@ -138,6 +138,7 @@ class AapService : Service(), UsbReceiver.Listener {
     private var wifiLock: WifiManager.WifiLock? = null
 
     private var wifiReadyCallback: ConnectivityManager.NetworkCallback? = null
+
     private var wifiReadyTimeoutJob: Job? = null
     private var wifiModeInitialized = false
 
@@ -1342,6 +1343,10 @@ class AapService : Service(), UsbReceiver.Listener {
         serviceScope.cancel()
         LogExporter.stopCapture()
         super.onDestroy()
+        if (killProcessOnDestroy) {
+            AppLog.i("AapService: killProcessOnDestroy is true. Triggering System.exit(0).")
+            System.exit(0)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -2229,6 +2234,13 @@ class AapService : Service(), UsbReceiver.Listener {
     // -------------------------------------------------------------------------
 
     companion object {
+        /**
+         * If set to `true`, the service will call [System.exit] at the very end of [onDestroy].
+         * This is used by `killOnDisconnect` to ensure all cleanup (like Car Mode) completes
+         * before the process dies.
+         */
+        var killProcessOnDestroy: Boolean = false
+
         /** `true` while a Self Mode session is active. */
         var selfMode = false
 

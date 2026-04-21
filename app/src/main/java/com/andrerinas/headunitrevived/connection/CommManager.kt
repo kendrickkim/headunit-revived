@@ -366,12 +366,12 @@ class CommManager(
                 val stopIntent = android.content.Intent(context, com.andrerinas.headunitrevived.aap.AapService::class.java).apply {
                     action = com.andrerinas.headunitrevived.aap.AapService.ACTION_STOP_SERVICE
                 }
+                com.andrerinas.headunitrevived.aap.AapService.killProcessOnDestroy = true
                 context.stopService(stopIntent)
-                // Finish all tasks and exit
+                // Finish all tasks
                 val app = context.applicationContext as Application
                 val activityManager = app.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
                 activityManager.appTasks.forEach { it.finishAndRemoveTask() }
-                System.exit(0)
             }, 500)
         }
     }
@@ -425,12 +425,12 @@ class CommManager(
                 val stopIntent = android.content.Intent(context, com.andrerinas.headunitrevived.aap.AapService::class.java).apply {
                     action = com.andrerinas.headunitrevived.aap.AapService.ACTION_STOP_SERVICE
                 }
+                com.andrerinas.headunitrevived.aap.AapService.killProcessOnDestroy = true
                 context.stopService(stopIntent)
-                // Finish all tasks and exit
+                // Finish all tasks
                 val app = context.applicationContext as Application
                 val activityManager = app.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
                 activityManager.appTasks.forEach { it.finishAndRemoveTask() }
-                System.exit(0)
             }, 500)
         }
     }
