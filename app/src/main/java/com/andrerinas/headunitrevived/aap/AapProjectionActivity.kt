@@ -635,6 +635,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                     HeadUnitScreenConfig.getRightMargin(),
                     HeadUnitScreenConfig.getBottomMargin()
                 )
+                AppLog.i("[UI_DEBUG_FIX] AA is already running, send corrected via sendUpdateUiConfigRequest")
             }
             // If transport not started yet, ServiceDiscoveryResponse will use the corrected values automatically.
         }
