@@ -9,7 +9,7 @@ import com.andrerinas.headunitrevived.decoder.AudioDecoder
 object AudioConfigs {
     private val audioTracks = SparseArray<Media.AudioConfiguration>(3)
 
-    fun stream(channel: Int, separateAudioStreams: Boolean = false) : Int
+    fun stream(channel: Int, separateAudioStreams: Boolean = true) : Int
     {
         if (separateAudioStreams) {
             return when(channel) {
