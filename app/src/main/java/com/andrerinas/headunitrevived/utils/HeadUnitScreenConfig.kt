@@ -314,15 +314,6 @@ object HeadUnitScreenConfig {
         }
     }
 
-    fun getHorizontalCorrection(): Float {
-        return (getNegotiatedWidth() - getWidthMargin()).toFloat() / screenWidthPx.toFloat()
-    }
-
-    fun getVerticalCorrection(): Float {
-        val fIntValue = (getNegotiatedHeight() - getHeightMargin()).toFloat() / screenHeightPx.toFloat()
-        return fIntValue
-    }
-
     fun getUsableWidth(): Int = screenWidthPx
     fun getUsableHeight(): Int = screenHeightPx
 
