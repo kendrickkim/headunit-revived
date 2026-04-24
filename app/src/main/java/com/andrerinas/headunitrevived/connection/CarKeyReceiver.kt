@@ -113,6 +113,7 @@ class CarKeyReceiver : BroadcastReceiver() {
                 if (isDown) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP, keyCode
             ))
         })
+        if (commManager.isConnected) commManager.send(keyCode, isDown)
     }
 
     /** Full click (DOWN + UP) — broadcasts both events for learning AND sends to AA. */
