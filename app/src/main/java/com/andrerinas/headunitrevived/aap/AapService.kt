@@ -188,6 +188,7 @@ class AapService : Service(), UsbReceiver.Listener {
      */
     @Volatile
     private var userExitedAA = false
+    @Volatile private var userExitCooldownUntil = 0L
 
     private val commManager get() = App.provide(this).commManager
 
@@ -895,21 +896,36 @@ class AapService : Service(), UsbReceiver.Listener {
         serviceScope.launch(Dispatchers.IO) {
             nearbyManager?.stop() // Disconnect Nearby tunnel
             
-            // [FIX] Reset Native AA manager so it's ready for a fresh start/poke.
-            // Skip if the user voluntarily exited AA, as re-initializing the group/servers
-            // might trigger the phone to reconnect immediately.
             val settings = App.provide(this@AapService).settings
-            if (settings.wifiConnectionMode == 3 && !state.isUserExit) {
-                AppLog.i("AapService: Native AA Mode disconnected. Resetting manager and group in 1.5s...")
-                nativeAaHandshakeManager?.stop()
-                serviceScope.launch {
-                    delay(1500) // Give hardware time to settle before re-initializing P2P
-                    initWifiMode(force = true)
+            if (settings.wifiConnectionMode == 3) {
+                if (state.isUserExit) {
+                    // [FIX] User voluntarily exited AA. Stop the BT handshake servers and
+                    // tear down the WiFi Direct group so the phone can't auto-reconnect.
+                    AppLog.i("AapService: Native AA user exit. Stopping handshake manager and WiFi Direct group.")
+                    nativeAaHandshakeManager?.stop()
+                    wifiDirectManager?.removeGroup()
+                } else {
+                    // Unexpected disconnect — reset and re-initialize for auto-reconnect.
+                    AppLog.i("AapService: Native AA Mode disconnected. Resetting manager and group in 1.5s...")
+                    nativeAaHandshakeManager?.stop()
+                    serviceScope.launch {
+                        delay(1500) // Give hardware time to settle before re-initializing P2P
+                        initWifiMode(force = true)
+                    }
                 }
             }
             App.provide(this@AapService).audioDecoder.stop()
             App.provide(this@AapService).videoDecoder.stop("AapService::onDisconnect")
         }
+
+        // [FIX] Set cooldown flag for ALL user exits (not just USB).
+        // The WirelessServer checks this flag to reject instant reconnections.
+        if (state.isUserExit) {
+            userExitedAA = true
+            userExitCooldownUntil = System.currentTimeMillis() + USER_EXIT_COOLDOWN_MS
+            AppLog.i("AapService: User exit cooldown active for ${USER_EXIT_COOLDOWN_MS}ms")
+        }
+
         scheduleReconnectIfNeeded(state)
     }
 
@@ -933,6 +949,11 @@ class AapService : Service(), UsbReceiver.Listener {
         val settings = App.provide(this).settings
 
         if (wirelessServer != null) {
+            // Skip reconnect for user-initiated exits — the user explicitly wants to stop.
+            if (state.isUserExit) {
+                AppLog.i("AapService: User exit with wirelessServer active. Not restarting discovery.")
+                return
+            }
             AppLog.i("AapService: Disconnected. Restarting discovery loop in 2s...")
             serviceScope.launch {
                 delay(2000)
@@ -2181,8 +2202,15 @@ class AapService : Service(), UsbReceiver.Listener {
                                 withContext(Dispatchers.IO) {
                                     try { clientSocket.close() } catch (e: Exception) {}
                                 }
+                            } else if (System.currentTimeMillis() < userExitCooldownUntil) {
+                                // [FIX] User just exited AA — reject the instant reconnection.
+                                AppLog.w("WirelessServer: Rejecting connection from ${clientSocket.inetAddress} — user exit cooldown active (${userExitCooldownUntil - System.currentTimeMillis()}ms remaining)")
+                                withContext(Dispatchers.IO) {
+                                    try { clientSocket.close() } catch (e: Exception) {}
+                                }
                             } else {
                                 AppLog.i("WirelessServer: Accepted client connection from ${clientSocket.inetAddress}. Passing to CommManager...")
+                                userExitedAA = false // Clear flag on genuine new connection
                                 commManager.connect(clientSocket)
                             }
                         }
@@ -2292,6 +2320,10 @@ class AapService : Service(), UsbReceiver.Listener {
 
         /** Delay before retrying USB connection after an unexpected disconnect. */
         private const val USB_RECONNECT_DELAY_MS = 3000L
+
+        /** Cooldown period after user-initiated exit. During this window, the WirelessServer
+         *  rejects incoming connections to prevent the phone from instantly reconnecting. */
+        private const val USER_EXIT_COOLDOWN_MS = 5000L
 
         /** Delay before AapService tries to handle a normal-mode USB attach as a fallback
          *  when UsbAttachedActivity doesn't fire (common on Chinese MediaTek headunits). */

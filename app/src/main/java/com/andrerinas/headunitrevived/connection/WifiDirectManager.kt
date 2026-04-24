@@ -470,6 +470,27 @@ class WifiDirectManager(private val context: Context) : WifiP2pManager.Connectio
         })
     }
 
+    /**
+     * Tears down the current P2P group without stopping the manager entirely.
+     * Used on user-initiated disconnects to prevent the phone from auto-reconnecting.
+     */
+    @SuppressLint("MissingPermission")
+    fun removeGroup() {
+        handler.removeCallbacks(discoveryRunnable)
+        isConnected = false
+        if (isGroupOwner) {
+            manager?.removeGroup(channel, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    AppLog.i("WifiDirectManager: Group removed (user exit).")
+                    isGroupOwner = false
+                }
+                override fun onFailure(reason: Int) {
+                    AppLog.d("WifiDirectManager: removeGroup failed (reason=$reason)")
+                }
+            })
+        }
+    }
+
     fun stop() {
         AppLog.i("WifiDirectManager: Stopping and cleaning up...")
         handler.removeCallbacks(discoveryRunnable)
