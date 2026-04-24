@@ -927,7 +927,7 @@ class AapService : Service(), UsbReceiver.Listener {
         // The WirelessServer checks this flag to reject instant reconnections.
         if (state.isUserExit) {
             userExitedAA = true
-            userExitCooldownUntil = System.currentTimeMillis() + USER_EXIT_COOLDOWN_MS
+            userExitCooldownUntil = android.os.SystemClock.elapsedRealtime() + USER_EXIT_COOLDOWN_MS
             AppLog.i("AapService: User exit cooldown active for ${USER_EXIT_COOLDOWN_MS}ms")
         }
 
