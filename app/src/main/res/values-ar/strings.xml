@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="app_name">Headunit Revived</string>
     <string name="menu">القائمة</string>
     <string name="settings">الإعدادات</string>
@@ -283,6 +283,7 @@
     <string name="share">مشاركة</string>
     <string name="close">إغلاق</string>
     <string name="failed_export_logs">فشل تصدير السجلات</string>
+    <string name="failed_export_in_silent_logs">تعذر تصدير السجلات: تم تحديد مستوى التسجيل الصامت</string>
     <string name="switching_to_android_auto">جار التبديل إلى Android Auto…</string>
     <string name="switch_failed">فشل التبديل</string>
     <string name="requesting_usb_permission">طلب إذن USB…</string>
@@ -339,6 +340,7 @@
     <string name="log_level_description">اختر مستوى تفصيل مخرجات السجل للتصحيح.</string>
     <string name="start_log_capture">بدء التقاط السجل</string>
     <string name="start_log_capture_description">يبدأ تسجيل سجلات النظام في ملف.</string>
+    <string name="start_log_capture_in_silent">تعذر بدء التسجيل: تم تحديد مستوى التسجيل الصامت</string>
     <string name="stop_log_capture">إيقاف التقاط السجل</string>
     <string name="stop_log_capture_description">يوقف التسجيل ويحفظ ملف السجل.</string>
 

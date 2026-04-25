@@ -130,9 +130,13 @@ class Settings(context: Context) {
         }
 
     var exporterLogLevel: LogExporter.LogLevel
-        get() = LogExporter.LogLevel.entries.getOrElse(prefs.getInt("log-level", LogExporter.LogLevel.INFO.ordinal)) { LogExporter.LogLevel.INFO }
-        set(value) { prefs.edit().putInt("log-level", value.ordinal).apply() }
+        get() = LogExporter.LogLevel.entries.getOrElse(prefs.getInt(KEY_LOG_LEVEL, LogExporter.LogLevel.INFO.ordinal)) { LogExporter.LogLevel.INFO }
+        set(value) { prefs.edit().putInt(KEY_LOG_LEVEL, value.ordinal).apply() }
 
+    /** Whether log capture should be active across restarts. Default: false (disabled). */
+    var exporterCaptureEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOG_CAPTURE_ENABLED, false)
+        set(value) { prefs.edit().putBoolean(KEY_LOG_CAPTURE_ENABLED, value).apply() }
     val logLevel: Int get() = exporterLogLevel.logLevel
 
     var viewMode: ViewMode
@@ -504,6 +508,11 @@ class Settings(context: Context) {
 
         /** SharedPreferences key; also used by [AapService] for change listener. */
         const val KEY_SYNC_MEDIA_SESSION_AA_METADATA = "sync-media-session-aa-metadata"
+
+        /** SharedPreferences key; also used by [AapService] for change listener. */
+        const val KEY_LOG_LEVEL = "log-level"
+        /** Persist whether log capture should be active across restarts. */
+        const val KEY_LOG_CAPTURE_ENABLED = "log-capture-enabled"
 
         const val AUTO_CONNECT_LAST_SESSION = "last-session"
         const val AUTO_CONNECT_SELF_MODE = "self-mode"

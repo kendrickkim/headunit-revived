@@ -125,6 +125,62 @@ class AapService : Service(), UsbReceiver.Listener {
                     refreshMediaSessionMetadataForPrefsChange()
                 }
             }
+
+            if (key == Settings.KEY_LOG_LEVEL) {
+                serviceScope.launch(Dispatchers.Main) {
+                    try {
+                        val settings = App.provide(this@AapService).settings
+                        val level = settings.exporterLogLevel
+                        val current = LogExporter.currentLevel
+
+                        if (level == LogExporter.LogLevel.SILENT) {
+                            if (LogExporter.isCapturing) {
+                                LogExporter.stopCapture()
+                                AppLog.d("LogExporter: stopped due to SILENT level")
+                            }
+                        } else {
+                            if (settings.exporterCaptureEnabled) {
+                                if (!LogExporter.isCapturing || current != level) {
+                                    LogExporter.startCapture(this@AapService, level)
+                                    AppLog.d("LogExporter: started with level ${level.name}")
+                                } else {
+                                    AppLog.d("LogExporter: no restart needed (isCapturing=${LogExporter.isCapturing}, current=${current?.name})")
+                                }
+                            } else {
+                                AppLog.d("LogExporter: level changed but capture disabled by prefs (level=${level.name})")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        AppLog.e("LogExporter: failed to handle log-level change", e)
+                    }
+                }
+            }
+
+            // Keep the service-internal LogExporter state in sync with persisted prefs.
+            // The SettingsFragment updates prefs when the user toggles capture, but
+            // the service runs independently and must react to preference changes
+            // even when the UI isn't active (or when prefs are changed by other
+            // components, adb, restore, etc.). Listening for KEY_LOG_CAPTURE_ENABLED
+            // here ensures the service can start/stop the exporter reliably without
+            // requiring explicit IPC from the UI.
+            if (key == Settings.KEY_LOG_CAPTURE_ENABLED) {
+                serviceScope.launch(Dispatchers.Main) {
+                    try {
+                        val settings = App.provide(this@AapService).settings
+                        val enabled = settings.exporterCaptureEnabled
+                        val level = settings.exporterLogLevel
+                        if (enabled && level != LogExporter.LogLevel.SILENT && !LogExporter.isCapturing) {
+                            LogExporter.startCapture(this@AapService, level)
+                            AppLog.d("LogExporter: started due to prefs enabled (level=${level.name})")
+                        } else if (!enabled && LogExporter.isCapturing) {
+                            LogExporter.stopCapture()
+                            AppLog.d("LogExporter: stopped due to prefs disabled")
+                        } 
+                    } catch (e: Exception) {
+                        AppLog.e("LogExporter: failed to handle capture-enabled change", e)
+                    }
+                }
+            }
         }
 
     /**
@@ -604,8 +660,11 @@ class AapService : Service(), UsbReceiver.Listener {
             prefs.registerOnSharedPreferenceChangeListener(settingsPreferenceListener)
         }
 
-        LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
-        AppLog.i("Auto-started continuous log capture")
+        val exporterLevel = App.provide(this).settings.exporterLogLevel
+        val settings = App.provide(this).settings
+        if (settings.exporterCaptureEnabled && exporterLevel != LogExporter.LogLevel.SILENT) {
+            LogExporter.startCapture(this, exporterLevel)
+        }
 
         startService(GpsLocationService.intent(this))
 

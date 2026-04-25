@@ -1108,7 +1108,14 @@ class SettingsFragment : Fragment() {
                 MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                     .setTitle(R.string.log_level)
                     .setSingleChoiceItems(logLevelNames, currentIndex) { dialog, which ->
-                        settings.exporterLogLevel = logLevels[which]
+                        val newLevel = logLevels[which]
+                        settings.exporterLogLevel = newLevel
+                        if (newLevel == com.andrerinas.headunitrevived.utils.LogExporter.LogLevel.SILENT) {
+                            settings.exporterCaptureEnabled = false
+                            if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) {
+                                com.andrerinas.headunitrevived.utils.LogExporter.stopCapture()
+                            }
+                        }
                         dialog.dismiss()
                         updateSettingsList()
                     }
@@ -1118,14 +1125,26 @@ class SettingsFragment : Fragment() {
 
         items.add(SettingItem.SettingEntry(
             stableId = "captureLog",
-            nameResId = if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) R.string.stop_log_capture else R.string.start_log_capture,
-            value = getString(if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) R.string.stop_log_capture_description else R.string.start_log_capture_description),
+            nameResId = if (settings.exporterLogLevel == com.andrerinas.headunitrevived.utils.LogExporter.LogLevel.SILENT) R.string.start_log_capture else if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) R.string.stop_log_capture else R.string.start_log_capture,
+            value = when {
+                settings.exporterLogLevel == com.andrerinas.headunitrevived.utils.LogExporter.LogLevel.SILENT -> getString(R.string.start_log_capture_description)
+                com.andrerinas.headunitrevived.utils.LogExporter.isCapturing -> getString(R.string.stop_log_capture_description)
+                else -> getString(R.string.start_log_capture_description)
+            },
             onClick = {
                 val context = requireContext()
+                val exporterLevel = settings.exporterLogLevel
+                if (exporterLevel == com.andrerinas.headunitrevived.utils.LogExporter.LogLevel.SILENT) {
+                    Toast.makeText(context, getString(R.string.start_log_capture_in_silent), Toast.LENGTH_LONG).show()
+                    return@SettingEntry
+                }
+
                 if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) {
                     com.andrerinas.headunitrevived.utils.LogExporter.stopCapture()
+                    settings.exporterCaptureEnabled = false
                 } else {
-                    com.andrerinas.headunitrevived.utils.LogExporter.startCapture(context, settings.exporterLogLevel)
+                    com.andrerinas.headunitrevived.utils.LogExporter.startCapture(context, exporterLevel)
+                    settings.exporterCaptureEnabled = true
                 }
                 updateSettingsList()
             }
@@ -1137,10 +1156,16 @@ class SettingsFragment : Fragment() {
             value = getString(R.string.export_logs_description),
             onClick = {
                 val context = requireContext()
+                val exporterLevel = settings.exporterLogLevel
+                if (exporterLevel == com.andrerinas.headunitrevived.utils.LogExporter.LogLevel.SILENT) {
+                    Toast.makeText(context, getString(R.string.failed_export_in_silent_logs), Toast.LENGTH_LONG).show()
+                    return@SettingEntry
+                }
+
                 if (com.andrerinas.headunitrevived.utils.LogExporter.isCapturing) {
                     com.andrerinas.headunitrevived.utils.LogExporter.stopCapture()
                 }
-                val logFile = com.andrerinas.headunitrevived.utils.LogExporter.saveLogToPublicFile(context, settings.exporterLogLevel)
+                val logFile = com.andrerinas.headunitrevived.utils.LogExporter.saveLogToPublicFile(context, exporterLevel)
                 updateSettingsList()
 
                 if (logFile != null) {

@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="app_name">Headunit Revived</string>
     <string name="menu">メニュー</string>
     <string name="settings">設定</string>
@@ -120,6 +120,7 @@
     <string name="log_level_description">エクスポート時にログレベルをフィルタリングする</string>
     <string name="start_log_capture">ログ取得を開始する</string>
     <string name="start_log_capture_description">デバッグのためにログの記録を開始します</string>
+    <string name="start_log_capture_in_silent">記録を開始できません: サイレントログレベルが選択されています</string>
     <string name="stop_log_capture">ログ取得を停止</string>
     <string name="stop_log_capture_description">録画中です...タップして停止</string>
     <string name="export_logs">ログをエクスポート</string>
@@ -298,6 +299,7 @@
     <string name="share">シェア</string>
     <string name="close">閉じる</string>
     <string name="failed_export_logs">ログのエクスポートに失敗しました</string>
+    <string name="failed_export_in_silent_logs">ログをエクスポートできません: サイレントログレベルが選択されています</string>
     <string name="switching_to_android_auto">Android Autoに切り替え中…</string>
     <string name="switch_failed">切り替えに失敗しました</string>
     <string name="requesting_usb_permission">USBアクセス許可を要求しています…</string>

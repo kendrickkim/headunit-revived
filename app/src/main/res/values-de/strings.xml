@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="app_name">Headunit Revived</string>
     <string name="menu">Menü</string>
     <string name="settings">Einstellungen</string>
@@ -120,6 +120,7 @@
     <string name="log_level_description">Filtert den Detailgrad beim Log-Export</string>
     <string name="start_log_capture">Log-Aufzeichnung starten</string>
     <string name="start_log_capture_description">Startet das Mitschreiben von System-Logs für Debugging</string>
+    <string name="start_log_capture_in_silent">Aufzeichnung kann nicht gestartet werden: Stilles Protokollierungslevel ausgewählt</string>
     <string name="stop_log_capture">Log-Aufzeichnung stoppen</string>
     <string name="stop_log_capture_description">Aufzeichnung läuft… Zum Stoppen tippen</string>
     <string name="export_logs">Logs exportieren</string>
@@ -297,6 +298,7 @@
     <string name="share">Teilen</string>
     <string name="close">Schließen</string>
     <string name="failed_export_logs">Fehler beim Log-Export</string>
+    <string name="failed_export_in_silent_logs">Protokolle können nicht exportiert werden: Stilles Protokollierungslevel ausgewählt</string>
     <string name="switching_to_android_auto">Wechsle zu Android Auto…</string>
     <string name="switch_failed">Wechsel fehlgeschlagen</string>
     <string name="requesting_usb_permission">Fordere USB-Berechtigung an…</string>
