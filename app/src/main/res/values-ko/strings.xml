@@ -52,8 +52,8 @@
     <string name="night_mode_short">안드로이드 오토</string>
     <string name="aa_monochrome">안드로이드 오토를 회색조로 만듭니다</string>
     <string name="aa_monochrome_description">밤 드라이빙을 위해 안드로이드 오토 색상을 줄입니다. GLES 뷰 모드가 필요합니다. 다크모드가 활성화될 때만 적용됩니다</string>
-    <string name="aa_desaturation">회색조 제거</string>
-    <string name="aa_desaturation_description">회색조 제거 정도를 제어합니다. 다크모드가 활성화될 때만 적용됩니다</string>
+    <string name="aa_desaturation">채도 감소</string>
+    <string name="aa_desaturation_description">채도 감소 정도를 제어합니다. 다크모드가 활성화될 때만 적용됩니다</string>
     <string name="gles_required_title">GLES 필요</string>
     <string name="gles_required_message">회색조 모드는 GLES 렌더링이 필요합니다. GLES를 활성화하시겠습니까?</string>
     <string name="enable_gles">GLES 활성화</string>
