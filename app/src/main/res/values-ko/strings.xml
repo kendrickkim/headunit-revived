@@ -395,7 +395,7 @@
     <string name="kill_on_disconnect_enable_anyway">활성화 하려면 무시</string>
     <string name="kill_on_disconnect_conflicts_disabled">충돌하는 설정이 비활성화되었습니다</string>
     <string name="kill_on_disconnect_boot_warning">\"시동 켜기\" 설정이 활성화되어 있습니다. 앱이 연결 끊기 시 닫히고 이 기기가 전원을 끄지 않고 절전·대기만 하는 경우, 다음 시동 주기에서 앱이 자동으로 다시 열리지 않을 수 있습니다. 시동 이벤트가 발생하지 않기 때문입니다. — 기기는 단순히 절전·대기 상태에서 깨어납니다.</string>
-    <string name="kill_on_disconnect_screen_on_warning">\"화면 켜기\" 설정이 활성화되어 있습니다. 이 설정은 화면이 켜질 때마다 앱을 엽니다. 연결 끊기 시 닫기와 組합니다, 앱은 연결 끊기 후 닫히지만 화면이 켜지면 자동으로 다시 열리며, 다시 시작 루프를 생성합니다.</string>
+    <string name="kill_on_disconnect_screen_on_warning">\"화면 켜기\" 설정이 활성화되어 있습니다. 이 설정은 화면이 켜질 때마다 앱을 엽니다. 연결 끊기 시 닫기와 결합하면, 앱은 연결 끊기 후 닫히지만 화면이 켜지면 자동으로 다시 열리며, 다시 시작 루프를 생성합니다.</string>
 
     <string name="wifi_disabled_info">정보: Wi-Fi가 비활성화되었습니다.</string>
     <string name="bt_not_enabled">Bluetooth가 비활성화되었습니다</string>
