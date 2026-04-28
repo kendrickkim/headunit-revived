@@ -31,9 +31,7 @@ class GpsLocation constructor(private val context: Context): LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        val intent = LocationUpdateIntent(location)
-        intent.setPackage(context.packageName)
-        context.sendBroadcast(intent)
+        context.sendBroadcast(LocationUpdateIntent(location).setPackage(context.packageName))
     }
 
     override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
