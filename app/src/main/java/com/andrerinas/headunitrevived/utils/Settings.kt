@@ -130,9 +130,13 @@ class Settings(context: Context) {
         }
 
     var exporterLogLevel: LogExporter.LogLevel
-        get() = LogExporter.LogLevel.entries.getOrElse(prefs.getInt("log-level", LogExporter.LogLevel.INFO.ordinal)) { LogExporter.LogLevel.INFO }
-        set(value) { prefs.edit().putInt("log-level", value.ordinal).apply() }
+        get() = LogExporter.LogLevel.entries.getOrElse(prefs.getInt(KEY_LOG_LEVEL, LogExporter.LogLevel.INFO.ordinal)) { LogExporter.LogLevel.INFO }
+        set(value) { prefs.edit().putInt(KEY_LOG_LEVEL, value.ordinal).apply() }
 
+    /** Whether log capture should be active across restarts. Default: false (disabled). */
+    var exporterCaptureEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOG_CAPTURE_ENABLED, false)
+        set(value) { prefs.edit().putBoolean(KEY_LOG_CAPTURE_ENABLED, value).apply() }
     val logLevel: Int get() = exporterLogLevel.logLevel
 
     var viewMode: ViewMode
@@ -345,6 +349,10 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("enable-audio-sink", true)
         set(value) { prefs.edit().putBoolean("enable-audio-sink", value).apply() }
 
+    var separateAudioStreams: Boolean
+        get() = prefs.getBoolean("separate-audio-streams", true)
+        set(value) { prefs.edit().putBoolean("separate-audio-streams", value).apply() }
+
     var micInputSource: Int
         get() = prefs.getInt("mic-input-source", 0) // Default: DEFAULT
         set(value) { prefs.edit().putInt("mic-input-source", value).apply() }
@@ -513,6 +521,11 @@ class Settings(context: Context) {
 
         /** SharedPreferences key; also used by [AapService] for change listener. */
         const val KEY_SYNC_MEDIA_SESSION_AA_METADATA = "sync-media-session-aa-metadata"
+
+        /** SharedPreferences key; also used by [AapService] for change listener. */
+        const val KEY_LOG_LEVEL = "log-level"
+        /** Persist whether log capture should be active across restarts. */
+        const val KEY_LOG_CAPTURE_ENABLED = "log-capture-enabled"
 
         const val AUTO_CONNECT_LAST_SESSION = "last-session"
         const val AUTO_CONNECT_SELF_MODE = "self-mode"

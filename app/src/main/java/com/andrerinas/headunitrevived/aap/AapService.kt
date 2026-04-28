@@ -125,6 +125,30 @@ class AapService : Service(), UsbReceiver.Listener {
                     refreshMediaSessionMetadataForPrefsChange()
                 }
             }
+
+            if (key == Settings.KEY_LOG_LEVEL || key == Settings.KEY_LOG_CAPTURE_ENABLED) {
+                serviceScope.launch(Dispatchers.Main) {
+                    try {
+                        val settings = App.provide(this@AapService).settings
+                        val newLogLevel = settings.exporterLogLevel
+                        val exporterCaptureEnabled = settings.exporterCaptureEnabled
+                        val isCapturing = LogExporter.isCapturing
+                        val currentLogLevel = LogExporter.currentLevel
+
+                        if (!exporterCaptureEnabled || newLogLevel == LogExporter.LogLevel.SILENT) {
+                            if (isCapturing) {
+                                LogExporter.stopCapture()
+                                AppLog.d("LogExporter: stopped (enabled=$exporterCaptureEnabled, level=${newLogLevel.name})")
+                            }
+                        } else if (!isCapturing || currentLogLevel != newLogLevel) {
+                            LogExporter.startCapture(this@AapService, newLogLevel)
+                            AppLog.d("LogExporter: started with level ${newLogLevel.name}")
+                        }
+                    } catch (e: Exception) {
+                        AppLog.e("LogExporter: failed to sync state", e)
+                    }
+                }
+            }
         }
 
     /**
@@ -605,8 +629,11 @@ class AapService : Service(), UsbReceiver.Listener {
             prefs.registerOnSharedPreferenceChangeListener(settingsPreferenceListener)
         }
 
-        LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
-        AppLog.i("Auto-started continuous log capture")
+        val exporterLevel = App.provide(this).settings.exporterLogLevel
+        val settings = App.provide(this).settings
+        if (settings.exporterCaptureEnabled && exporterLevel != LogExporter.LogLevel.SILENT) {
+            LogExporter.startCapture(this, exporterLevel)
+        }
 
         startService(GpsLocationService.intent(this))
 
