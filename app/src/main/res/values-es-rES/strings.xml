@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="app_name">Headunit Revived</string>
     <string name="menu">Menú</string>
     <string name="settings">Configuración</string>
@@ -283,6 +283,7 @@
     <string name="share">Compartir</string>
     <string name="close">Cerrar</string>
     <string name="failed_export_logs">Error al exportar logs</string>
+    <string name="failed_export_in_silent_logs">No se pueden exportar los registros: nivel de registro silencioso seleccionado</string>
     <string name="switching_to_android_auto">Cambiando a Android Auto…</string>
     <string name="switch_failed">Fallo al cambiar</string>
     <string name="requesting_usb_permission">Pidiendo permiso USB…</string>
@@ -339,6 +340,7 @@
     <string name="log_level_description">Elija el nivel de detalle de los mensajes de log para depuración.</string>
     <string name="start_log_capture">Iniciar captura de log</string>
     <string name="start_log_capture_description">Comienza a registrar los logs del sistema en un archivo.</string>
+    <string name="start_log_capture_in_silent">No se puede iniciar la grabación: nivel de registro silencioso seleccionado</string>
     <string name="stop_log_capture">Detener captura de log</string>
     <string name="stop_log_capture_description">Detiene la grabación y guarda el archivo de log.</string>
 
