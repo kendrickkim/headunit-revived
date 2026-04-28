@@ -232,7 +232,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                showExitDialog()
+                // Do not ask exit option
+                commManager.disconnect(sendByeBye = true)
+                finish()
+//                showExitDialog()
             }
         })
 
@@ -594,7 +597,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                         val deltaY = Math.abs(ev.getY(0) - initialY)
                         if (deltaX > 200 && deltaY < 100) {
                             isPotentialGesture = false
-                            showExitDialog()
+//                            showExitDialog()
+                            // Do not ask exit option
+                            commManager.disconnect(sendByeBye = true)
+                            finish()
                             return true // Consume
                         }
                     }

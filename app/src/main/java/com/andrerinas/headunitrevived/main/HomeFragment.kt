@@ -90,6 +90,22 @@ class HomeFragment : Fragment() {
         self_mode_text = view.findViewById(R.id.self_mode_text)
 
         setupListeners()
+
+        val tempCompact = true
+
+        if(tempCompact)
+        {
+            val usbText : TextView = view.findViewById(R.id.usb_text)
+            self_mode_text.visibility = View.GONE
+            self_mode_button.visibility = View.GONE
+            usb.visibility = View.GONE
+            usbText.visibility = View.GONE
+            wifi.layoutParams.width = 400
+            wifi.layoutParams.height = 400
+            settings.layoutParams.width = 400
+            settings.layoutParams.height = 400
+        }
+
         updateProjectionButtonText()
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -414,14 +430,14 @@ class HomeFragment : Fragment() {
         }
 
         val deviceNames = bondedDevices.map { it.name ?: "Unknown Device" }.toTypedArray()
-        
-        
+
+
         activeDialog = MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
             .setTitle(R.string.select_bt_device)
             .setItems(deviceNames) { _, which ->
                 val device = bondedDevices[which]
                 AppLog.i("HomeFragment: Manually selected ${device.name} for Native-AA poke")
-                
+
                 val intent = Intent(requireContext(), AapService::class.java).apply {
                     action = AapService.ACTION_NATIVE_AA_POKE
                     putExtra(AapService.EXTRA_MAC, device.address)
@@ -486,12 +502,12 @@ class HomeFragment : Fragment() {
             .setTitle(getString(R.string.searching)) // Initial title
             .setView(dialogView)
             .setNegativeButton(R.string.cancel, null)
-            .setOnDismissListener { 
+            .setOnDismissListener {
                 collectJob?.cancel()
                 if (activeDialog == it) activeDialog = null
             }
             .create()
-        
+
         activeDialog = dialog
 
         deviceListView.setOnItemClickListener { _, _, which, _ ->
@@ -499,14 +515,14 @@ class HomeFragment : Fragment() {
             if (which < endpoints.size) {
                 val endpoint = endpoints[which]
                 AppLog.i("HomeFragment: Selected Nearby device: ${endpoint.name} (${endpoint.id})")
-                
+
                 // UI Switch: Hide list, show connecting spinner
                 listContainer.visibility = View.GONE
                 connectingContainer.visibility = View.VISIBLE
                 connectingText.text = getString(R.string.connecting_to_nearby, endpoint.name)
-                
+
                 // Allow the user to see the progress
-                dialog.setCancelable(false) 
+                dialog.setCancelable(false)
 
                 val intent = Intent(requireContext(), AapService::class.java).apply {
                     action = AapService.ACTION_NEARBY_CONNECT
@@ -524,7 +540,7 @@ class HomeFragment : Fragment() {
                 listAdapter.clear()
                 listAdapter.addAll(endpoints)
                 listAdapter.notifyDataSetChanged()
-                
+
                 if (endpoints.isEmpty()) {
                     dialog.setTitle(getString(R.string.searching))
                     searchingText.visibility = View.GONE
