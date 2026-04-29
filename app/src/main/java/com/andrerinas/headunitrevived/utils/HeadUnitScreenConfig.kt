@@ -355,8 +355,6 @@ object HeadUnitScreenConfig {
             return false
         }
 
-        AppLog.i("[UI_DEBUG_FIX]  diffW: $diffW, diffH: $diffH, surface: ${surfaceW}x${surfaceH}, usable: ${screenWidthPx}x${screenHeightPx}")
-
         if( (diffW > 0 && getNegotiatedWidth() == surfaceW) || (diffH > 0 && getNegotiatedHeight() == surfaceH)) {
             AppLog.i("[UI_DEBUG_FIX] Surface mismatch detected but matches negotiated resolution. Usable: ${screenWidthPx}x${screenHeightPx}, Actual surface: ${surfaceW}x${surfaceH}. Ignoring.")
             return false
