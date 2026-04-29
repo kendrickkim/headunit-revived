@@ -155,6 +155,15 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
 
 
+    private val orientationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AapService.ACTION_ORIENTATION_CHANGED) {
+                AppLog.i("AapProjectionActivity: Orientation change broadcast received. Updating.")
+                applyOrientationSettings()
+            }
+        }
+    }
+
     private val finishReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == "com.andrerinas.headunitrevived.ACTION_FINISH_ACTIVITIES") {
@@ -170,20 +179,8 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
         super.onCreate(savedInstanceState)
 
-        val screenOrientation = settings.screenOrientation
-        if (screenOrientation == Settings.ScreenOrientation.AUTO) {
-            applyStickyOrientation()
-            if (!HeadUnitScreenConfig.isResolutionLocked) {
-                // Initial start: lock to current orientation at launch
-                if (Build.VERSION.SDK_INT >= 18) {
-                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                } else {
-                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-                }
-            }
-        } else {
-            requestedOrientation = screenOrientation.androidOrientation
-        }
+        applyOrientationSettings()
+
 
         setContentView(R.layout.activity_headunit)
 
@@ -378,6 +375,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         watchdogHandler.removeCallbacks(watchdogRunnable)
         watchdogHandler.removeCallbacks(videoWatchdogRunnable)
         watchdogHandler.removeCallbacks(reconnectingWatchdog)
+        try { unregisterReceiver(orientationReceiver) } catch (_: Exception) {}
         unregisterReceiver(nightModeReceiver)
     }
 
@@ -388,6 +386,9 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         watchdogHandler.postDelayed(watchdogRunnable, 2000)
         watchdogHandler.postDelayed(videoWatchdogRunnable, 3000)
         watchdogHandler.postDelayed(reconnectingWatchdog, 5000)
+
+        // Register orientation receiver
+        ContextCompat.registerReceiver(this, orientationReceiver, IntentFilter(AapService.ACTION_ORIENTATION_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
 
         // Register night mode receiver for AA monochrome filter
         ContextCompat.registerReceiver(this, nightModeReceiver, IntentFilter(AapService.ACTION_NIGHT_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -832,6 +833,22 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             val aapIntent = Intent(context, AapProjectionActivity::class.java)
             aapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             return aapIntent
+        }
+    }
+    private fun applyOrientationSettings() {
+        val screenOrientation = settings.screenOrientation
+        if (screenOrientation == Settings.ScreenOrientation.AUTO) {
+            applyStickyOrientation()
+            if (!HeadUnitScreenConfig.isResolutionLocked) {
+                // Initial start: lock to current orientation at launch
+                if (Build.VERSION.SDK_INT >= 18) {
+                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                } else {
+                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                }
+            }
+        } else {
+            requestedOrientation = screenOrientation.androidOrientation
         }
     }
 }

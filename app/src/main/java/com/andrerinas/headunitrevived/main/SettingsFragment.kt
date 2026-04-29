@@ -822,7 +822,18 @@ class SettingsFragment : Fragment() {
                 MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
                     .setTitle(R.string.change_screen_orientation)
                     .setSingleChoiceItems(orientationOptions, currentIdx) { dialog, whiches ->
-                        pendingScreenOrientation = Settings.ScreenOrientation.fromInt(whiches)
+                        val newOrientation = Settings.ScreenOrientation.fromInt(whiches) ?: Settings.ScreenOrientation.SYSTEM
+                        pendingScreenOrientation = newOrientation
+                        
+                        // Apply immediately
+                        settings.screenOrientation = newOrientation
+                        settings.commit()
+                        
+                        requireActivity().requestedOrientation = newOrientation.androidOrientation
+                        requireContext().sendBroadcast(Intent(AapService.ACTION_ORIENTATION_CHANGED).apply {
+                            setPackage(requireContext().packageName)
+                        })
+                        
                         checkChanges()
                         dialog.dismiss()
                         updateSettingsList()

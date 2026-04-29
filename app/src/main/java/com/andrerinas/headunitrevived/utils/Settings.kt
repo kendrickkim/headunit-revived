@@ -150,11 +150,11 @@ class Settings(context: Context) {
 
     var screenOrientation: ScreenOrientation
         get() {
-            val value = prefs.getInt("screen-orientation", 0)
+            val value = prefs.getInt(KEY_SCREEN_ORIENTATION, 0)
             return ScreenOrientation.fromInt(value) ?: ScreenOrientation.SYSTEM
         }
         set(orientation) {
-            prefs.edit().putInt("screen-orientation", orientation.value).apply()
+            prefs.edit().putInt(KEY_SCREEN_ORIENTATION, orientation.value).apply()
         }
 
     var dpiPixelDensity: Int
@@ -597,6 +597,7 @@ class Settings(context: Context) {
         }
 
         private const val KEY_AUTO_START_ON_USB = "auto-start-on-usb"
+        const val KEY_SCREEN_ORIENTATION = "screen-orientation"
         private const val KEY_LISTEN_FOR_USB_DEVICES = "listen-for-usb-devices"
         private const val KEY_AUTO_START_BT_MAC = "auto-start-bt-mac"
 

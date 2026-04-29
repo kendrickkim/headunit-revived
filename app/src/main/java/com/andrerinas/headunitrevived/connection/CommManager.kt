@@ -9,6 +9,7 @@ import com.andrerinas.headunitrevived.utils.AppLog
 import com.andrerinas.headunitrevived.main.BackgroundNotification
 import com.andrerinas.headunitrevived.ssl.SingleKeyKeyManager
 import com.andrerinas.headunitrevived.utils.Settings
+import com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import com.andrerinas.headunitrevived.decoder.AudioDecoder
@@ -170,6 +171,7 @@ class CommManager(
         if (_connectionState.value is ConnectionState.Connecting)
             return@withContext
 
+
         val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
         if (!usbManager.hasPermission(device)) {
             _connectionState.emit(ConnectionState.Error("USB permission not granted for device"))
@@ -209,6 +211,7 @@ class CommManager(
         // Another caller already started the connection — do nothing.
         if (_connectionState.value is ConnectionState.Connecting)
             return@withContext
+
 
         _disconnectJob?.join()
 
@@ -428,7 +431,7 @@ class CommManager(
     fun disconnect(sendByeBye: Boolean = true) {
         if (_connectionState.value is ConnectionState.Disconnected) return
 
-        com.andrerinas.headunitrevived.utils.HeadUnitScreenConfig.unlockResolution()
+        HeadUnitScreenConfig.unlockResolution()
 
         _connectionState.value = ConnectionState.Disconnected(isUserExit = true)
         _transport?.wasUserExit = true

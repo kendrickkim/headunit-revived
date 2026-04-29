@@ -1,6 +1,8 @@
 package com.andrerinas.headunitrevived.main
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -48,6 +50,15 @@ class MainActivity : BaseActivity() {
 
     interface KeyListener {
         fun onKeyEvent(event: KeyEvent?): Boolean
+    }
+
+    private val orientationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AapService.ACTION_ORIENTATION_CHANGED) {
+                AppLog.i("MainActivity: Orientation change broadcast received. Updating.")
+                requestedOrientation = Settings(this@MainActivity).screenOrientation.androidOrientation
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -313,6 +324,9 @@ class MainActivity : BaseActivity() {
 
         checkSetupFlow()
 
+        requestedOrientation = Settings(this).screenOrientation.androidOrientation
+        ContextCompat.registerReceiver(this, orientationReceiver, android.content.IntentFilter(AapService.ACTION_ORIENTATION_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+
         // If an Android Auto session is active, bring the projection activity to front
         if (App.provide(this).commManager.isConnected) {
             AppLog.i("MainActivity: Active session detected, bringing projection to front")
@@ -322,6 +336,11 @@ class MainActivity : BaseActivity() {
             }
             startActivity(aapIntent)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        try { unregisterReceiver(orientationReceiver) } catch (_: Exception) {}
     }
 
     fun checkSetupFlow() {
