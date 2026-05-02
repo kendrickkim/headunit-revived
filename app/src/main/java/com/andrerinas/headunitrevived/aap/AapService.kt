@@ -747,7 +747,6 @@ class AapService : Service(), UsbReceiver.Listener {
      * starting the AA handshake) to avoid stealing audio during autostart.
      */
     private fun requestPermanentAudioFocus() {
-        val settings = App.provide(this).settings
         if (!settings.enableAudioSink) {
             AppLog.i("Audio Sink disabled - skipping permanent audio focus request.")
             return
