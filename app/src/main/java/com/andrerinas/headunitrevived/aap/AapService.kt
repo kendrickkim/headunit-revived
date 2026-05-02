@@ -748,7 +748,7 @@ class AapService : Service(), UsbReceiver.Listener {
      */
     private fun requestPermanentAudioFocus() {
         if (!settings.enableAudioSink) {
-            AppLog.i("Audio Sink disabled - skipping permanent audio focus request.")
+            AppLog.d("Audio Sink disabled - skipping permanent audio focus request.")
             return
         }
 
@@ -764,23 +764,54 @@ class AapService : Service(), UsbReceiver.Listener {
                         .setAudioAttributes(attrs)
                         .setWillPauseWhenDucked(false)
                         .setOnAudioFocusChangeListener { focusChange ->
-                            AppLog.d("Permanent audio focus changed: $focusChange")
+                            AppLog.d("AapService: Permanent audio focus changed: $focusChange")
                         }
                         .build()
                 }
                 val res = audioManager.requestAudioFocus(permanentFocusRequest!!)
-                AppLog.i("requestPermanentAudioFocus: result=$res")
+                AppLog.d("AapService: requestPermanentAudioFocus: result=$res")
             } else {
                 @Suppress("DEPRECATION")
                 val res = audioManager.requestAudioFocus(
-                    { focusChange -> AppLog.d("Permanent audio focus changed: $focusChange") },
+                    { focusChange -> AppLog.d("AapService: Permanent audio focus changed: $focusChange") },
                     AudioManager.STREAM_MUSIC,
                     AudioManager.AUDIOFOCUS_GAIN
                 )
-                AppLog.i("requestPermanentAudioFocus (legacy): result=$res")
+                AppLog.d("AapService: requestPermanentAudioFocus (legacy): result=$res")
             }
         } catch (e: Exception) {
-            AppLog.e("requestPermanentAudioFocus failed", e)
+            AppLog.e("AapService: requestPermanentAudioFocus failed", e)
+        }
+    }
+
+    /**
+     * Releases any permanent audio focus previously requested by [requestPermanentAudioFocus].
+     *
+     * This is invoked on disconnect to return audio focus to the phone or other media
+     * apps so that playback can resume normally. Supports both the modern
+     * AudioFocusRequest API (API >= O) and the legacy abandonAudioFocus path.
+     */
+    private fun releasePermanentAudioFocus() {
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                permanentFocusRequest?.let {
+                    audioManager.abandonAudioFocusRequest(it)
+                    AppLog.d("AapService: abandoned permanent audio focus request")
+                    permanentFocusRequest = null
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                try {
+                    audioManager.abandonAudioFocus(null)
+                    AppLog.d("AapService: abandoned legacy audio focus (null listener)")
+                } catch (e: Exception) {
+                    // Some devices may not accept a null listener; ignore failures
+                    AppLog.e("AapService: releasePermanentAudioFocus failed", e)
+                }
+            }
+        } catch (e: Exception) {
+            AppLog.e("AapService: Failed to abandon audio focus", e)
         }
     }
 
@@ -931,6 +962,8 @@ class AapService : Service(), UsbReceiver.Listener {
 
         // Cleanup steering wheel and audio focus hacks
         silentAudioPlayer?.stop()
+        // Release any permanent audio focus we may have requested when connected
+        releasePermanentAudioFocus()
         try {
             carKeyReceiver?.let { unregisterReceiver(it) }
         } catch (e: Exception) {}
