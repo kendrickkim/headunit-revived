@@ -681,41 +681,6 @@ class AapService : Service(), UsbReceiver.Listener {
         initWifiMode()
         checkAlreadyConnectedUsb()
         registerNetworkMonitor()
-
-        // Grab permanent AUDIOFOCUS_GAIN at service start.
-        // This ensures the headunit owns system audio focus before any AA connection,
-        // preventing other apps from stealing it and causing AA to keep audio on the phone.
-        if (settings.enableAudioSink) {
-            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (permanentFocusRequest == null) {
-                    val attrs = AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                    permanentFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                        .setAudioAttributes(attrs)
-                        .setWillPauseWhenDucked(false)
-                        .setOnAudioFocusChangeListener { focusChange ->
-                            AppLog.d("Permanent audio focus changed: $focusChange")
-                        }
-                        .build()
-                }
-                audioManager.requestAudioFocus(permanentFocusRequest!!)
-            } else {
-                @Suppress("DEPRECATION")
-                audioManager.requestAudioFocus(
-                    { focusChange ->
-                        AppLog.d("Permanent audio focus changed: $focusChange")
-                    },
-                    AudioManager.STREAM_MUSIC,
-                    AudioManager.AUDIOFOCUS_GAIN
-                )
-            }
-            AppLog.i("Grabbed permanent AUDIOFOCUS_GAIN at service start")
-        } else {
-            AppLog.i("Audio Sink disabled - skipping permanent audio focus request.")
-        }
     }
 
     /** Enables Android Automotive UI mode so the system uses car-optimised layouts. */
@@ -775,6 +740,52 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     /**
+     * Performs the permanent audio focus request used for AA audio sink.
+     *
+     * This logic was previously executed in onCreate(); it has been moved here so
+     * the caller can decide when to acquire focus (for example, immediately before
+     * starting the AA handshake) to avoid stealing audio during autostart.
+     */
+    private fun requestPermanentAudioFocus() {
+        val settings = App.provide(this).settings
+        if (!settings.enableAudioSink) {
+            AppLog.i("Audio Sink disabled - skipping permanent audio focus request.")
+            return
+        }
+
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (permanentFocusRequest == null) {
+                    val attrs = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                    permanentFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(attrs)
+                        .setWillPauseWhenDucked(false)
+                        .setOnAudioFocusChangeListener { focusChange ->
+                            AppLog.d("Permanent audio focus changed: $focusChange")
+                        }
+                        .build()
+                }
+                val res = audioManager.requestAudioFocus(permanentFocusRequest!!)
+                AppLog.i("requestPermanentAudioFocus: result=$res")
+            } else {
+                @Suppress("DEPRECATION")
+                val res = audioManager.requestAudioFocus(
+                    { focusChange -> AppLog.d("Permanent audio focus changed: $focusChange") },
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN
+                )
+                AppLog.i("requestPermanentAudioFocus (legacy): result=$res")
+            }
+        } catch (e: Exception) {
+            AppLog.e("requestPermanentAudioFocus failed", e)
+        }
+    }
+
+    /**
      * Called by [CommManager.ConnectionState.Connected] observer:
      * 1. Refreshes the foreground notification.
      * 2. Activates a [MediaSessionCompat] so media keys are routed to Android Auto.
@@ -823,6 +834,10 @@ class AapService : Service(), UsbReceiver.Listener {
             updateMediaSessionState(isPlaying)
         }
 
+        // Acquire permanent audio focus just before starting the AA handshake so we
+        // don't steal audio during service autostart but still obtain focus when a
+        // real connection is beginning.
+        requestPermanentAudioFocus()
         serviceScope.launch { commManager.startHandshake() }
     }
 
