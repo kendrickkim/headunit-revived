@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import com.andrerinas.headunitrevived.App
 import com.andrerinas.headunitrevived.app.BootCompleteReceiver
+import com.andrerinas.headunitrevived.app.WifiAutoStartReceiver
 import com.andrerinas.headunitrevived.main.MainActivity
 import com.andrerinas.headunitrevived.R
 import com.andrerinas.headunitrevived.aap.protocol.messages.NightModeEvent
@@ -58,6 +59,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import android.app.NotificationManager
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.provider.Settings as AndroidSettings
 import android.view.View
 import android.view.WindowManager
@@ -100,13 +103,25 @@ class AapService : Service(), UsbReceiver.Listener {
     private var wifiDirectManager: WifiDirectManager? = null
     private var nativeAaHandshakeManager: NativeAaHandshakeManager? = null
     private var nearbyManager: NearbyManager? = null
+    private var wifiAutoStartReceiver: WifiAutoStartReceiver? = null
     private var carKeyReceiver: CarKeyReceiver? = null
     private var silentAudioPlayer: SilentAudioPlayer? = null
     private var wirelessServer: WirelessServer? = null
     private var networkDiscovery: NetworkDiscovery? = null
     private var mediaSession: MediaSessionCompat? = null
+
+    private inline fun <T> safeMediaSessionCall(crossinline block: (MediaSessionCompat) -> T): T? {
+        if (isDestroying) return null
+        val session = mediaSession ?: return null
+        return try {
+            block(session)
+        } catch (e: Exception) {
+            // Catching binder death: DeadObjectException or DeadSystemException
+            AppLog.e("MediaSession call failed (Binder dead?): ${e.message}")
+            null
+        }
+    }
     private var permanentFocusRequest: android.media.AudioFocusRequest? = null
-    private var lastMediaButtonClickTime = 0L
 
     private var lastAaMediaMetadata: MediaPlayback.MediaMetaData? = null
     private var lastAaPlaybackPositionMs: Long = 0L
@@ -116,6 +131,7 @@ class AapService : Service(), UsbReceiver.Listener {
     /** Decoded on a background thread in [scheduleApplyAaMediaMetadata]; reused for notification updates on position ticks. */
     private var cachedAaAlbumArtBitmap: Bitmap? = null
     private var settingsPrefs: SharedPreferences? = null
+    private val settings: Settings by lazy { App.provide(this).settings }
     private val mediaNotification by lazy { BackgroundNotification(this) }
 
     private val settingsPreferenceListener =
@@ -123,6 +139,29 @@ class AapService : Service(), UsbReceiver.Listener {
             if (key == Settings.KEY_SYNC_MEDIA_SESSION_AA_METADATA) {
                 serviceScope.launch(Dispatchers.Main) {
                     refreshMediaSessionMetadataForPrefsChange()
+                }
+            }
+
+            if (key == Settings.KEY_LOG_LEVEL || key == Settings.KEY_LOG_CAPTURE_ENABLED) {
+                serviceScope.launch(Dispatchers.Main) {
+                    try {
+                        val newLogLevel = settings.exporterLogLevel
+                        val exporterCaptureEnabled = settings.exporterCaptureEnabled
+                        val isCapturing = LogExporter.isCapturing
+                        val currentLogLevel = LogExporter.currentLevel
+
+                        if (!exporterCaptureEnabled || newLogLevel == LogExporter.LogLevel.SILENT) {
+                            if (isCapturing) {
+                                LogExporter.stopCapture()
+                                AppLog.d("LogExporter: stopped (enabled=$exporterCaptureEnabled, level=${newLogLevel.name})")
+                            }
+                        } else if (!isCapturing || currentLogLevel != newLogLevel) {
+                            LogExporter.startCapture(this@AapService, newLogLevel)
+                            AppLog.d("LogExporter: started with level ${newLogLevel.name}")
+                        }
+                    } catch (e: Exception) {
+                        AppLog.e("LogExporter: failed to sync state", e)
+                    }
                 }
             }
         }
@@ -136,6 +175,7 @@ class AapService : Service(), UsbReceiver.Listener {
     private var accessoryHandshakeFailures = 0
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var wifiLock: WifiManager.WifiLock? = null
+    private var isCarKeyReceiverRegistered = false
 
     private var wifiReadyCallback: ConnectivityManager.NetworkCallback? = null
 
@@ -162,7 +202,7 @@ class AapService : Service(), UsbReceiver.Listener {
         override fun onReceive(context: Context, intent: Intent) {
             if (Intent.ACTION_MEDIA_BUTTON == intent.action) {
                 AppLog.i("Runtime MEDIA_BUTTON receiver fired")
-                mediaSession?.let {
+                safeMediaSessionCall {
                     MediaButtonReceiver.handleIntent(it, intent)
                 }
             }
@@ -209,24 +249,28 @@ class AapService : Service(), UsbReceiver.Listener {
             actions = actions or PlaybackStateCompat.ACTION_PLAY
         }
 
-        mediaSession?.setPlaybackState(
-            PlaybackStateCompat.Builder()
-                .setState(state, lastAaPlaybackPositionMs, if (isPlaying) 1.0f else 0.0f)
-                .setActions(actions)
-                .build()
-        )
+        safeMediaSessionCall {
+            it.setPlaybackState(
+                PlaybackStateCompat.Builder()
+                    .setState(state, lastAaPlaybackPositionMs, if (isPlaying) 1.0f else 0.0f)
+                    .setActions(actions)
+                    .build()
+            )
+        }
         AppLog.d(
             "MediaSession: State updated to ${if (isPlaying) "PLAYING" else "STOPPED"}, positionMs=$lastAaPlaybackPositionMs"
         )
     }
 
     private fun applyPlaceholderMediaMetadata() {
-        mediaSession?.setMetadata(
-            MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, getString(R.string.video))
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, getString(R.string.media_session_aa_status_placeholder))
-                .build()
-        )
+        safeMediaSessionCall {
+            it.setMetadata(
+                MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, getString(R.string.video))
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, getString(R.string.media_session_aa_status_placeholder))
+                    .build()
+            )
+        }
     }
 
     private fun refreshMediaSessionMetadataForPrefsChange() {
@@ -273,7 +317,7 @@ class AapService : Service(), UsbReceiver.Listener {
 
     private fun resolveIsPlayingFromStatus(status: MediaPlayback.MediaPlaybackStatus): Boolean {
         if (!status.hasState()) return lastAaPlaybackIsPlaying ?: mediaSessionIsPlaying
-        return when (val s = status.state) {
+        return when (status.state) {
             MediaPlayback.MediaPlaybackStatus.State.PLAYING -> true
             MediaPlayback.MediaPlaybackStatus.State.STOPPED,
             MediaPlayback.MediaPlaybackStatus.State.PAUSED -> false
@@ -357,7 +401,7 @@ class AapService : Service(), UsbReceiver.Listener {
         if (albumArt != null) {
             b.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
         }
-        session.setMetadata(b.build())
+        safeMediaSessionCall { it.setMetadata(b.build()) }
     }
 
     // Receives ACTION_REQUEST_NIGHT_MODE_UPDATE broadcasts sent by the key-binding handler
@@ -540,6 +584,10 @@ class AapService : Service(), UsbReceiver.Listener {
 
         if (commManager.isConnected) {
             // Connection still alive — return to projection screen
+            if (App.isPiPActive) {
+                AppLog.i("WakeDetect: connection active, but PiP is active. Skipping return to full screen.")
+                return
+            }
             AppLog.i("WakeDetect: connection active, returning to projection")
             try {
                 val projectionIntent = AapProjectionActivity.intent(this).apply {
@@ -589,6 +637,9 @@ class AapService : Service(), UsbReceiver.Listener {
         setupNightMode()
         observeConnectionState()
         registerReceivers()
+        
+        // Handle immediate WiFi auto-start check (e.g. if already connected on boot/wake)
+        WifiAutoStartReceiver.checkAndStart(this)
 
         // Initialize MediaSession early and set it active immediately.
         // This ensures media button routing works even BEFORE an AA connection,
@@ -596,7 +647,7 @@ class AapService : Service(), UsbReceiver.Listener {
         if (mediaSession == null) {
             setupMediaSession()
         }
-        mediaSession?.isActive = true
+        safeMediaSessionCall { it.isActive = true }
         updateMediaSessionState(false) // Set initial PlaybackState so system knows our actions
 
         commManager.onAaMediaMetadata = { meta -> onAaMediaMetadataFromPhone(meta) }
@@ -605,8 +656,11 @@ class AapService : Service(), UsbReceiver.Listener {
             prefs.registerOnSharedPreferenceChangeListener(settingsPreferenceListener)
         }
 
-        LogExporter.startCapture(this, LogExporter.LogLevel.DEBUG)
-        AppLog.i("Auto-started continuous log capture")
+        val exporterLevel = App.provide(this).settings.exporterLogLevel
+        val settings = App.provide(this).settings
+        if (settings.exporterCaptureEnabled && exporterLevel != LogExporter.LogLevel.SILENT) {
+            LogExporter.startCapture(this, exporterLevel)
+        }
 
         startService(GpsLocationService.intent(this))
 
@@ -649,38 +703,8 @@ class AapService : Service(), UsbReceiver.Listener {
         carKeyReceiver = CarKeyReceiver()
         silentAudioPlayer = SilentAudioPlayer(this)
 
-        initWifiMode()
         checkAlreadyConnectedUsb()
         registerNetworkMonitor()
-
-        // Grab permanent AUDIOFOCUS_GAIN at service start.
-        // This ensures the headunit owns system audio focus before any AA connection,
-        // preventing other apps from stealing it and causing AA to keep audio on the phone.
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val attrs = android.media.AudioAttributes.Builder()
-                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
-                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build()
-            permanentFocusRequest = android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                .setAudioAttributes(attrs)
-                .setWillPauseWhenDucked(false)
-                .setOnAudioFocusChangeListener(AudioManager.OnAudioFocusChangeListener { focusChange ->
-                    AppLog.d("Permanent audio focus changed: $focusChange")
-                })
-                .build()
-            audioManager.requestAudioFocus(permanentFocusRequest!!)
-        } else {
-            @Suppress("DEPRECATION")
-            audioManager.requestAudioFocus(
-                AudioManager.OnAudioFocusChangeListener { focusChange ->
-                    AppLog.d("Permanent audio focus changed: $focusChange")
-                },
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN
-            )
-        }
-        AppLog.i("Grabbed permanent AUDIOFOCUS_GAIN at service start")
     }
 
     /** Enables Android Automotive UI mode so the system uses car-optimised layouts. */
@@ -740,6 +764,82 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     /**
+     * Performs the permanent audio focus request used for AA audio sink.
+     *
+     * This logic was previously executed in onCreate(); it has been moved here so
+     * the caller can decide when to acquire focus (for example, immediately before
+     * starting the AA handshake) to avoid stealing audio during autostart.
+     */
+    private fun requestPermanentAudioFocus() {
+        if (!settings.enableAudioSink) {
+            AppLog.d("Audio Sink disabled - skipping permanent audio focus request.")
+            return
+        }
+
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (permanentFocusRequest == null) {
+                    val attrs = AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                    permanentFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(attrs)
+                        .setWillPauseWhenDucked(false)
+                        .setOnAudioFocusChangeListener { focusChange ->
+                            AppLog.d("AapService: Permanent audio focus changed: $focusChange")
+                        }
+                        .build()
+                }
+                val res = audioManager.requestAudioFocus(permanentFocusRequest!!)
+                AppLog.d("AapService: requestPermanentAudioFocus: result=$res")
+            } else {
+                @Suppress("DEPRECATION")
+                val res = audioManager.requestAudioFocus(
+                    { focusChange -> AppLog.d("AapService: Permanent audio focus changed: $focusChange") },
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN
+                )
+                AppLog.d("AapService: requestPermanentAudioFocus (legacy): result=$res")
+            }
+        } catch (e: Exception) {
+            AppLog.e("AapService: requestPermanentAudioFocus failed", e)
+        }
+    }
+
+    /**
+     * Releases any permanent audio focus previously requested by [requestPermanentAudioFocus].
+     *
+     * This is invoked on disconnect to return audio focus to the phone or other media
+     * apps so that playback can resume normally. Supports both the modern
+     * AudioFocusRequest API (API >= O) and the legacy abandonAudioFocus path.
+     */
+    private fun releasePermanentAudioFocus() {
+        try {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                permanentFocusRequest?.let {
+                    audioManager.abandonAudioFocusRequest(it)
+                    AppLog.d("AapService: abandoned permanent audio focus request")
+                    permanentFocusRequest = null
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                try {
+                    audioManager.abandonAudioFocus(null)
+                    AppLog.d("AapService: abandoned legacy audio focus (null listener)")
+                } catch (e: Exception) {
+                    // Some devices may not accept a null listener; ignore failures
+                    AppLog.e("AapService: releasePermanentAudioFocus failed", e)
+                }
+            }
+        } catch (e: Exception) {
+            AppLog.e("AapService: Failed to abandon audio focus", e)
+        }
+    }
+
+    /**
      * Called by [CommManager.ConnectionState.Connected] observer:
      * 1. Refreshes the foreground notification.
      * 2. Activates a [MediaSessionCompat] so media keys are routed to Android Auto.
@@ -758,26 +858,32 @@ class AapService : Service(), UsbReceiver.Listener {
         acquireWifiLock()
 
         // Start silent audio hack to keep media focus (helps with steering wheel buttons)
-        silentAudioPlayer?.start()
+        if (settings.enableAudioSink) {
+            silentAudioPlayer?.start()
+        }
 
         // Register the comprehensive steering wheel key receiver
-        val filter = IntentFilter().apply {
-            priority = 1000
-            CarKeyReceiver.ACTIONS.forEach { addAction(it) }
-        }
-        try {
-            ContextCompat.registerReceiver(
-                this,
-                carKeyReceiver,
-                filter,
-                ContextCompat.RECEIVER_EXPORTED
-            )
-        } catch (e: Exception) {
-            AppLog.e("AapService: Failed to register CarKeyReceiver", e)
+        if (!isCarKeyReceiverRegistered) {
+            val filter = IntentFilter().apply {
+                priority = 1000
+                CarKeyReceiver.ACTIONS.forEach { addAction(it) }
+            }
+            try {
+                ContextCompat.registerReceiver(
+                    this,
+                    carKeyReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_EXPORTED
+                )
+                isCarKeyReceiverRegistered = true
+                AppLog.d("AapService: CarKeyReceiver registered")
+            } catch (e: Exception) {
+                AppLog.e("AapService: Failed to register CarKeyReceiver", e)
+            }
         }
 
         // Reactivate the existing MediaSession (created in onCreate, kept alive across disconnects)
-        mediaSession?.isActive = true
+        safeMediaSessionCall { it.isActive = true }
         updateMediaSessionState(true)
         applyPlaceholderMediaMetadata()
 
@@ -786,10 +892,18 @@ class AapService : Service(), UsbReceiver.Listener {
             updateMediaSessionState(isPlaying)
         }
 
+        // Acquire permanent audio focus just before starting the AA handshake so we
+        // don't steal audio during service autostart but still obtain focus when a
+        // real connection is beginning.
+        requestPermanentAudioFocus()
         serviceScope.launch { commManager.startHandshake() }
     }
 
     private fun launchAapProjectionActivity() {
+        if (App.isPiPActive) {
+            AppLog.i("AapService: Skipping projection launch because PiP is active")
+            return
+        }
         startActivity(AapProjectionActivity.intent(this).apply {
             putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
@@ -807,19 +921,13 @@ class AapService : Service(), UsbReceiver.Listener {
                         val actionStr = if (keyEvent.action == android.view.KeyEvent.ACTION_DOWN) "DOWN" else "UP"
                         AppLog.d("MediaButtonEvent: Received key ${keyEvent.keyCode} ($actionStr)")
 
-                        // Only handle ACTION_DOWN to prevent double triggers.
-                        if (keyEvent.action == android.view.KeyEvent.ACTION_DOWN) {
-                            val now = System.currentTimeMillis()
-                            if (now - lastMediaButtonClickTime < 300) {
-                                AppLog.i("MediaButtonEvent: Debouncing key ${keyEvent.keyCode} (too fast)")
-                                return true
-                            }
-                            lastMediaButtonClickTime = now
-                            
+                        // Only handle ACTION_DOWN to prevent double triggers from standard Android behavior.
+                        // Physical double triggers are handled by CommManager.sendKey deduplication.
+                        if (keyEvent.action == android.view.KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
                             AppLog.i("MediaButtonEvent: Processing key ${keyEvent.keyCode}")
                             // Send a complete click sequence (press + release) immediately
-                            commManager.send(keyEvent.keyCode, true)
-                            commManager.send(keyEvent.keyCode, false)
+                            commManager.sendKey(keyEvent.keyCode, true)
+                            commManager.sendKey(keyEvent.keyCode, false)
                             return true
                         }
                         
@@ -834,32 +942,32 @@ class AapService : Service(), UsbReceiver.Listener {
 
                 override fun onPause() {
                     AppLog.i("MediaSession: Processing transport control action = KEYCODE_MEDIA_PAUSE")
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, true)
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, false)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, true)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, false)
                 }
 
                 override fun onPlay() {
                     AppLog.i("MediaSession: Processing transport control action = KEYCODE_MEDIA_PLAY")
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, true)
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, false)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, true)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PLAY, false)
                 }
 
                 override fun onSkipToNext() {
                     AppLog.i("MediaSession: Processing transport control action = KEYCODE_MEDIA_NEXT")
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, true)
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, false)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, true)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_NEXT, false)
                 }
 
                 override fun onSkipToPrevious() {
                     AppLog.i("MediaSession: Processing transport control action = KEYCODE_MEDIA_PREVIOUS")
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, true)
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, false)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, true)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS, false)
                 }
 
                 override fun onStop() {
                     AppLog.i("MediaSession: Processing transport control action = KEYCODE_MEDIA_STOP")
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, true)
-                    commManager.send(android.view.KeyEvent.KEYCODE_MEDIA_STOP, false)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_STOP, true)
+                    commManager.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_STOP, false)
                 }
             })
             setPlaybackToLocal(android.media.AudioManager.STREAM_MUSIC)
@@ -880,9 +988,17 @@ class AapService : Service(), UsbReceiver.Listener {
 
         // Cleanup steering wheel and audio focus hacks
         silentAudioPlayer?.stop()
-        try {
-            carKeyReceiver?.let { unregisterReceiver(it) }
-        } catch (e: Exception) {}
+        // Release any permanent audio focus we may have requested when connected
+        releasePermanentAudioFocus()
+        if (isCarKeyReceiverRegistered) {
+            try {
+                carKeyReceiver?.let { unregisterReceiver(it) }
+            } catch (e: Exception) {
+                AppLog.e("AapService: Failed to unregister CarKeyReceiver", e)
+            } finally {
+                isCarKeyReceiverRegistered = false
+            }
+        }
 
         if (!isDestroying) updateNotification()
         mediaMetadataDecodeJob?.cancel()
@@ -897,7 +1013,7 @@ class AapService : Service(), UsbReceiver.Listener {
         // Only deactivate it — do NOT release it. A released session can no longer
         // receive media button events, which means the keymap stops working until
         // the next connection. HURev keeps its session alive the entire service lifetime.
-        mediaSession?.isActive = false
+        safeMediaSessionCall { it.isActive = false }
         updateMediaSessionState(false)
         serviceScope.launch(Dispatchers.IO) {
             nearbyManager?.stop() // Disconnect Nearby tunnel
@@ -1040,6 +1156,15 @@ class AapService : Service(), UsbReceiver.Listener {
             ContextCompat.RECEIVER_EXPORTED
         )
         AppLog.i("Registered runtime MEDIA_BUTTON receiver")
+        
+        // WiFi Auto-start: Dynamic registration for reliability on Android 8+
+        wifiAutoStartReceiver = WifiAutoStartReceiver()
+        ContextCompat.registerReceiver(
+            this, wifiAutoStartReceiver,
+            IntentFilter(android.net.wifi.WifiManager.NETWORK_STATE_CHANGED_ACTION),
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        AppLog.i("Registered dynamic WiFi Auto-start receiver")
 
         // Wake detection receiver: catches SCREEN_ON, SCREEN_OFF, POWER_CONNECTED,
         // and all known OEM boot/ACC intents. Enables hibernate wake detection on
@@ -1254,11 +1379,10 @@ class AapService : Service(), UsbReceiver.Listener {
 
             // Mode 3: Native AA Wireless
             if (mode == 3) {
-                val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
-                if (wifiManager.isWifiEnabled) {
-                    // Start WiFi Direct as a "quiet host" (P2P Group for phone to join)
-                    wifiDirectManager?.startNativeAaQuietHost()
-                }
+                // Start WiFi Direct as a "quiet host" (P2P Group for phone to join)
+                // We let WifiDirectManager handle the WiFi state (enabling if needed)
+                wifiDirectManager?.startNativeAaQuietHost()
+                
                 // Start the official Bluetooth handshake servers
                 nativeAaHandshakeManager?.start()
             }
@@ -1362,8 +1486,14 @@ class AapService : Service(), UsbReceiver.Listener {
         stopWirelessServer()
         wifiDirectManager?.stop()
         nearbyManager?.stop()
-        mediaSession?.isActive = false
-        mediaSession?.release()
+        try {
+            mediaSession?.let {
+                it.isActive = false
+                it.release()
+            }
+        } catch (e: Exception) {
+            AppLog.e("Error releasing MediaSession: ${e.message}")
+        }
         mediaSession = null
         commManager.destroy()
         nightModeManager?.stop()
@@ -1371,6 +1501,11 @@ class AapService : Service(), UsbReceiver.Listener {
         try { unregisterReceiver(usbReceiver) } catch (_: Exception) {}
         try { unregisterReceiver(mediaButtonReceiver) } catch (_: Exception) {}
         try { unregisterReceiver(wakeDetectReceiver) } catch (_: Exception) {}
+        if (isCarKeyReceiverRegistered) {
+            try { carKeyReceiver?.let { unregisterReceiver(it) } } catch (_: Exception) {}
+            isCarKeyReceiverRegistered = false
+        }
+        try { wifiAutoStartReceiver?.let { unregisterReceiver(it) } } catch (_: Exception) {}
         uiModeManager.disableCarMode(0)
         serviceScope.cancel()
         LogExporter.stopCapture()
@@ -1382,6 +1517,13 @@ class AapService : Service(), UsbReceiver.Listener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, createNotification(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            startForeground(1, createNotification())
+        }
+
         // Handle stop before re-posting the notification to avoid a flash
         if (intent?.action == ACTION_STOP_SERVICE) {
             AppLog.i("Stop action received. Broadcasting finish request to activities.")
@@ -1396,18 +1538,7 @@ class AapService : Service(), UsbReceiver.Listener {
         }
 
         // Route MEDIA_BUTTON intents to the active MediaSession.
-        // This is the AndroidX-recommended pattern: MediaButtonReceiver (manifest)
-        // forwards the intent to this service, and handleIntent() dispatches it
-        // to the MediaSession callback. This works on Android 8+ where implicit
-        // broadcasts to manifest-registered receivers are restricted.
-        mediaSession?.let { MediaButtonReceiver.handleIntent(it, intent) }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(1, createNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        } else {
-            startForeground(1, createNotification())
-        }
+        safeMediaSessionCall { MediaButtonReceiver.handleIntent(it, intent) }
         // Launch the UI after boot.
         // Direct startActivity() is silently blocked on MIUI/HyperOS even from
         // a foreground service. We use an overlay window trampoline: creating a
@@ -1464,8 +1595,18 @@ class AapService : Service(), UsbReceiver.Listener {
                     // [FIX] Reset exit flags so the subsequent connection is accepted
                     userExitedAA = false
                     userExitCooldownUntil = 0L
-                    // Ensure WiFi Direct and BT servers are ready before poking
-                    initWifiMode(force = true)
+                    
+                    val settings = App.provide(this).settings
+                    if (activeWifiMode != 3 || settings.wifiConnectionMode != 3) {
+                        AppLog.i("AapService: Initializing Native AA mode before poke...")
+                        initWifiMode(force = true)
+                    } else {
+                        AppLog.d("AapService: Already in Native AA mode, skipping re-init.")
+                        // Just ensure servers are running if they were stopped for some reason
+                        startWirelessServer() 
+                        nativeAaHandshakeManager?.start()
+                    }
+                    
                     nativeAaHandshakeManager?.manualPoke(mac)
                 }
             }
@@ -1812,6 +1953,18 @@ class AapService : Service(), UsbReceiver.Listener {
         wirelessServer = WirelessServer().apply { start(registerNsd = shouldRegisterNsd) }
         if (shouldRegisterNsd) {
             startDiscovery()
+        }
+    }
+
+    /**
+     * Triggers a refresh of the WiFi Direct "quiet host" state.
+     * Called by NativeAaHandshakeManager if it's waiting for credentials that haven't arrived yet.
+     */
+    fun triggerWifiDirectRefresh() {
+        AppLog.i("AapService: WiFi Direct refresh requested.")
+        val mode = App.provide(this).settings.wifiConnectionMode
+        if (mode == 3) {
+            wifiDirectManager?.startNativeAaQuietHost()
         }
     }
 
@@ -2322,6 +2475,7 @@ class AapService : Service(), UsbReceiver.Listener {
         const val ACTION_DISCONNECT                = "com.andrerinas.headunitrevived.ACTION_DISCONNECT"
         const val ACTION_REQUEST_NIGHT_MODE_UPDATE = "com.andrerinas.headunitrevived.ACTION_REQUEST_NIGHT_MODE_UPDATE"
         const val ACTION_NIGHT_MODE_CHANGED      = "com.andrerinas.headunitrevived.ACTION_NIGHT_MODE_CHANGED"
+        const val ACTION_ORIENTATION_CHANGED     = "com.andrerinas.headunitrevived.ACTION_ORIENTATION_CHANGED"
         /**
          * Sent after the caller has already invoked [CommManager.connect(socket)].
          * The [observeConnectionState] flow observer handles the result — [onStartCommand]

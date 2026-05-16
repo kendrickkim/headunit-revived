@@ -39,7 +39,7 @@ class CarKeyReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
         val action = intent?.action ?: return
-        AppLog.d("CarKeyReceiver: Received action: $action")
+        AppLog.i("CarKeyReceiver: Handling intent action: $action")
 
         // Broadcast for KeymapFragment debugger (raw intent data)
         context.sendBroadcast(Intent("com.andrerinas.headunitrevived.DEBUG_KEY").apply {
@@ -78,9 +78,9 @@ class CarKeyReceiver : BroadcastReceiver() {
                 if (keyCode != -1) handleKey(context, commManager, keyCode, action.endsWith("keyDown"))
             }
             "android.intent.action.C3_HARDKEY" -> {
-                val keyCode = intent.getIntExtra("c3_hardkey_keycode", -1)
-                val c3Action = intent.getIntExtra("c3_hardkey_action", -1)
-                if (keyCode != -1 && c3Action != -1) handleKey(context, commManager, keyCode, c3Action == 1)
+                val keyCode = intent.getIntExtra("android.intent.extra.c3_hardkey_keycode", -1)
+                val c3Action = intent.getIntExtra("android.intent.extra.c3_hardkey_action", -1)
+                if (keyCode != -1 && c3Action != -1) handleKey(context, commManager, keyCode, c3Action == 0)
             }
 
             // --- Protocols that fire once (no DOWN/UP) → use virtual IDs for mapping ---
@@ -113,7 +113,7 @@ class CarKeyReceiver : BroadcastReceiver() {
                 if (isDown) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP, keyCode
             ))
         })
-        if (commManager.isConnected) commManager.send(keyCode, isDown)
+        commManager.sendKey(keyCode, isDown)
     }
 
     /** Full click (DOWN + UP) — broadcasts both events for learning AND sends to AA. */

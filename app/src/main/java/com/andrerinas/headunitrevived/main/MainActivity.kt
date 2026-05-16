@@ -1,6 +1,8 @@
 package com.andrerinas.headunitrevived.main
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -34,6 +36,10 @@ class MainActivity : BaseActivity() {
 
     private var lastBackPressTime: Long = 0
     var keyListener: KeyListener? = null
+    
+    private var isOrientationReceiverRegistered = false
+    private var isFinishReceiverRegistered = false
+    private var isRecreateReceiverRegistered = false
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -46,8 +52,44 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private val recreateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_RECREATE_MAIN) {
+                AppLog.i("MainActivity: Received recreate request. Recreating.")
+                try {
+                    recreate()
+                } catch (e: Exception) {
+                    AppLog.e("MainActivity: Failed to recreate activity", e)
+                }
+            }
+        }
+    }
+
     interface KeyListener {
         fun onKeyEvent(event: KeyEvent?): Boolean
+    }
+
+    private val orientationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AapService.ACTION_ORIENTATION_CHANGED) {
+                AppLog.i("MainActivity: Orientation change broadcast received. Updating.")
+                requestedOrientation = Settings(this@MainActivity).screenOrientation.androidOrientation
+            }
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val settings  = Settings(newBase)
+        val scale = settings.uiScaleHomePercent / 100.0f
+        if (scale != 1.0f && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            val cfg = Configuration(newBase.resources.configuration)
+            val metrics = newBase.resources.displayMetrics
+            cfg.densityDpi = (metrics.densityDpi * scale).toInt()
+            val ctx = newBase.createConfigurationContext(cfg)
+            super.attachBaseContext(ctx)
+        } else {
+            super.attachBaseContext(newBase)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +98,7 @@ class MainActivity : BaseActivity() {
         logLaunchSource()
 
         // If an Android Auto session is active, bring the projection activity to front
-        if (App.provide(this).commManager.isConnected) {
+        if (App.provide(this).commManager.isConnected && !App.isPiPActive) {
             AppLog.i("MainActivity: Active session detected in onCreate, bringing projection to front")
             val aapIntent = AapProjectionActivity.intent(this).apply {
                 putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
@@ -134,6 +176,15 @@ class MainActivity : BaseActivity() {
             android.content.IntentFilter("com.andrerinas.headunitrevived.ACTION_FINISH_ACTIVITIES"),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
+        isFinishReceiverRegistered = true
+
+        // Register recreate receiver so SettingsFragment can request MainActivity recreate
+        ContextCompat.registerReceiver(
+            this, recreateReceiver,
+            android.content.IntentFilter(ACTION_RECREATE_MAIN),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+        isRecreateReceiverRegistered = true
     }
 
     private fun showSplashWithDelay(delayMs: Long) {
@@ -313,14 +364,26 @@ class MainActivity : BaseActivity() {
 
         checkSetupFlow()
 
+        requestedOrientation = Settings(this).screenOrientation.androidOrientation
+        ContextCompat.registerReceiver(this, orientationReceiver, android.content.IntentFilter(AapService.ACTION_ORIENTATION_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        isOrientationReceiverRegistered = true
+
         // If an Android Auto session is active, bring the projection activity to front
-        if (App.provide(this).commManager.isConnected) {
+        if (App.provide(this).commManager.isConnected && !App.isPiPActive && !AapProjectionActivity.isForeground) {
             AppLog.i("MainActivity: Active session detected, bringing projection to front")
             val aapIntent = AapProjectionActivity.intent(this).apply {
                 putExtra(AapProjectionActivity.EXTRA_FOCUS, true)
                 addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
             startActivity(aapIntent)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isOrientationReceiverRegistered) {
+            unregisterReceiver(orientationReceiver)
+            isOrientationReceiverRegistered = false
         }
     }
 
@@ -358,7 +421,14 @@ class MainActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        try { unregisterReceiver(finishReceiver) } catch (e: Exception) {}
+        if (isFinishReceiverRegistered) {
+            unregisterReceiver(finishReceiver)
+            isFinishReceiverRegistered = false
+        }
+        if (isRecreateReceiverRegistered) {
+            unregisterReceiver(recreateReceiver)
+            isRecreateReceiverRegistered = false
+        }
         if (isFinishing) {
             AppLog.i("MainActivity finishing, resetting auto-start flag.")
             HomeFragment.resetAutoStart()
@@ -368,5 +438,6 @@ class MainActivity : BaseActivity() {
     companion object {
         private const val permissionRequestCode = 97
         const val EXTRA_LAUNCH_SOURCE = "launch_source"
+        const val ACTION_RECREATE_MAIN = "com.andrerinas.headunitrevived.ACTION_RECREATE_MAIN"
     }
 }

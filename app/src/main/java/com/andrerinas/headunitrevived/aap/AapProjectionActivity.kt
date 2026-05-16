@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -62,6 +63,11 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     private var initialY = 0f
     private var isPotentialGesture = false
     private var fpsTextView: TextView? = null
+    
+    private var isOrientationReceiverRegistered = false
+    private var isNightModeReceiverRegistered = false
+    private var isFinishReceiverRegistered = false
+    private var isKeyEventReceiverRegistered = false
 
     private val videoWatchdogRunnable = object : Runnable {
         override fun run() {
@@ -153,14 +159,18 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
     }
 
-    private val keyCodeReceiver = object : BroadcastReceiver() {
+    private val orientationReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val event: KeyEvent? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableExtra(KeyIntent.extraEvent, KeyEvent::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableExtra(KeyIntent.extraEvent)
+            if (intent.action == AapService.ACTION_ORIENTATION_CHANGED) {
+                AppLog.i("AapProjectionActivity: Orientation change broadcast received. Updating.")
+                applyOrientationSettings()
             }
+        }
+    }
+
+    private val keyEventReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val event: KeyEvent? = IntentCompat.getParcelableExtra(intent, KeyIntent.extraEvent, KeyEvent::class.java)
             event?.let {
                 onKeyEvent(it.keyCode, it.action == KeyEvent.ACTION_DOWN)
             }
@@ -177,25 +187,10 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            enableEdgeToEdge()
-        }
         super.onCreate(savedInstanceState)
 
-        val screenOrientation = settings.screenOrientation
-        if (screenOrientation == Settings.ScreenOrientation.AUTO) {
-            applyStickyOrientation()
-            if (!HeadUnitScreenConfig.isResolutionLocked) {
-                // Initial start: lock to current orientation at launch
-                if (Build.VERSION.SDK_INT >= 18) {
-                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                } else {
-                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-                }
-            }
-        } else {
-            requestedOrientation = screenOrientation.androidOrientation
-        }
+        applyOrientationSettings()
+
 
         setContentView(R.layout.activity_headunit)
 
@@ -293,6 +288,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
         
         ContextCompat.registerReceiver(this, finishReceiver, android.content.IntentFilter("com.andrerinas.headunitrevived.ACTION_FINISH_ACTIVITIES"), ContextCompat.RECEIVER_NOT_EXPORTED)
+        isFinishReceiverRegistered = true
 
         AppLog.i("HeadUnit for Android Auto (tm) - Copyright 2011-2015 Michael A. Reid., since 2025 André Rinas All Rights Reserved...")
 
@@ -388,28 +384,48 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     }
 
     override fun onPause() {
+        isForeground = false
         AppLog.i("AapProjectionActivity: onPause")
         super.onPause()
         watchdogHandler.removeCallbacks(watchdogRunnable)
         watchdogHandler.removeCallbacks(videoWatchdogRunnable)
         watchdogHandler.removeCallbacks(reconnectingWatchdog)
-        unregisterReceiver(keyCodeReceiver)
-        unregisterReceiver(nightModeReceiver)
+        if (isOrientationReceiverRegistered) {
+            unregisterReceiver(orientationReceiver)
+            isOrientationReceiverRegistered = false
+        }
+        if (isNightModeReceiverRegistered) {
+            unregisterReceiver(nightModeReceiver)
+            isNightModeReceiverRegistered = false
+        }
+        if (isKeyEventReceiverRegistered) {
+            unregisterReceiver(keyEventReceiver)
+            isKeyEventReceiverRegistered = false
+        }
     }
 
     override fun onResume() {
-        AppLog.i("AapProjectionActivity: onResume")
         super.onResume()
+        isForeground = true
+        AppLog.i("AapProjectionActivity: onResume")
         applyStickyOrientation()
         watchdogHandler.postDelayed(watchdogRunnable, 2000)
         watchdogHandler.postDelayed(videoWatchdogRunnable, 3000)
         watchdogHandler.postDelayed(reconnectingWatchdog, 5000)
 
-        // Register key event receiver safely for Android 14+
-        ContextCompat.registerReceiver(this, keyCodeReceiver, IntentFilters.keyEvent, ContextCompat.RECEIVER_NOT_EXPORTED)
+
+        if (!isKeyEventReceiverRegistered) {
+            ContextCompat.registerReceiver(this, keyEventReceiver, IntentFilters.keyEvent, ContextCompat.RECEIVER_EXPORTED)
+            isKeyEventReceiverRegistered = true
+        }
+
+        // Register orientation receiver
+        ContextCompat.registerReceiver(this, orientationReceiver, IntentFilter(AapService.ACTION_ORIENTATION_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        isOrientationReceiverRegistered = true
 
         // Register night mode receiver for AA monochrome filter
         ContextCompat.registerReceiver(this, nightModeReceiver, IntentFilter(AapService.ACTION_NIGHT_MODE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        isNightModeReceiverRegistered = true
 
         // Request current night mode state for initial desaturation
         sendBroadcast(Intent(AapService.ACTION_REQUEST_NIGHT_MODE_UPDATE).apply {
@@ -418,6 +434,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
         setFullscreen()
     }
+
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -542,14 +559,38 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
     private fun enterPiP() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             try {
-                val params = android.app.PictureInPictureParams.Builder()
-                    // Default aspect ratio for AA (usually 16:9 or 16:10)
-                    .setAspectRatio(android.util.Rational(videoDecoder.videoWidth.coerceAtLeast(1), videoDecoder.videoHeight.coerceAtLeast(1)))
-                    .build()
-                enterPictureInPictureMode(params)
+                var width = videoDecoder.videoWidth.coerceAtLeast(1).toFloat()
+                var height = videoDecoder.videoHeight.coerceAtLeast(1).toFloat()
+                val ratio = width / height
+                
+                // Android supports PiP aspect ratios between 1/2.39 (0.418) and 2.39.
+                // If we exceed this (e.g. on ultrawide headunits), PiP entry will fail.
+                if (ratio > 2.39f) {
+                    AppLog.i("PiP: Aspect ratio $ratio is too wide, clamping to 2.39")
+                    width = height * 2.39f
+                } else if (ratio < 0.418f) {
+                    AppLog.i("PiP: Aspect ratio $ratio is too narrow, clamping to 0.418")
+                    height = width / 0.418f
+                }
+
+                val paramsBuilder = android.app.PictureInPictureParams.Builder()
+                    .setAspectRatio(android.util.Rational(width.toInt(), height.toInt()))
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    // Smooth transition for Android 12+
+                    paramsBuilder.setAutoEnterEnabled(true)
+                    paramsBuilder.setSeamlessResizeEnabled(true)
+                }
+
+                App.isPiPActive = true
+                enterPictureInPictureMode(paramsBuilder.build())
             } catch (e: Exception) {
                 AppLog.e("Failed to enter PiP mode: ${e.message}")
+                e.printStackTrace()
+                Toast.makeText(this, "PiP failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            AppLog.w("PiP mode not supported on this Android version (SDK < 26)")
         }
     }
 
@@ -562,6 +603,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        App.isPiPActive = isInPictureInPictureMode
         if (isInPictureInPictureMode) {
             // Hide UI elements during PiP (like FPS counter, loading overlay)
             findViewById<View>(R.id.loading_overlay)?.visibility = View.GONE
@@ -699,6 +741,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         videoDecoder.stop("surfaceDestroyed")
     }
 
+
     override fun onVideoDimensionsChanged(width: Int, height: Int) {
         AppLog.i("[AapProjectionActivity] Received video dimensions: ${width}x$height")
         runOnUiThread {
@@ -787,25 +830,29 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         commManager.send(TouchEvent(ts, action, event.actionIndex, pointerData))
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE) {
-            return super.onKeyDown(keyCode, event)
-        }
-        onKeyEvent(keyCode, true)
-        return true
-    }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE) {
-            return super.onKeyUp(keyCode, event)
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val action = event.action
+        if (action != KeyEvent.ACTION_DOWN && action != KeyEvent.ACTION_UP) {
+            return super.dispatchKeyEvent(event)
         }
-        onKeyEvent(keyCode, false)
+
+        // 1. Let the system handle volume and back keys
+        if (event.keyCode == KeyEvent.KEYCODE_BACK || 
+            event.keyCode == KeyEvent.KEYCODE_VOLUME_UP || 
+            event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || 
+            event.keyCode == KeyEvent.KEYCODE_VOLUME_MUTE) {
+            return super.dispatchKeyEvent(event)
+        }
+
+        // 2. Funnel all other keys to CommManager
+        commManager.sendKey(event.keyCode, event.action == KeyEvent.ACTION_DOWN)
         return true
     }
 
     private fun onKeyEvent(keyCode: Int, isPress: Boolean) {
-        AppLog.d("AapProjectionActivity: onKeyEvent code=$keyCode, isPress=$isPress")
-        commManager.send(keyCode, isPress)
+        // Broadcasts (e.g. from CarKeyReceiver) still use this path.
+        commManager.sendKey(keyCode, isPress)
     }
 
     private fun applyStickyOrientation() {
@@ -824,18 +871,43 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
 
     override fun onDestroy() {
         super.onDestroy()
-        try { unregisterReceiver(finishReceiver) } catch (e: Exception) {}
+        if (isFinishReceiverRegistered) {
+            unregisterReceiver(finishReceiver)
+            isFinishReceiverRegistered = false
+        }
+        if (isKeyEventReceiverRegistered) {
+            unregisterReceiver(keyEventReceiver)
+            isKeyEventReceiverRegistered = false
+        }
         AppLog.i("AapProjectionActivity.onDestroy called. isFinishing=$isFinishing")
+        App.isPiPActive = false
         videoDecoder.dimensionsListener = null
     }
 
     companion object {
         const val EXTRA_FOCUS = "focus"
+        @Volatile var isForeground = false
 
         fun intent(context: Context): Intent {
             val aapIntent = Intent(context, AapProjectionActivity::class.java)
             aapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             return aapIntent
+        }
+    }
+    private fun applyOrientationSettings() {
+        val screenOrientation = settings.screenOrientation
+        if (screenOrientation == Settings.ScreenOrientation.AUTO) {
+            applyStickyOrientation()
+            if (!HeadUnitScreenConfig.isResolutionLocked) {
+                // Initial start: lock to current orientation at launch
+                if (Build.VERSION.SDK_INT >= 18) {
+                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                } else {
+                    requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                }
+            }
+        } else {
+            requestedOrientation = screenOrientation.androidOrientation
         }
     }
 }

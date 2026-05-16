@@ -131,6 +131,12 @@
     <string name="key_music">Muziek</string>
     <string name="key_nav">Navigatie</string>
     <string name="key_night">Schakel Nachtmodus</string>
+    <string name="key_enter">Enter</string>
+    <string name="key_home">Home</string>
+    <string name="key_app_switch">Recente apps</string>
+    <string name="key_button_a">Knop A (Selecteren)</string>
+    <string name="key_button_b">Knop B (Terug)</string>
+
 
     <!-- Language Settings -->
     <string name="app_language">App-taal</string>
@@ -145,6 +151,14 @@
     <string name="usb_auto_connect_description">Automatisch verbinden met een bekend USB-apparaat wanneer de applicatie wordt geopend.</string>
     <string name="auto_start_bt_label">Automatisch starten bij Bluetooth</string>
     <string name="auto_start_bt_description">Start Headunit Revived automatisch wanneer een specifiek Bluetooth-apparaat verbinding maakt.</string>
+    <string name="auto_start_wifi_label">Automatisch starten bij WiFi</string>
+    <string name="auto_start_wifi_description">Opent Headunit Revived automatisch bij verbinding met een specifieke WiFi-SSID.</string>
+    <string name="auto_start_wifi_ssid_label">WiFi-SSID</string>
+    <string name="auto_start_wifi_ssid_description">Alleen verbinden bij verbinding met deze WiFi-SSID</string>
+    <string name="auto_start_wifi_warning">Legacy-functie: Dit werkt mogelijk niet betrouwbaar op Android 8+ vanwege achtergrondbeperkingen. Zorg ervoor dat de app is uitgesloten van batterijoptimalisatie.</string>
+    <string name="enter_wifi_ssid">WiFi-SSID invoeren</string>
+    <string name="wifi_ssid_not_set">Niet ingesteld</string>
+
     <string name="listen_for_usb_devices_label">Luister naar USB-apparaten</string>
     <string name="listen_for_usb_devices_description">Toon de Android-systeemprompt wanneer een USB-apparaat wordt aangesloten.</string>
     <string name="auto_start_usb_label">Automatisch starten via USB</string>
@@ -216,6 +230,8 @@
 <string name="category_audio">Audio</string>
     <string name="enable_audio_sink">Audio-sink inschakelen</string>
     <string name="enable_audio_sink_description">Indien uitgeschakeld, fungeert de autoradio niet als audio-uitgang. Het geluid wordt dan vanaf de telefoon afgespeeld.</string>
+    <string name="separate_audio_streams">Afzonderlijke audiostreams</string>
+    <string name="separate_audio_streams_description">Scheid audiokanalen voor muziek, oproepen en meldingen in plaats van één multimediastroom (werkt mogelijk niet correct op sommige apparaten).</string>
     <string name="use_aac_audio">Gebruik AAC Audio</string>
     <string name="use_aac_audio_description">Gebruik de AAC-codec voor audio om bandbreedte te besparen (experimenteel).</string>
     <string name="audio_volume_offset">Volume-offsets</string>
@@ -280,6 +296,7 @@
     <string name="share">Delen</string>
     <string name="close">Sluiten</string>
     <string name="failed_export_logs">Exporteren van logs mislukt</string>
+    <string name="failed_export_in_silent_logs">Kan de logbestanden niet exporteren: Stille logboekregistratie geselecteerd</string>
     <string name="switching_to_android_auto">Overschakelen naar Android Auto…</string>
     <string name="switch_failed">Overschakelen mislukt</string>
     <string name="requesting_usb_permission">USB-toestemming aanvragen…</string>
@@ -334,6 +351,7 @@
     <string name="log_level_description">Kies het detailniveau van de loguitvoer voor foutopsporing.</string>
     <string name="start_log_capture">Logboekregistratie starten</string>
     <string name="start_log_capture_description">Begint met het opnemen van systeemlogs in een bestand.</string>
+    <string name="start_log_capture_in_silent">Kan opname niet starten: Stille logboekregistratie geselecteerd</string>
     <string name="stop_log_capture">Logboekregistratie stoppen</string>
     <string name="stop_log_capture_description">Stopt de opname en slaat het logbestand op.</string>
 
@@ -392,6 +410,9 @@
     <!-- Vehicle Info Settings -->
     <string name="vehicle_info_settings">Voertuiginformatie</string>
     <string name="vehicle_info_settings_description">Pas aan hoe uw voertuig op uw telefoon wordt weergegeven</string>
+    <string name="ui_scale">UI-schaal</string>
+    <string name="ui_scale_home">Startscherm</string>
+    <string name="ui_scale_settings">Instellingen scherm</string>
     <string name="category_vehicle">Voertuig</string>
     <string name="category_head_unit">Headunit</string>
     <string name="vehicle_display_name_label">Weergavenaam</string>
@@ -467,4 +488,15 @@
     <string name="sync_media_session_aa_metadata">Huidig AA-nummer in mediasessie</string>
     <string name="sync_media_session_aa_metadata_description">Toon titel, artiest, duur en albumhoes van de telefoon in de mediasessie van het systeem en in de mediamelding</string>
     <string name="error_usb_permission_failed">Systeemfout: Aanvragen van USB-toestemmingsvenster mislukt.</string>
+    <string name="microphone_settings">Microfooninstellingen</string>
+    <string name="microphone_settings_description">Microfooningang en audioverwerking configureren.</string>
+    <string name="mic_echo_canceler">Echonderdrukking (AEC)</string>
+    <string name="mic_echo_canceler_description">Probeert echo van de microfoon te verwijderen. Schakel dit uit als u stilte of vervorming ervaart.</string>
+    <string name="mic_noise_suppressor">Ruisonderdrukking (NS)</string>
+    <string name="mic_noise_suppressor_description">Probeert achtergrondgeluid te verminderen. Schakel dit uit als uw stem gedempt klinkt.</string>
+    <string name="mic_auto_gain_control">Automatische versterkingsregeling (AGC)</string>
+    <string name="mic_auto_gain_control_description">Past automatisch het microfoonvolume aan. Schakel dit uit als het volume onstabiel is.</string>
+    <string name="bt_permission_denied">Bluetooth-toestemming geweigerd. Kan niet scannen naar apparaten.</string>
+    <string name="wifi_autostart_title">WiFi Auto-Start</string>
+    <string name="wifi_autostart_content">Verbonden met %s. Tik om Android Auto te starten.</string>
 </resources>
