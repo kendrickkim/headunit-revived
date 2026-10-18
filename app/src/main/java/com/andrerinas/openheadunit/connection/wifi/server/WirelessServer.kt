@@ -135,7 +135,7 @@ class WirelessServer(
                     AppLog.d("WirelessServer: Waiting for TCP connection on port 5288...")
                     val clientSocket = serverSocket?.accept() ?: break
                     AppLog.i("WirelessServer: Incoming connection detected from ${clientSocket.inetAddress}")
-                    service.serviceScope.launch {
+                    service.serviceScope.launch(Dispatchers.Main.immediate) {
                         if (SystemClock.elapsedRealtime() < commManager.projectionWppRejectionUntilMs) {
                             withContext(Dispatchers.IO) { rejectStaleWppDial(clientSocket) }
                         } else if (commManager.isConnected) {

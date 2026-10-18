@@ -50,17 +50,27 @@ class AABrokerClient(context: Context) {
 
     private var linkGeneration = 0
     private var linkUp = false
+    private var inFlight: PendingWrite? = null
 
     fun isReady(): Boolean = adapter?.isEnabled == true
 
-    /** Tells an already-open broker session that the phone's projection socket came up or went away. */
-    fun notifyProjection(up: Boolean) {
-        if (gatt == null) return
+    /**
+     * Tells an already-open broker session that the phone's projection socket came up or went away.
+     * [onRecorded] runs once, on the main thread, when that notice is written or cannot be written.
+     */
+    fun notifyProjection(up: Boolean, onRecorded: ((Boolean) -> Unit)? = null) {
+        val link = gatt
+        if (link == null) {
+            if (onRecorded != null) main.post { onRecorded(false) }
+            return
+        }
         queueFrame(
             AABrokerProtocol.CMD_PROJECTION_UP,
             AABrokerProtocol.CH_CONTROL,
             byteArrayOf(if (up) 1 else 0),
+            onRecorded = onRecorded,
         )
+        writeNext(link)
     }
 
     @SuppressLint("MissingPermission")
@@ -252,10 +262,18 @@ class AABrokerClient(context: Context) {
                 main.post {
                     if (writeWithoutResponse) return@post
                     writeBusy = false
+                    val flight = inFlight
+                    inFlight = null
                     if (status != BluetoothGatt.GATT_SUCCESS) {
+                        if (flight?.onRecorded != null) {
+                            flight.onRecorded.invoke(false)
+                            writeNext(gatt)
+                            return@post
+                        }
                         fail(report, IllegalStateException("write status $status"))
                         return@post
                     }
+                    flight?.onRecorded?.invoke(true)
                     writeNext(gatt)
                 }
             }
@@ -280,6 +298,10 @@ class AABrokerClient(context: Context) {
         linkGeneration++
         linkUp = false
         stopScan()
+        val abandoned = mutableListOf<(Boolean) -> Unit>()
+        inFlight?.onRecorded?.let { abandoned.add(it) }
+        inFlight = null
+        pending.mapNotNullTo(abandoned) { it.onRecorded }
         pending.clear()
         writeBusy = false
         writeWithoutResponse = false
@@ -288,6 +310,7 @@ class AABrokerClient(context: Context) {
         dataAssembly.reset()
         gatt?.close()
         gatt = null
+        abandoned.forEach { it(false) }
     }
 
     private fun inbound(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
@@ -353,7 +376,12 @@ class AABrokerClient(context: Context) {
         queueFrame(AABrokerProtocol.CMD_GET_STATUS, AABrokerProtocol.CH_CONTROL, ByteArray(0))
     }
 
-    private fun queueFrame(type: Int, channel: Int, payload: ByteArray) {
+    private fun queueFrame(
+        type: Int,
+        channel: Int,
+        payload: ByteArray,
+        onRecorded: ((Boolean) -> Unit)? = null,
+    ) {
         val frame = AABrokerProtocol.encode(type, channel, appSeq++, payload)
         val uuid = if (channel == AABrokerProtocol.CH_RFCOMM) {
             AABrokerProtocol.DATA_RX_UUID
@@ -365,8 +393,16 @@ class AABrokerClient(context: Context) {
         } else {
             BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
         }
-        AABrokerProtocol.fragment(frame, attPayload, transportSeq++).forEach {
-            pending.add(PendingWrite(uuid, writeType, it))
+        val parts = AABrokerProtocol.fragment(frame, attPayload, transportSeq++)
+        parts.forEachIndexed { index, bytes ->
+            pending.add(
+                PendingWrite(
+                    uuid,
+                    writeType,
+                    bytes,
+                    onRecorded = if (index == parts.lastIndex) onRecorded else null,
+                ),
+            )
         }
     }
 
@@ -395,9 +431,16 @@ class AABrokerClient(context: Context) {
             if (done != null) main.post { done(Result.success(Unit)) }
             return
         }
-        val service = gatt.getService(AABrokerProtocol.SERVICE_UUID) ?: return
-        val characteristic = service.getCharacteristic(next.uuid) ?: return
+        val service = gatt.getService(AABrokerProtocol.SERVICE_UUID)
+        val characteristic = service?.getCharacteristic(next.uuid)
+        if (characteristic == null) {
+            next.onRecorded?.invoke(false)
+            if (next.onRecorded == null) return
+            writeNext(gatt)
+            return
+        }
         writeBusy = true
+        inFlight = next
         writeWithoutResponse = next.writeType == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
         val ok = if (Build.VERSION.SDK_INT >= 33) {
             gatt.writeCharacteristic(characteristic, next.bytes, next.writeType) ==
@@ -409,6 +452,12 @@ class AABrokerClient(context: Context) {
         }
         if (!ok) {
             writeBusy = false
+            inFlight = null
+            if (next.onRecorded != null) {
+                next.onRecorded.invoke(false)
+                writeNext(gatt)
+                return
+            }
             val done = activeResult
             activeResult = null
             if (done != null) fail(done, IllegalStateException("write rejected"))
@@ -432,7 +481,12 @@ class AABrokerClient(context: Context) {
         private val CCCD: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
     }
 
-    private data class PendingWrite(val uuid: UUID, val writeType: Int, val bytes: ByteArray)
+    private data class PendingWrite(
+        val uuid: UUID,
+        val writeType: Int,
+        val bytes: ByteArray,
+        val onRecorded: ((Boolean) -> Unit)? = null,
+    )
 
     private class Assembly {
         private var seq = -1

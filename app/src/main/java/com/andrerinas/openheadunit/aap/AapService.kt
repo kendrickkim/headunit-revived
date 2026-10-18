@@ -1086,6 +1086,15 @@ class AapService : Service() {
                 honorKillOnDisconnect = false,
             )
         }
+        AABrokerSession.onProjectionRecordFailed = {
+            AppLog.w("AapService: projection status was not recorded 10 times, stopping Android Auto")
+            sessionEndedByHand = true
+            App.provide(this).commManager.disconnect(
+                sendByeBye = true,
+                isUserExit = true,
+                honorKillOnDisconnect = false,
+            )
+        }
         // A dark screen is not evidence that the car is on.
         if (ScreenPower.isInteractive(this) != false) AccPowerState.noteOn()
 
@@ -2913,6 +2922,7 @@ class AapService : Service() {
     override fun onDestroy() {
         ConnectionStageTracker.setOnApplied(null)
         AABrokerSession.onGiveUp = null
+        AABrokerSession.onProjectionRecordFailed = null
         AppLog.i("AapService destroying... (wakeLock held=${bootWakeLock?.isHeld == true})")
         FloatingButtonManager.removeOverlay(this)
         isDestroying = true

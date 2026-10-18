@@ -27,13 +27,20 @@ object AABrokerSession {
     private var fromRetry = false
     private var gaveUp = false
     private var projectionUp = false
-    /** When the last AA_ENABLE was handed to the broker. The next waits out delivery to the phone. */
+    private var projectionRecordFailures = 0
+    /** This down period already handed the broker one AA_ENABLE. */
+    private var startSent = false
+    /** The one start is waiting out the snapshot window, so a later offer does not send another. */
+    private var dialArmed = false
     private var lastDialAtMs = 0L
     /** BLE is down and the retry window has not expired. The displayed phase stays as it was. */
     private var awaitingBroker = false
 
     /** Runs once when the broker stays down for the whole retry window. */
     var onGiveUp: (() -> Unit)? = null
+
+    /** Projection status could not be recorded ten times in a row. Android Auto should stop. */
+    var onProjectionRecordFailed: (() -> Unit)? = null
 
     private val retry = Runnable {
         retryPosted = false
@@ -77,29 +84,59 @@ object AABrokerSession {
             }
             return
         }
-        val dial = !projectionUp && dialDelivered()
-        if (!projectionUp && !dial && !awaitingBroker &&
+        lastInfo = info
+        appContext = app
+        // A start that never brought the socket up may be asked again. Not before the phone has
+        // had time to finish the one that is already on the way.
+        if (startSent && !projectionUp && lastDialAtMs != 0L &&
+            SystemClock.elapsedRealtime() - lastDialAtMs >= START_RETRY_MS
+        ) {
+            startSent = false
+        }
+        // Snapshots keep arriving for about a second after the group comes up. Wait that out,
+        // then send one start with the latest of them. Another start while the phone is still
+        // dialing is what drops the session that just came up.
+        if (!projectionUp && !startSent && !dialArmed) {
+            dialArmed = true
+            main.postDelayed(sendDial, START_DELIVERY_MS)
+        }
+        val snapshot = listOf(address, info.ssid, info.bssid, info.ipAddress, info.port.toString()).joinToString("|")
+        if (!projectionUp && (startSent || dialArmed) && !awaitingBroker &&
+            snapshot == lastSnapshot &&
             (status.phase == Phase.READY || status.phase == Phase.CONNECTING)
         ) {
             AppLog.i("Broker: previous start is still on the way to the phone")
             return
         }
-        lastInfo = info
-        val snapshot = listOf(address, info.ssid, info.bssid, info.ipAddress, info.port.toString()).joinToString("|")
         if (snapshot == lastSnapshot && status.phase == Phase.CONNECTING) return
         if (!force && snapshot == lastSnapshot && status.phase == Phase.READY) return
         lastSnapshot = snapshot
-        appContext = app
         if (!fromRetry) gaveUp = false
         publish(Status(Phase.CONNECTING))
-        if (dial) lastDialAtMs = SystemClock.elapsedRealtime()
+        push(app, info, dial = false)
+    }
+
+    /** One AA_ENABLE for this down period, using whichever snapshot arrived last. */
+    private val sendDial: Runnable = Runnable {
+        dialArmed = false
+        val app = appContext ?: return@Runnable
+        val info = lastInfo ?: return@Runnable
+        if (projectionUp || startSent || !info.isComplete) return@Runnable
+        startSent = true
+        lastDialAtMs = SystemClock.elapsedRealtime()
+        AppLog.i("Broker: one start for ${info.ssid} ${info.ipAddress}:${info.port}")
+        push(app, info, dial = true)
+    }
+
+    private fun push(app: Context, info: AABrokerProtocol.DisplayInfo, dial: Boolean) {
+        val address = AABrokerStore(app).deviceAddress ?: return
         AppLog.i("Broker: sending Wi-Fi snapshot ${info.ssid} ${info.ipAddress}:${info.port} to $address" +
             if (dial) "" else " without a new start")
         brokerClient(app).prepare(
             address,
             info.copy(generation = System.currentTimeMillis() / 1000L),
             restartProjection = dial,
-            confirmProjection = projectionUp,
+            confirmProjection = projectionUp && !dial,
         ) { result ->
             if (result.isSuccess) {
                 awaitingBroker = false
@@ -155,19 +192,55 @@ object AABrokerSession {
         val changed = projectionUp != up
         projectionUp = up
         main.removeCallbacks(projectionHeartbeat)
+        if (changed && up) {
+            projectionRecordFailures = 0
+            main.removeCallbacks(sendDial)
+            dialArmed = false
+        }
+        if (changed && !up) {
+            projectionRecordFailures = 0
+            startSent = false
+            dialArmed = false
+            main.removeCallbacks(sendDial)
+        }
         if (changed) {
             AppLog.i("Broker: projection socket ${if (up) "up" else "down"}")
         }
-        client?.notifyProjection(up)
-        if (up) {
+        sendProjection(up)
+        if (up && projectionUp) {
             main.postDelayed(projectionHeartbeat, PROJECTION_HEARTBEAT_MS)
         }
     }
 
     private val projectionHeartbeat: Runnable = Runnable {
         if (!projectionUp) return@Runnable
-        client?.notifyProjection(true)
-        main.postDelayed(projectionHeartbeat, PROJECTION_HEARTBEAT_MS)
+        sendProjection(true)
+        if (projectionUp) main.postDelayed(projectionHeartbeat, PROJECTION_HEARTBEAT_MS)
+    }
+
+    private fun sendProjection(up: Boolean) {
+        val link = client
+        if (link == null) {
+            if (up) noteProjectionRecord(false)
+            return
+        }
+        link.notifyProjection(up) { ok -> if (up) noteProjectionRecord(ok) }
+    }
+
+    private fun noteProjectionRecord(ok: Boolean) {
+        if (!projectionUp) return
+        if (ok) {
+            projectionRecordFailures = 0
+            return
+        }
+        projectionRecordFailures += 1
+        AppLog.w("Broker: projection status was not recorded ($projectionRecordFailures/$PROJECTION_RECORD_FAILURES)")
+        if (projectionRecordFailures < PROJECTION_RECORD_FAILURES) return
+        projectionRecordFailures = 0
+        projectionUp = false
+        main.removeCallbacks(projectionHeartbeat)
+        AppLog.w("Broker: projection status failed $PROJECTION_RECORD_FAILURES times, stopping Android Auto")
+        main.post { onProjectionRecordFailed?.invoke() }
     }
 
     /** Read the live Wi-Fi Direct group and send it when a broker is saved. */
@@ -184,7 +257,11 @@ object AABrokerSession {
         client?.close()
         client = null
         projectionUp = false
+        projectionRecordFailures = 0
+        startSent = false
+        dialArmed = false
         main.removeCallbacks(projectionHeartbeat)
+        main.removeCallbacks(sendDial)
         lastDialAtMs = 0L
         lastSnapshot = null
         lastInfo = null
@@ -239,18 +316,17 @@ object AABrokerSession {
 
     private const val RETRY_WINDOW_MS = 10_000L
     private const val RETRY_EVERY_MS = 2_000L
-    /** Shorter than the broker's silence limit, so one missed write does not look like the socket closed. */
-    private const val PROJECTION_HEARTBEAT_MS = 2_000L
+    /** Shorter than the broker's 4s silence limit, so a missed write does not look like the socket closed. */
+    private const val PROJECTION_HEARTBEAT_MS = 1_000L
+    private const val PROJECTION_RECORD_FAILURES = 10
 
     /**
-     * One BLE setup is several writes. A second start in that burst is the same request.
-     * The Wi-Fi group often comes up about a second after the first snapshot, and that later
-     * snapshot is the one the phone must receive, so this stays under that gap.
+     * The Wi-Fi group often finishes about a second after the first snapshot. The start waits
+     * that long and then goes out once, with the latest snapshot.
      */
     private const val START_DELIVERY_MS = 1_000L
-
-    private fun dialDelivered(now: Long = SystemClock.elapsedRealtime()): Boolean =
-        lastDialAtMs == 0L || now - lastDialAtMs >= START_DELIVERY_MS
+    /** Long enough that the phone can finish the first dial. A second start inside this drops it. */
+    private const val START_RETRY_MS = 15_000L
 
     private fun publish(next: Status) {
         status = next
