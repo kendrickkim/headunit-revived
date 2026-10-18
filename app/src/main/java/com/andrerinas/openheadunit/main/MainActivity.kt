@@ -1086,7 +1086,7 @@ class MainActivity : BaseActivity() {
                 beginAutoConnect(LAUNCH_SOURCE_BLUETOOTH, ConnectionUiMode.PILL)
             }
             val launchesSelfMode = BtAutoStartRearmPolicy.launchesSelfMode(
-                selfSelected = settings.showsSelf(),
+                selfSelected = settings.offersSelf(),
                 wirelessSelected = settings.showsWifi(),
                 mode = settings.wifiConnectionMode,
                 sessionUp = commManager.isConnected,

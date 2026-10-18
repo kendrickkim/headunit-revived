@@ -585,8 +585,8 @@ class CustomizationFragment : Fragment() {
 
         switchAutoMonochromeNight?.isChecked = settings.autoMonochromeButtonsAtNight
 
-        val showsSelf = settings.showsSelf()
-        val showsUsb = settings.showsUsb()
+        val showsSelf = settings.offersSelf()
+        val showsUsb = settings.offersUsb()
         val showsWifi = settings.showsWifi()
 
         // Update button color previews & indicators (previews stay visible but styled as disabled when unchecked)

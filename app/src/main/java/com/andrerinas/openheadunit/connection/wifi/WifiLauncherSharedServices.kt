@@ -12,6 +12,7 @@ import com.andrerinas.openheadunit.connection.ConnectionStageTracker
 import com.andrerinas.openheadunit.connection.HeldServerSocket
 import com.andrerinas.openheadunit.connection.SameEndpointConnectPolicy
 import com.andrerinas.openheadunit.connection.UnresponsivePeerPolicy
+import com.andrerinas.openheadunit.connection.broker.AABrokerSession
 import com.andrerinas.openheadunit.connection.wifi.direct.WifiDirectManager
 import com.andrerinas.openheadunit.connection.wifi.direct.WifiRadioSwitchPolicy
 import com.andrerinas.openheadunit.connection.wifi.server.WirelessServer
@@ -161,6 +162,7 @@ class WifiLauncherSharedServices(val service: AapService) {
             service,
             wirelessServerHistory,
         ).apply { start() }
+        AABrokerSession.offerLiveGroup(service)
     }
 
     private fun stopWirelessServer() {

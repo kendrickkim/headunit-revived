@@ -31,6 +31,7 @@ import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.NativeDriverSe
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.NativeStrategy
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.SoftApAddressRecord
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.SoftApAdvertisedEndpoint
+import com.andrerinas.openheadunit.R
 import com.andrerinas.openheadunit.connection.wifi.WifiLauncherMode
 
 class Settings(private val context: Context) {
@@ -483,6 +484,16 @@ class Settings(private val context: Context) {
     var marginBottom: Int
         get() = prefs.getInt("margin-bottom", 0)
         set(value) { prefs.edit().putInt("margin-bottom", value).apply() }
+
+    /** Home screen shows only the wireless Android Auto button. */
+    var wirelessAndroidOnly: Boolean
+        get() = prefs.getBoolean("wireless-android-only", false)
+        set(value) { prefs.edit().putBoolean("wireless-android-only", value).apply() }
+
+    var projectionExitAction: ProjectionExitAction
+        get() = ProjectionExitAction.fromInt(prefs.getInt("projection-exit-action", ProjectionExitAction.ASK.value))
+            ?: ProjectionExitAction.ASK
+        set(value) { prefs.edit().putInt("projection-exit-action", value.value).apply() }
 
     var fullscreenMode: FullscreenMode
         get() {
@@ -1133,6 +1144,13 @@ class Settings(private val context: Context) {
 
     /** Whether Self Mode settings should be shown (empty selection shows everything). */
     fun showsSelf(): Boolean = connectionModes.isEmpty() || ConnectionMode.SELF in connectionModes
+
+    /** Home and auto-start. Wireless-only hides Self Mode even when it is selected. */
+    fun offersSelf(connected: Boolean = false): Boolean =
+        !wirelessAndroidOnly && (showsSelf() || connected)
+
+    /** Home. Wireless-only hides USB even when it is selected. */
+    fun offersUsb(): Boolean = !wirelessAndroidOnly && showsUsb()
 
     var autoConnectLastSession: Boolean
         get() = prefs.getBoolean("auto-connect-last-session", false)
@@ -2165,6 +2183,24 @@ class Settings(private val context: Context) {
 
         companion object {
             private val map = values().associateBy(ScreenOrientation::value)
+            fun fromInt(value: Int) = map[value]
+        }
+    }
+
+    /** What the projection exit gesture does. [ASK] opens the popup. */
+    enum class ProjectionExitAction(val value: Int, val titleRes: Int) {
+        ASK(0, R.string.projection_exit_ask),
+        STOP(1, R.string.exit_dialog_stop),
+        STAY_ARMED(2, R.string.exit_dialog_end_stay_armed),
+        PIP(3, R.string.exit_dialog_pip),
+        BACKGROUND(4, R.string.exit_dialog_background),
+        QUICK_SETTINGS(5, R.string.exit_dialog_settings),
+        APPS(6, R.string.apps),
+        SWITCH_DRIVER(7, R.string.switch_driver),
+        QUIT_APP(8, R.string.exit_dialog_quit_app);
+
+        companion object {
+            private val map = values().associateBy(ProjectionExitAction::value)
             fun fromInt(value: Int) = map[value]
         }
     }

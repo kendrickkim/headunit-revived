@@ -1634,32 +1634,47 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         }
     }
 
-    private data class ExitOption(val titleResId: Int, val iconResId: Int, val iconColor: Int)
+    private data class ExitOption(
+        val action: Settings.ProjectionExitAction,
+        val iconResId: Int,
+        val iconColor: Int,
+    )
 
-    private fun showExitDialog() {
+    private fun exitOptions(): List<ExitOption> {
         val options = mutableListOf<ExitOption>()
-        options.add(ExitOption(R.string.exit_dialog_stop, R.drawable.ic_stop, Color.RED))
+        options.add(ExitOption(Settings.ProjectionExitAction.STOP, R.drawable.ic_stop, Color.RED))
+        options.add(ExitOption(Settings.ProjectionExitAction.QUIT_APP, R.drawable.ic_close_white, Color.RED))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            options.add(ExitOption(R.string.exit_dialog_pip, R.drawable.ic_pip, Color.LTGRAY))
+            options.add(ExitOption(Settings.ProjectionExitAction.PIP, R.drawable.ic_pip, Color.LTGRAY))
         }
 
-        options.add(ExitOption(R.string.exit_dialog_background, R.drawable.ic_home, Color.LTGRAY))
-        options.add(ExitOption(R.string.exit_dialog_settings, R.drawable.ic_settings_quick, Color.LTGRAY))
+        options.add(ExitOption(Settings.ProjectionExitAction.BACKGROUND, R.drawable.ic_home, Color.LTGRAY))
+        options.add(ExitOption(Settings.ProjectionExitAction.QUICK_SETTINGS, R.drawable.ic_settings_quick, Color.LTGRAY))
 
         if (settings.isCarLauncherActive) {
-            options.add(ExitOption(R.string.apps, R.drawable.ic_apps, Color.LTGRAY))
+            options.add(ExitOption(Settings.ProjectionExitAction.APPS, R.drawable.ic_apps, Color.LTGRAY))
         }
 
         if (settings.wifiConnectionMode == com.andrerinas.openheadunit.connection.wifi.WifiLauncherMode.NATIVE) {
             if (!ExternalBtTransportPolicy.usesExternalModule(NativeAaHandshakeManager.transportRoute(this))) {
-                options.add(ExitOption(R.string.switch_driver, R.drawable.ic_phone, Color.LTGRAY))
+                options.add(ExitOption(Settings.ProjectionExitAction.SWITCH_DRIVER, R.drawable.ic_phone, Color.LTGRAY))
             }
             // WiFi Direct only: the group is ours, created for the session. An access point is
             // usually the user's own, and UserExitHotspotPolicy already leaves it alone.
             if (settings.nativeApStrategy == com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.NativeStrategy.WIFI_DIRECT) {
-                options.add(1, ExitOption(R.string.exit_dialog_end_stay_armed, R.drawable.ic_stop, Color.LTGRAY))
+                options.add(1, ExitOption(Settings.ProjectionExitAction.STAY_ARMED, R.drawable.ic_stop, Color.LTGRAY))
             }
+        }
+        return options
+    }
+
+    private fun showExitDialog() {
+        val options = exitOptions()
+        val chosen = settings.projectionExitAction
+        if (chosen != Settings.ProjectionExitAction.ASK && options.any { it.action == chosen }) {
+            performExit(chosen)
+            return
         }
 
         val adapter = object : android.widget.BaseAdapter() {
@@ -1672,7 +1687,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
                 val iconView = view.findViewById<android.widget.ImageView>(R.id.icon)
                 val textView = view.findViewById<android.widget.TextView>(R.id.text)
 
-                textView.setText(option.titleResId)
+                textView.setText(option.action.titleRes)
                 iconView.setImageResource(option.iconResId)
                 iconView.setColorFilter(option.iconColor)
 
@@ -1683,31 +1698,7 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
         val dialog = MaterialAlertDialogBuilder(this, R.style.DarkAlertDialog)
             .setTitle(R.string.exit_dialog_title)
             .setAdapter(adapter) { _, which ->
-                val selected = options[which]
-                when (selected.titleResId) {
-                    R.string.exit_dialog_stop -> {
-                        commManager.disconnect(sendByeBye = true)
-                        finish()
-                    }
-                    R.string.exit_dialog_end_stay_armed -> {
-                        endSessionStayArmed()
-                    }
-                    R.string.exit_dialog_pip -> {
-                        enterPiP()
-                    }
-                    R.string.exit_dialog_background -> {
-                        moveToBackground()
-                    }
-                    R.string.exit_dialog_settings -> {
-                        showQuickSettings()
-                    }
-                    R.string.apps -> {
-                        showAppDrawer()
-                    }
-                    R.string.switch_driver -> {
-                        switchDriver()
-                    }
-                }
+                performExit(options[which].action)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
@@ -1716,6 +1707,42 @@ class AapProjectionActivity : SurfaceActivity(), IProjectionView.Callbacks, Vide
             val root = dialog.window?.findViewById<View>(android.R.id.content) ?: dialog.window?.decorView
             root?.scaleX = -1.0f
         }
+    }
+
+    private fun performExit(action: Settings.ProjectionExitAction) {
+        when (action) {
+            Settings.ProjectionExitAction.ASK -> Unit
+            Settings.ProjectionExitAction.STOP -> {
+                commManager.disconnect(sendByeBye = true)
+                finish()
+            }
+            Settings.ProjectionExitAction.STAY_ARMED -> endSessionStayArmed()
+            Settings.ProjectionExitAction.PIP -> enterPiP()
+            Settings.ProjectionExitAction.BACKGROUND -> moveToBackground()
+            Settings.ProjectionExitAction.QUICK_SETTINGS -> showQuickSettings()
+            Settings.ProjectionExitAction.APPS -> showAppDrawer()
+            Settings.ProjectionExitAction.SWITCH_DRIVER -> switchDriver()
+            Settings.ProjectionExitAction.QUIT_APP -> quitApplication()
+        }
+    }
+
+    /**
+     * Stops the projection and every service this app started. Removing the task does not stop
+     * them: AapService is marked to outlive the task, and the others are sticky.
+     */
+    private fun quitApplication() {
+        AppLog.i("AapProjectionActivity: User asked to quit the application")
+        AapService.stopAppServices(this)
+        ContextCompat.startForegroundService(this, Intent(this, AapService::class.java).apply {
+            action = AapService.ACTION_STOP_SERVICE
+        })
+        window.decorView.postDelayed({
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val activityManager = getSystemService(android.app.ActivityManager::class.java)
+                activityManager?.appTasks?.forEach { it.finishAndRemoveTask() }
+            }
+            finish()
+        }, 400)
     }
 
     private fun showQuickSettings() {

@@ -63,6 +63,7 @@ import com.andrerinas.openheadunit.connection.ConnectionArbiter
 import com.andrerinas.openheadunit.connection.ConnectionPriorityPolicy
 import com.andrerinas.openheadunit.connection.ConnectionStage
 import com.andrerinas.openheadunit.connection.ConnectionStageTracker
+import com.andrerinas.openheadunit.connection.broker.AABrokerSession
 import com.andrerinas.openheadunit.connection.carkey.CarKeysManager
 import com.andrerinas.openheadunit.connection.wifi.NetworkDiscovery
 import android.support.v4.media.session.MediaSessionCompat
@@ -72,6 +73,7 @@ import androidx.media.session.MediaButtonReceiver
 import com.andrerinas.openheadunit.connection.usb.UsbDeviceCompat
 import com.andrerinas.openheadunit.connection.usb.UsbReceiver
 import com.andrerinas.openheadunit.location.GpsLocationService
+import com.andrerinas.openheadunit.main.FloatingButtonService
 import com.andrerinas.openheadunit.utils.LocaleHelper
 import com.andrerinas.openheadunit.utils.LogExporter
 import com.andrerinas.openheadunit.utils.NightModeManager
@@ -1070,6 +1072,20 @@ class AapService : Service() {
         super.onCreate()
         AppLog.i("AapService creating...")
         instance = this
+        ConnectionStageTracker.setOnApplied { stage ->
+            if (stage == ConnectionStage.WAITING_FOR_PHONE || stage == ConnectionStage.WAKING_PHONE) {
+                AABrokerSession.offerStart(this)
+            }
+        }
+        AABrokerSession.onGiveUp = {
+            AppLog.w("AapService: broker stayed down for 10s, stopping the session without a disconnect prompt")
+            sessionEndedByHand = true
+            App.provide(this).commManager.disconnect(
+                sendByeBye = true,
+                isUserExit = true,
+                honorKillOnDisconnect = false,
+            )
+        }
         // A dark screen is not evidence that the car is on.
         if (ScreenPower.isInteractive(this) != false) AccPowerState.noteOn()
 
@@ -1620,6 +1636,7 @@ class AapService : Service() {
         // A failed USB open has no live AAP resources to retire. Its Save loop and fallback
         // still own recovery; an end after the open has run onConnected and needs the full cleanup.
         if (!state.hadPhysicalConnection && state.settingsRetryOwner?.acceptsSettingsRestart(state) == true) return
+        AABrokerSession.notifyProjection(false)
         cancelProjectionRaiseDeadline()
         // Consumed by every end, so a mark that no Native re-arm reads cannot mute a later wake.
         val endedByHand = sessionEndedByHand
@@ -2894,6 +2911,8 @@ class AapService : Service() {
 
     @SuppressLint("WrongConstant")
     override fun onDestroy() {
+        ConnectionStageTracker.setOnApplied(null)
+        AABrokerSession.onGiveUp = null
         AppLog.i("AapService destroying... (wakeLock held=${bootWakeLock?.isHeld == true})")
         FloatingButtonManager.removeOverlay(this)
         isDestroying = true
@@ -3033,7 +3052,13 @@ class AapService : Service() {
         }
 
         // Handle stop before re-posting the notification to avoid a flash
+        if (applicationQuitting && intent?.action != ACTION_STOP_SERVICE) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
         if (intent?.action == ACTION_STOP_SERVICE) {
+            if (killProcessOnDestroy) stopAppServices(this)
             AppLog.i("Stop action received. Broadcasting finish request to activities.")
             sendBroadcast(Intent("com.andrerinas.openheadunit.ACTION_FINISH_ACTIVITIES").apply {
                 setPackage(packageName)
@@ -3810,6 +3835,16 @@ class AapService : Service() {
          * before the process dies.
          */
         var killProcessOnDestroy: Boolean = false
+        /** Quit was requested. A sticky restart of any app service must not come back. */
+        @Volatile var applicationQuitting: Boolean = false
+
+        /** Marks the process as quitting and stops the services that would otherwise stay up. */
+        fun stopAppServices(context: Context) {
+            killProcessOnDestroy = true
+            applicationQuitting = true
+            context.stopService(Intent(context, GpsLocationService::class.java))
+            context.stopService(Intent(context, FloatingButtonService::class.java))
+        }
 
         val wifiDirectName = MutableStateFlow<String?>(null)
 

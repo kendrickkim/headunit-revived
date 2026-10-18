@@ -6,9 +6,16 @@ import android.net.nsd.NsdServiceInfo
 import android.os.SystemClock
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.AapService
+import com.andrerinas.openheadunit.connection.broker.AABrokerSession
 import com.andrerinas.openheadunit.connection.CommManager
+import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.WppFraming
+import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.WppMessageType
+import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.WppMessages
+import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.WppTcpTls
+import com.andrerinas.openheadunit.ssl.SslContextFactory
 import com.andrerinas.openheadunit.utils.AppLog
 import java.net.ServerSocket
+import java.net.Socket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -129,10 +136,12 @@ class WirelessServer(
                     val clientSocket = serverSocket?.accept() ?: break
                     AppLog.i("WirelessServer: Incoming connection detected from ${clientSocket.inetAddress}")
                     service.serviceScope.launch {
-                        if (commManager.isConnected) {
-                            AppLog.w("WirelessServer: Already connected, dropping client from ${clientSocket.inetAddress}")
+                        if (SystemClock.elapsedRealtime() < commManager.projectionWppRejectionUntilMs) {
+                            withContext(Dispatchers.IO) { rejectStaleWppDial(clientSocket) }
+                        } else if (commManager.isConnected) {
+                            AppLog.w("WirelessServer: phone opened another projection socket from ${clientSocket.inetAddress}; keeping the live one")
                             withContext(Dispatchers.IO) {
-                                try { clientSocket.close() } catch (e: Exception) { AppLog.d("WirelessServer: Error closing dropped client socket", e) }
+                                try { clientSocket.close() } catch (e: Exception) { AppLog.d("WirelessServer: Error closing the extra projection socket", e) }
                             }
                         } else if (SystemClock.elapsedRealtime() < service.userExitCooldownUntil) {
                             // [FIX] User just exited AA — reject the instant reconnection.
@@ -143,6 +152,7 @@ class WirelessServer(
                         } else {
                             AppLog.i("WirelessServer: Accepted client connection from ${clientSocket.inetAddress}. Passing to CommManager...")
                             service.userExitedAA = false // Clear flag on genuine new connection
+                            AABrokerSession.notifyProjection(true)
                             commManager.connect(clientSocket)
                         }
                     }
@@ -157,6 +167,51 @@ class WirelessServer(
                 unregisterNsd()
                 try { serverSocket?.close() } catch (e: Exception) { AppLog.d("WirelessServer: Error closing server socket in finally", e) }
             }
+        }
+    }
+
+    @Volatile private var tlsRejectionBusy = false
+
+    /**
+     * The phone opened 5288 and reset it as soon as a plaintext version request was written.
+     *
+     * A WPP-over-TCP dial puts the phone in TLS server mode and waits for our ClientHello, the
+     * same role it uses for projection after the version exchange. Plaintext on that socket is
+     * reset, and a plaintext rejection is never read. One dial is answered with TLS and a WPP
+     * connection rejection so the phone drops the endpoint it stored on the projection port.
+     * The rest of the burst is closed; starting TLS on every retry exhausts the handshake.
+     */
+    private fun rejectStaleWppDial(socket: Socket) {
+        if (tlsRejectionBusy) {
+            try { socket.close() } catch (_: Exception) {}
+            return
+        }
+        tlsRejectionBusy = true
+        try {
+            val factory = SslContextFactory.create(service).socketFactory
+            val tls = WppTcpTls.clientSocket(factory, socket)
+            tls.soTimeout = 4000
+            tls.startHandshake()
+            val frame = WppFraming.encodeFrame(
+                WppMessages.connectionRejection().toByteArray(),
+                WppMessageType.CONNECTION_REJECTION
+            )
+            tls.outputStream.apply {
+                write(frame)
+                flush()
+            }
+            AppLog.w(
+                "WirelessServer: TLS up with ${socket.inetAddress}; sent a WPP rejection so the " +
+                    "phone drops the endpoint it stored on projection port 5288"
+            )
+        } catch (e: Exception) {
+            AppLog.w(
+                "WirelessServer: the dial from ${socket.inetAddress} did not complete a WPP TLS " +
+                    "handshake (${e.javaClass.simpleName}: ${e.message})"
+            )
+        } finally {
+            tlsRejectionBusy = false
+            try { socket.close() } catch (_: Exception) {}
         }
     }
 

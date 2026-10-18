@@ -16,6 +16,7 @@ import android.view.ViewOutlineProvider
 import android.view.WindowManager
 import android.widget.ImageView
 import com.andrerinas.openheadunit.App
+import com.andrerinas.openheadunit.aap.AapService
 import com.andrerinas.openheadunit.R
 import com.andrerinas.openheadunit.utils.AppLog
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +48,11 @@ class FloatingButtonService : Service() {
         }
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (AapService.applicationQuitting) {
+            removeOverlay()
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (intent?.action == ACTION_STOP) {
             removeOverlay()
             stopSelf()

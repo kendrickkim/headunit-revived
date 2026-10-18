@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import com.andrerinas.openheadunit.R
 import com.google.android.material.button.MaterialButton
@@ -24,34 +26,60 @@ object HomeUiHelper {
         settings: Settings,
         isConnected: Boolean = false
     ) {
-        val showsSelf = isEnabled(settings.showsSelf(), isConnected)
-        val showsUsb = settings.showsUsb()
-        val showsWifi = settings.showsWifi()
+        val wirelessOnly = settings.wirelessAndroidOnly
+        applyModeButton(
+            rootView.findViewById(R.id.self_mode_button),
+            rootView.findViewById(R.id.self_mode_text),
+            visible = !wirelessOnly,
+            enabled = settings.offersSelf(isConnected),
+        )
+        applyModeButton(
+            rootView.findViewById(R.id.usb_button),
+            rootView.findViewById(R.id.usb_text),
+            visible = !wirelessOnly,
+            enabled = settings.offersUsb(),
+        )
+        applyModeButton(
+            rootView.findViewById(R.id.wifi_button),
+            rootView.findViewById(R.id.wifi_text),
+            visible = true,
+            enabled = settings.showsWifi(),
+        )
 
-        val selfBtn = rootView.findViewById<View>(R.id.self_mode_button)
-        val selfTxt = rootView.findViewById<View>(R.id.self_mode_text)
-        val usbBtn = rootView.findViewById<View>(R.id.usb_button)
-        val usbTxt = rootView.findViewById<View>(R.id.usb_text)
-        val wifiBtn = rootView.findViewById<View>(R.id.wifi_button)
-        val wifiTxt = rootView.findViewById<View>(R.id.wifi_text)
+        placeLandscapeButtons(rootView, wirelessOnly)
+    }
 
-        selfBtn?.visibility = View.VISIBLE
-        selfBtn?.isEnabled = showsSelf
-        selfBtn?.isClickable = showsSelf
-        selfTxt?.visibility = View.VISIBLE
-        selfTxt?.alpha = if (showsSelf) 1.0f else 0.4f
+    private fun applyModeButton(button: View?, label: View?, visible: Boolean, enabled: Boolean) {
+        val visibility = if (visible) View.VISIBLE else View.GONE
+        button?.visibility = visibility
+        button?.isEnabled = enabled
+        button?.isClickable = enabled
+        label?.visibility = visibility
+        label?.alpha = if (enabled) 1.0f else 0.4f
+    }
 
-        usbBtn?.visibility = View.VISIBLE
-        usbBtn?.isEnabled = showsUsb
-        usbBtn?.isClickable = showsUsb
-        usbTxt?.visibility = View.VISIBLE
-        usbTxt?.alpha = if (showsUsb) 1.0f else 0.4f
-
-        wifiBtn?.visibility = View.VISIBLE
-        wifiBtn?.isEnabled = showsWifi
-        wifiBtn?.isClickable = showsWifi
-        wifiTxt?.visibility = View.VISIBLE
-        wifiTxt?.alpha = if (showsWifi) 1.0f else 0.4f
+    /**
+     * Landscape lays the four buttons in fixed quarters. With only Wi-Fi and Settings left,
+     * those two move into the middle quarters so each keeps the four-button size.
+     */
+    private fun placeLandscapeButtons(rootView: View, wirelessOnly: Boolean) {
+        val layout = rootView.findViewById<View>(R.id.main_buttons_layout) as? ConstraintLayout ?: return
+        val set = ConstraintSet()
+        set.clone(layout)
+        val wifiStart = if (wirelessOnly) R.id.home_slot_25 else R.id.home_slot_50
+        val wifiEnd = if (wirelessOnly) R.id.home_slot_50 else R.id.home_slot_75
+        val settingsStart = if (wirelessOnly) R.id.home_slot_50 else R.id.home_slot_75
+        val settingsEnd = if (wirelessOnly) R.id.home_slot_75 else ConstraintSet.PARENT_ID
+        set.connect(R.id.wifi_button, ConstraintSet.START, wifiStart, ConstraintSet.START)
+        set.connect(R.id.wifi_button, ConstraintSet.END, wifiEnd, ConstraintSet.START)
+        set.connect(R.id.settings_button, ConstraintSet.START, settingsStart, ConstraintSet.START)
+        set.connect(
+            R.id.settings_button,
+            ConstraintSet.END,
+            settingsEnd,
+            if (settingsEnd == ConstraintSet.PARENT_ID) ConstraintSet.END else ConstraintSet.START
+        )
+        set.applyTo(layout)
     }
 
     fun applyButtonScale(

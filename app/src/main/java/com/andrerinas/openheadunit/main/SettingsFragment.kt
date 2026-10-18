@@ -128,6 +128,7 @@ class SettingsFragment : Fragment() {
         // is picked, and on a device that will not let an app read its hotspot configuration the
         // manual name is the only way to finish setting the route up.
         "wifiConnectionMode",
+        "AABroker",
         "nativeApTransport", "nativeApTransportHint", "hotspotBand", "hotspotBandHint",
         // The WiFi Direct band, for the same reason as the hotspot one beside it: it is the first
         // thing to try when a wireless session connects and shows no picture, and a user sent to
@@ -1113,6 +1114,14 @@ class SettingsFragment : Fragment() {
 
 
 
+        items.add(SettingItem.SettingEntry(
+            stableId = "projectionExitAction",
+            nameResId = R.string.projection_exit_action,
+            value = projectionExitLabel(settings.projectionExitAction),
+            searchKeywords = "exit stop pip background disconnect",
+            onClick = { showProjectionExitDialog() }
+        ))
+
         items.add(SettingItem.ToggleSettingEntry(
             stableId = "showToastMessages",
             nameResId = R.string.show_toast_messages,
@@ -1141,6 +1150,18 @@ class SettingsFragment : Fragment() {
 
         // --- Wireless Connection ---
         items.add(SettingItem.CategoryHeader("wirelessConnection", R.string.category_wireless))
+
+        items.add(SettingItem.ToggleSettingEntry(
+            stableId = "wirelessAndroidOnly",
+            nameResId = R.string.wireless_android_only,
+            descriptionResId = R.string.wireless_android_only_description,
+            isChecked = settings.wirelessAndroidOnly,
+            onCheckedChanged = { isChecked ->
+                settings.wirelessAndroidOnly = isChecked
+                settings.commit()
+                updateSettingsList()
+            }
+        ))
 
         // Add 2.4GHz Warning Banner
         items.add(SettingItem.InfoBanner(
@@ -1191,6 +1212,17 @@ class SettingsFragment : Fragment() {
         ))
 
         if (pendingWifiConnectionMode == WifiLauncherMode.NATIVE) {
+            items.add(SettingItem.SettingEntry(
+                stableId = "AABroker",
+                nameResId = R.string.broker_settings_title,
+                value = getString(R.string.broker_settings_summary),
+                onClick = {
+                    try {
+                        findNavController().navigate(R.id.action_settingsFragment_to_brokerSettingsFragment)
+                    } catch (e: Exception) { }
+                }
+            ))
+
             items.add(SettingItem.SegmentedButtonSettingEntry(
                 stableId = "nativeApTransport",
                 nameResId = R.string.native_ap_transport,
@@ -3358,6 +3390,23 @@ class SettingsFragment : Fragment() {
         if (Settings.ConnectionMode.WIFI in modes) parts.add(getString(R.string.connection_kind_wifi))
         if (Settings.ConnectionMode.SELF in modes) parts.add(getString(R.string.self_mode))
         return parts.joinToString(", ")
+    }
+
+    private fun projectionExitLabel(action: Settings.ProjectionExitAction): String = getString(action.titleRes)
+
+    private fun showProjectionExitDialog() {
+        val actions = Settings.ProjectionExitAction.values()
+        val labels = actions.map { projectionExitLabel(it) }.toTypedArray()
+        val selected = actions.indexOf(settings.projectionExitAction).coerceAtLeast(0)
+        MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
+            .setTitle(R.string.projection_exit_action)
+            .setSingleChoiceItems(labels, selected) { dialog, which ->
+                settings.projectionExitAction = actions[which]
+                settings.commit()
+                dialog.dismiss()
+                updateSettingsList()
+            }
+            .show()
     }
 
     private fun showResolutionDialog() {

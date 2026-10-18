@@ -114,6 +114,8 @@ object SettingsBackupManager {
         "margin-right" to ValueType.INT,
         "margin-bottom" to ValueType.INT,
         "fullscreen-mode" to ValueType.INT,
+        "projection-exit-action" to ValueType.INT,
+        "wireless-android-only" to ValueType.BOOLEAN,
         "force-software-decoding" to ValueType.BOOLEAN,
         "software-video-decoder" to ValueType.INT,
         "right-hand-drive" to ValueType.BOOLEAN,

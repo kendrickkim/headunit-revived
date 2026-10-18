@@ -1033,6 +1033,11 @@
     <string name="nearby_device_found">Nearby Device Found</string>
     <string name="connecting_to_nearby">Connecting to %s…</string>
 
+    <string name="wireless_android_only">Wireless Android Auto only</string>
+    <string name="wireless_android_only_description">Hides the Self Mode and USB buttons.</string>
+    <string name="projection_exit_action">Projection exit</string>
+    <string name="projection_exit_ask">Choose each time</string>
+    <string name="exit_dialog_quit_app">Quit application</string>
     <string name="exit_dialog_title">Exit Android Auto</string>
     <string name="exit_dialog_stop">Stop Connection</string>
     <string name="exit_dialog_end_stay_armed">End session, stay ready</string>
@@ -1335,4 +1340,25 @@
     <string name="copy_to_clipboard">Copy</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="audio_settings_reconnect">Audio settings saved. Reconnect Android Auto to apply them.</string>
+    <string name="broker_settings_title">AA Broker</string>
+    <string name="broker_settings_summary">Pair the Bluetooth relay and send this display</string>
+    <string name="broker_saved_device">Saved broker</string>
+    <string name="broker_none">None</string>
+    <string name="broker_status">Link</string>
+    <string name="broker_scan">Scan</string>
+    <string name="broker_scan_action">Look for OpenHU-AA-Broker-Setter</string>
+    <string name="broker_scanning">Scanning…</string>
+    <string name="broker_found_device">Found device</string>
+    <string name="broker_send_now">Send display info</string>
+    <string name="broker_send_now_value">Wi-Fi Direct group and port 5288</string>
+    <string name="broker_forget">Forget broker</string>
+    <string name="broker_forget_value">Clear the saved device</string>
+    <string name="broker_phase_idle">Not connected</string>
+    <string name="broker_phase_connecting">Connecting…</string>
+    <string name="broker_phase_ready">Display info sent</string>
+    <string name="broker_phase_incomplete">Wi-Fi Direct group is not ready</string>
+    <string name="broker_phase_pairing">Search for OpenHU-AA-Broker on the phone</string>
+    <string name="broker_pair">Phone pairing</string>
+    <string name="broker_pair_value">Classic discovery for 120 seconds, PIN 0000</string>
+    <string name="broker_phase_failed">Failed: %1$s</string>
 </resources>

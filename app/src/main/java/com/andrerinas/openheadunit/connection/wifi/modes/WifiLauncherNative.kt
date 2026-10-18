@@ -7,6 +7,8 @@ import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.connection.CommManager
 import com.andrerinas.openheadunit.connection.ConnectionStage
 import com.andrerinas.openheadunit.connection.ConnectionStageTracker
+import com.andrerinas.openheadunit.connection.broker.AABrokerProtocol
+import com.andrerinas.openheadunit.connection.broker.AABrokerSession
 import com.andrerinas.openheadunit.connection.wifi.MacAddressPolicy
 import com.andrerinas.openheadunit.connection.wifi.WifiLauncher
 import com.andrerinas.openheadunit.connection.wifi.WifiLauncherManager
@@ -443,6 +445,18 @@ class WifiLauncherNative : WifiLauncher {
 
         AppLog.i("AapService: Received WiFi credentials from manager (SSID=$ssid, IP=$ip). Updating and Triggering Poke.")
         handshakeManager?.updateWifiCredentials(ssid, psk, ip, bssid, identity)
+        if (isWirelessServerListening()) {
+            AABrokerSession.offer(
+                service,
+                AABrokerProtocol.DisplayInfo(
+                    ipAddress = ip,
+                    port = AABrokerProtocol.PROJECTION_PORT,
+                    ssid = ssid,
+                    key = psk,
+                    bssid = bssid,
+                ),
+            )
+        }
 
         if (commManager.isConnected ||
             commManager.connectionState.value is CommManager.ConnectionState.Connecting) {

@@ -253,6 +253,20 @@ class CommManager(
      * `disconnect()` follows the emit, so the value has moved on before any collector resumes.
      */
     var onSessionFailure: ((reason: String) -> Unit)? = null
+
+    /**
+     * Until this clock, [com.andrerinas.openheadunit.connection.wifi.server.WirelessServer] answers
+     * port 5288 with a WPP connection rejection instead of an Android Auto version request.
+     *
+     * Set when the phone opens 5288 and resets the socket the moment the projection version
+     * request is written. That is the phone dialling a WPP endpoint it stored on the projection
+     * port: a bare close makes it retry the same port, and another version request never lands.
+     */
+    @Volatile var projectionWppRejectionUntilMs: Long = 0
+        private set
+
+    /** A version response already arrived, so later sockets on 5288 are projection, not a stale WPP dial. */
+    @Volatile private var projectionVersionSucceeded = false
     // Written with the connection token under transportLifecycleLock.
     private var outgoingEndpoint: Pair<String, Int>? = null
 
@@ -664,6 +678,9 @@ class CommManager(
             _connectionState.value = ConnectionState.Connecting
             val previous = _connection
             _connection = null
+            // The socket being replaced will EOF. Dropping the transport first makes that quit
+            // belong to the old session, so it cannot mark the replacement disconnected.
+            if (previous != null) _transport = null
             token to previous
         }
         try {
@@ -915,6 +932,10 @@ class CommManager(
                 val shook = transport.startHandshake(conn)
                 if (_connection !== conn || (shook && _transport !== transport)) return@withContext
                 if (shook) {
+                    if (attemptedConnection is SocketProjectionConnection) {
+                        projectionVersionSucceeded = true
+                        projectionWppRejectionUntilMs = 0
+                    }
                     val live = withLiveTransport(transport, ConnectionState.StartingTransport) {
                         // A session that got this far had a working link to carry video on. See
                         // VideoStarvationPolicy for what it means when one ends without carrying any.
@@ -931,6 +952,20 @@ class CommManager(
                     if (live && usb) onUsbHandshakeEnded?.invoke(AapTransport.HandshakeFailure.NONE)
                 } else {
                     val failure = transport.lastHandshakeFailure
+                    if (!projectionVersionSucceeded &&
+                        failure == AapTransport.HandshakeFailure.TRANSPORT_ERROR &&
+                        attemptedConnection is SocketProjectionConnection) {
+                        val now = SystemClock.elapsedRealtime()
+                        if (now >= projectionWppRejectionUntilMs) {
+                            projectionWppRejectionUntilMs = now + PROJECTION_WPP_REJECTION_MS
+                            AppLog.w(
+                                "CommManager: the phone reset port 5288 as the projection version " +
+                                    "request was written. For ${PROJECTION_WPP_REJECTION_MS}ms the " +
+                                    "next dials are answered with a WPP rejection so the phone drops " +
+                                    "an endpoint it stored on the projection port."
+                            )
+                        }
+                    }
                     val live = withLiveTransport(transport, ConnectionState.StartingTransport) {
                         val silent = failure == AapTransport.HandshakeFailure.PEER_SILENT
                         noteHandshakeOutcome(silent)
@@ -1659,5 +1694,8 @@ class CommManager(
          * Still contains "Handshake failed" so the generic handling keeps working.
          */
         const val ERROR_HANDSHAKE_PEER_SILENT = "Handshake failed: the peer never responded"
+
+        /** How long a reset of port 5288 is answered as a stale WPP dial. */
+        private const val PROJECTION_WPP_REJECTION_MS = 8000L
     }
 }

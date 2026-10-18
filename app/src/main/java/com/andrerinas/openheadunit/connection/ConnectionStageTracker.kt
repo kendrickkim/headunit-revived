@@ -14,6 +14,7 @@ object ConnectionStageTracker {
 
     private val _stage = MutableStateFlow<ConnectionStage?>(null)
     private val _network = MutableStateFlow<ConnectionNetworkDetail?>(null)
+    private var onApplied: ((ConnectionStage) -> Unit)? = null
 
     /** Null means the stack is down and the pill is hidden. */
     val stage = _stage.asStateFlow()
@@ -21,9 +22,14 @@ object ConnectionStageTracker {
     /** The group the pill's third line describes; null while there is none. */
     val network = _network.asStateFlow()
 
+    /** Told when a stage is actually shown, including a retreat back to an earlier one. */
+    fun setOnApplied(listener: ((ConnectionStage) -> Unit)?) {
+        onApplied = listener
+    }
+
     /** A step of the attempt already running. Ignored if it would rewind the display. */
     fun report(candidate: ConnectionStage) {
-        if (ConnectionStagePolicy.shouldApply(_stage.value, candidate)) _stage.value = candidate
+        if (ConnectionStagePolicy.shouldApply(_stage.value, candidate)) apply(candidate)
     }
 
     /** A genuine restart: the floor drops so [opening] shows even though it ranks lower. The
@@ -32,7 +38,7 @@ object ConnectionStageTracker {
         // A fresh arming is somebody asking for a connection, so the hold from the phone's own
         // exit is no longer about anything.
         phoneLeftAtMs = 0L
-        _stage.value = opening
+        apply(opening)
     }
 
     /** The session or attempt is over. The network line is left to whoever owns the group, which a
@@ -43,7 +49,7 @@ object ConnectionStageTracker {
 
     /** A step that ended with nothing to show: [from] gives way to [to], and any other stage stays. */
     fun retreat(from: ConnectionStage, to: ConnectionStage) {
-        if (ConnectionStagePolicy.shouldRetreat(_stage.value, from)) _stage.value = to
+        if (ConnectionStagePolicy.shouldRetreat(_stage.value, from)) apply(to)
     }
 
     /** The group came up, changed, or (null) went down. Equal deliveries are conflated. */
@@ -69,5 +75,10 @@ object ConnectionStageTracker {
         phoneLeftAtMs = 0L
         _stage.value = null
         _network.value = null
+    }
+
+    private fun apply(stage: ConnectionStage) {
+        _stage.value = stage
+        onApplied?.invoke(stage)
     }
 }
