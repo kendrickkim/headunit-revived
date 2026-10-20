@@ -100,25 +100,22 @@ class BrokerSettingsFragment : Fragment() {
                 onClick = { select(address, name) },
             ))
         }
+        val brokerSaved = store.deviceAddress != null
         items.add(SettingItem.SettingEntry(
             stableId = "brokerPair",
             nameResId = R.string.broker_pair,
             value = getString(R.string.broker_pair_value),
-            isEnabled = store.deviceAddress != null,
-            onClick = { AABrokerSession.openPairing(requireContext()); refresh() },
-        ))
-        items.add(SettingItem.SettingEntry(
-            stableId = "brokerSend",
-            nameResId = R.string.broker_send_now,
-            value = getString(R.string.broker_send_now_value),
-            isEnabled = store.deviceAddress != null,
-            onClick = { sendNow() },
+            isEnabled = brokerSaved,
+            onClick = {
+                AABrokerSession.openPairing(requireContext())
+                refresh()
+            },
         ))
         items.add(SettingItem.SettingEntry(
             stableId = "brokerForget",
             nameResId = R.string.broker_forget,
             value = getString(R.string.broker_forget_value),
-            isEnabled = store.deviceAddress != null,
+            isEnabled = brokerSaved,
             onClick = {
                 store.clear()
                 AABrokerSession.close()
@@ -175,10 +172,6 @@ class BrokerSettingsFragment : Fragment() {
         scanner.stopScan()
         scanning = false
         sendCurrentGroup(pairIfIncomplete = true)
-    }
-
-    private fun sendNow() {
-        sendCurrentGroup(pairIfIncomplete = false)
     }
 
     private fun sendCurrentGroup(pairIfIncomplete: Boolean) {

@@ -34,6 +34,13 @@ object AABrokerProtocol {
     const val CMD_SET_BOND_MODE = 0x06
     const val CMD_PROJECTION_UP = 0x07
 
+    /** Close the Classic pairing window. */
+    const val BOND_MODE_OFF = 0
+    /** Open discoverable without clearing existing phone bonds. */
+    const val BOND_MODE_ON = 1
+    /** Drop phone bonds and open pairing for a new smartphone. */
+    const val BOND_MODE_NEW_PHONE = 2
+
     const val EVT_HELLO_ACK = 0x20
     const val EVT_BT_READY = 0x21
     const val EVT_PHONE_LINK = 0x22
@@ -145,9 +152,18 @@ object AABrokerProtocol {
         return buf.array()
     }
 
-    fun bondModePayload(enable: Boolean, seconds: Int = 120): ByteArray {
+    fun bondModePayload(
+        enable: Boolean,
+        seconds: Int = 120,
+        clearPhoneBonds: Boolean = false,
+    ): ByteArray {
+        val mode = when {
+            !enable -> BOND_MODE_OFF
+            clearPhoneBonds -> BOND_MODE_NEW_PHONE
+            else -> BOND_MODE_ON
+        }
         return byteArrayOf(
-            if (enable) 1 else 0,
+            mode.toByte(),
             (seconds and 0xFF).toByte(),
             (seconds shr 8 and 0xFF).toByte(),
         )

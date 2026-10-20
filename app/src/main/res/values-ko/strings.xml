@@ -1290,7 +1290,7 @@
     <string name="broker_phase_ready">디스플레이 정보를 보냄</string>
     <string name="broker_phase_incomplete">Wi-Fi Direct 그룹이 아직 없습니다</string>
     <string name="broker_phase_pairing">스마트폰에서 OpenHU-AA-Broker 를 검색하세요</string>
-    <string name="broker_pair">스마트폰 페어링</string>
-    <string name="broker_pair_value">Classic 검색 120초, PIN 0000</string>
+    <string name="broker_pair">새로운 스마트폰 페어링</string>
+    <string name="broker_pair_value">기존 폰 본드를 지우고 Classic 검색 120초, PIN 0000</string>
     <string name="broker_phase_failed">실패: %1$s</string>
 </resources>

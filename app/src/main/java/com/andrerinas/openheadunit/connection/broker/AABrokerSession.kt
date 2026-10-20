@@ -151,7 +151,7 @@ object AABrokerSession {
         }
     }
 
-    /** Ask the broker to answer a phone's Classic inquiry for 120 seconds. */
+    /** Ask the broker to drop phone bonds and answer a new phone's Classic inquiry for 120 seconds. */
     fun openPairing(context: Context) {
         val app = context.applicationContext
         val address = AABrokerStore(app).deviceAddress
@@ -161,7 +161,7 @@ object AABrokerSession {
         }
         appContext = app
         publish(Status(Phase.CONNECTING))
-        AppLog.i("Broker: opening phone pairing window on $address")
+        AppLog.i("Broker: opening new-phone pairing window on $address")
         brokerClient(app).allowPhonePairing(address) { result ->
             if (result.isSuccess) {
                 publish(Status(Phase.PAIRING, address))

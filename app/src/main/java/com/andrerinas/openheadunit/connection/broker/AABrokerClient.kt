@@ -140,7 +140,7 @@ class AABrokerClient(context: Context) {
         }
     }
 
-    /** Classic inquiry on for 120 seconds. Does not require a Wi-Fi snapshot. */
+    /** Clear phone bonds on the broker and open Classic inquiry for 120 seconds. */
     fun allowPhonePairing(address: String, onResult: (Result<Unit>) -> Unit) {
         prepare(
             address,
@@ -152,6 +152,7 @@ class AABrokerClient(context: Context) {
                 bssid = "",
             ),
             restartProjection = false,
+            clearPhoneBonds = true,
             onResult = onResult,
         )
     }
@@ -162,6 +163,7 @@ class AABrokerClient(context: Context) {
         info: AABrokerProtocol.DisplayInfo,
         restartProjection: Boolean = true,
         confirmProjection: Boolean = false,
+        clearPhoneBonds: Boolean = false,
         onResult: (Result<Unit>) -> Unit,
     ) {
         val device = try {
@@ -174,7 +176,7 @@ class AABrokerClient(context: Context) {
             return
         }
         if (linkUp && gatt != null) {
-            main.post { reuse(info, restartProjection, confirmProjection, onResult) }
+            main.post { reuse(info, restartProjection, confirmProjection, clearPhoneBonds, onResult) }
             return
         }
         close()
@@ -219,7 +221,7 @@ class AABrokerClient(context: Context) {
                     return
                 }
                 linkUp = true
-                queueSetup(info, restartProjection, confirmProjection)
+                queueSetup(info, restartProjection, confirmProjection, clearPhoneBonds)
                 subscribe(gatt, event)
             }
 
@@ -328,6 +330,7 @@ class AABrokerClient(context: Context) {
         info: AABrokerProtocol.DisplayInfo,
         restartProjection: Boolean,
         confirmProjection: Boolean,
+        clearPhoneBonds: Boolean,
         onResult: (Result<Unit>) -> Unit,
     ) {
         val link = gatt
@@ -335,7 +338,7 @@ class AABrokerClient(context: Context) {
             onResult(Result.failure(IllegalStateException("disconnected")))
             return
         }
-        queueSetup(info, restartProjection, confirmProjection)
+        queueSetup(info, restartProjection, confirmProjection, clearPhoneBonds)
         val report: (Result<Unit>) -> Unit = { result -> onResult(result) }
         val previous = activeResult
         activeResult = if (previous == null) {
@@ -354,6 +357,7 @@ class AABrokerClient(context: Context) {
         info: AABrokerProtocol.DisplayInfo,
         restartProjection: Boolean,
         confirmProjection: Boolean,
+        clearPhoneBonds: Boolean = false,
     ) {
         queueFrame(AABrokerProtocol.CMD_HELLO, AABrokerProtocol.CH_CONTROL, ByteArray(0))
         if (info.ssid.isNotEmpty() || info.ipAddress.isNotEmpty()) {
@@ -371,7 +375,7 @@ class AABrokerClient(context: Context) {
         queueFrame(
             AABrokerProtocol.CMD_SET_BOND_MODE,
             AABrokerProtocol.CH_CONTROL,
-            AABrokerProtocol.bondModePayload(true),
+            AABrokerProtocol.bondModePayload(enable = true, clearPhoneBonds = clearPhoneBonds),
         )
         queueFrame(AABrokerProtocol.CMD_GET_STATUS, AABrokerProtocol.CH_CONTROL, ByteArray(0))
     }

@@ -1358,7 +1358,7 @@
     <string name="broker_phase_ready">Display info sent</string>
     <string name="broker_phase_incomplete">Wi-Fi Direct group is not ready</string>
     <string name="broker_phase_pairing">Search for OpenHU-AA-Broker on the phone</string>
-    <string name="broker_pair">Phone pairing</string>
-    <string name="broker_pair_value">Classic discovery for 120 seconds, PIN 0000</string>
+    <string name="broker_pair">Pair new phone</string>
+    <string name="broker_pair_value">Clear phone bonds, then Classic discovery for 120 seconds, PIN 0000</string>
     <string name="broker_phase_failed">Failed: %1$s</string>
 </resources>
