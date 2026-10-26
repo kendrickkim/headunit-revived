@@ -260,8 +260,16 @@ object HeadUnitScreenConfig {
         // immersive display reading is the whole panel already; outside it the fallback is the
         // window metrics, which are bar-reduced like any other canvas. The insets in force are the
         // right ones unless the settings moved, in which case the manual ones are re-seeded below.
-        val insetW = if (settingsChanged) settings.insetLeft + settings.insetRight else systemInsetLeft + systemInsetRight
-        val insetH = if (settingsChanged) settings.insetTop + settings.insetBottom else systemInsetTop + systemInsetBottom
+        val insetW = if (settingsChanged) {
+            settings.effectiveInsetLeft() + settings.effectiveInsetRight()
+        } else {
+            systemInsetLeft + systemInsetRight
+        }
+        val insetH = if (settingsChanged) {
+            settings.effectiveInsetTop() + settings.effectiveInsetBottom()
+        } else {
+            systemInsetTop + systemInsetBottom
+        }
         val panelIsTheAnchor = choice.source == ProjectionCanvasPolicy.Source.DISPLAY && immersive
         val anchor = if (panelIsTheAnchor) {
             ProjectionCanvasPolicy.Rect(choice.width, choice.height)
@@ -295,10 +303,10 @@ object HeadUnitScreenConfig {
         // Manual insets only; the bars are re-read by the insets listener right after this. Left
         // alone otherwise, or a bar already in force would be subtracted from the canvas twice.
         if (settingsChanged) {
-            systemInsetLeft = settings.insetLeft
-            systemInsetTop = settings.insetTop
-            systemInsetRight = settings.insetRight
-            systemInsetBottom = settings.insetBottom
+            systemInsetLeft = settings.effectiveInsetLeft()
+            systemInsetTop = settings.effectiveInsetTop()
+            systemInsetRight = settings.effectiveInsetRight()
+            systemInsetBottom = settings.effectiveInsetBottom()
         }
 
         realScreenWidthPx = anchorW
@@ -778,10 +786,10 @@ object HeadUnitScreenConfig {
         resolutionId = settings.resolutionId,
         dpiPixelDensity = settings.dpiPixelDensity,
         pixelAspectRatioE4 = settings.pixelAspectRatioE4,
-        insetLeft = settings.insetLeft,
-        insetTop = settings.insetTop,
-        insetRight = settings.insetRight,
-        insetBottom = settings.insetBottom,
+        insetLeft = settings.effectiveInsetLeft(),
+        insetTop = settings.effectiveInsetTop(),
+        insetRight = settings.effectiveInsetRight(),
+        insetBottom = settings.effectiveInsetBottom(),
         viewMode = settings.viewMode.ordinal,
         screenOrientation = settings.screenOrientation.ordinal,
         fullscreenMode = settings.fullscreenMode.value,

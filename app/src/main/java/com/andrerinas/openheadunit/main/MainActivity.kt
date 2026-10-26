@@ -154,6 +154,12 @@ class MainActivity : BaseActivity() {
 
         logLaunchSource()
         clearBootLoopGuardIfOpenedByHand()
+        Settings.applyUserPaddingFromIntent(intent)?.let { padding ->
+            AppLog.i(
+                "MainActivity: session user padding " +
+                    "L${padding.left} T${padding.top} R${padding.right} B${padding.bottom} (not saved)"
+            )
+        }
 
         // If an Android Auto session is active, bring the projection activity to front
         if (App.provide(this).commManager.isConnected && !App.isPiPActive) {
@@ -1174,6 +1180,14 @@ class MainActivity : BaseActivity() {
 
     private fun handleLaunchIntent(intent: Intent?) {
         if (intent == null) return
+
+        Settings.applyUserPaddingFromIntent(intent)?.let { padding ->
+            AppLog.i(
+                "MainActivity: session user padding " +
+                    "L${padding.left} T${padding.top} R${padding.right} B${padding.bottom} (not saved)"
+            )
+            setFullscreen()
+        }
 
         if (intent.getBooleanExtra(EXTRA_SHOW_DRIVER_SELECTOR, false)) {
             AppLog.i("MainActivity: EXTRA_SHOW_DRIVER_SELECTOR received")

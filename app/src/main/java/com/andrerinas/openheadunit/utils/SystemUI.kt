@@ -159,10 +159,10 @@ object SystemUI {
         val settings = Settings(root.context)
 
         // IMMEDIATE APPLICATION OF MANUAL INSETS
-        val manualL = settings.insetLeft
-        val manualT = settings.insetTop
-        val manualR = settings.insetRight
-        val manualB = settings.insetBottom
+        val manualL = settings.effectiveInsetLeft()
+        val manualT = settings.effectiveInsetTop()
+        val manualR = settings.effectiveInsetRight()
+        val manualB = settings.effectiveInsetBottom()
 
         // Read before the line below re-seeds the insets: until it runs, the content area and the
         // insets in force describe the same layout, and afterwards one half of the pair is stale.
