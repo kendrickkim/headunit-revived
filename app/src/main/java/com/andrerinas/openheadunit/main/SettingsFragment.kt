@@ -1820,32 +1820,6 @@ class SettingsFragment : Fragment() {
             ))
         }
 
-        if (!isCarLauncherActive) {
-            val exitActions = arrayOf(
-                getString(R.string.aa_exit_action_oem_launcher),
-                getString(R.string.aa_exit_action_app_home),
-                getString(R.string.aa_exit_action_disconnect)
-            )
-            val currentExitActionIdx = (pendingAaExitAction ?: settings.rawAaExitAction).value
-            items.add(SettingItem.SettingEntry(
-                stableId = "aaExitAction",
-                nameResId = R.string.pref_aa_exit_action_title,
-                value = exitActions.getOrElse(currentExitActionIdx) { exitActions[0] },
-                searchKeywords = getString(R.string.pref_aa_exit_action_summary),
-                onClick = { _ ->
-                    MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
-                        .setTitle(R.string.pref_aa_exit_action_title)
-                        .setSingleChoiceItems(exitActions, currentExitActionIdx) { dialog, which ->
-                            Settings.ExitAction.fromInt(which)?.let { pendingAaExitAction = it }
-                            checkChanges()
-                            dialog.dismiss()
-                            updateSettingsList()
-                        }
-                        .show()
-                }
-            ))
-        }
-
         val projectionExitChoices = arrayOf(
             getString(R.string.projection_exit_default_ask),
             getString(R.string.exit_dialog_stop),
@@ -1874,6 +1848,32 @@ class SettingsFragment : Fragment() {
                     .show()
             }
         ))
+
+        if (!isCarLauncherActive) {
+            val exitActions = arrayOf(
+                getString(R.string.aa_exit_action_oem_launcher),
+                getString(R.string.aa_exit_action_app_home),
+                getString(R.string.aa_exit_action_disconnect)
+            )
+            val currentExitActionIdx = (pendingAaExitAction ?: settings.rawAaExitAction).value
+            items.add(SettingItem.SettingEntry(
+                stableId = "aaExitAction",
+                nameResId = R.string.pref_aa_exit_action_title,
+                value = exitActions.getOrElse(currentExitActionIdx) { exitActions[0] },
+                searchKeywords = getString(R.string.pref_aa_exit_action_summary),
+                onClick = { _ ->
+                    MaterialAlertDialogBuilder(requireContext(), R.style.DarkAlertDialog)
+                        .setTitle(R.string.pref_aa_exit_action_title)
+                        .setSingleChoiceItems(exitActions, currentExitActionIdx) { dialog, which ->
+                            Settings.ExitAction.fromInt(which)?.let { pendingAaExitAction = it }
+                            checkChanges()
+                            dialog.dismiss()
+                            updateSettingsList()
+                        }
+                        .show()
+                }
+            ))
+        }
 
         // --- Navigation Settings ---
                 items.add(SettingItem.SettingEntry(
