@@ -14,6 +14,7 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -37,8 +38,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.R
 import com.andrerinas.openheadunit.aap.AapService
-import com.andrerinas.openheadunit.connection.broker.NativeBTBrokerSession
-import com.andrerinas.openheadunit.connection.broker.NativeBTBrokerStore
+import com.andrerinas.openheadunit.connection.esp32.Esp32RelaySession
+import com.andrerinas.openheadunit.connection.esp32.Esp32RelayStore
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.CredentialField
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.NativeAaWakeDamagePolicy
 import com.andrerinas.openheadunit.connection.wifi.modes.nativeaa.zbt.ZbtProbe
@@ -148,7 +149,7 @@ class SettingsFragment : Fragment() {
         // Dark mode
         "darkModeSettings",
         // Automation
-        "autoStartSettings", "autoConnectSettings", "NativeBTBroker", "enableCarLauncher",
+        "autoStartSettings", "autoConnectSettings", "Esp32Relay", "enableCarLauncher",
         // Navigation
         "gpsNavigation",
         // Graphic
@@ -160,7 +161,7 @@ class SettingsFragment : Fragment() {
         // Input
         "keymap",
         // Audio
-        "enableAudioSink", "audioStreamSettings", "useAAudioOutput", "micSettings", "audioVolumeOffsets",
+        "enableAudioSink", "audioStreamSettings", "audioMatchingMode", "audioMatchingModeHint", "useAAudioOutput", "micSettings", "audioVolumeOffsets",
         // Info
         "version", "about", "support"
     )
@@ -194,6 +195,7 @@ class SettingsFragment : Fragment() {
     private var pendingEnableRotary by pending::enableRotary
     private var pendingMediaKeyRouting by pending::mediaKeyRouting
     private var pendingAudioLatencyMultiplier by pending::audioLatencyMultiplier
+    private var pendingAudioTimeCorrectionMode by pending::audioMatchingMode
     private var pendingUseLibusb by pending::useLibusb
     private var pendingAudioQueueCapacity by pending::audioQueueCapacity
     private var pendingShowToastMessages by pending::showToastMessages
@@ -420,9 +422,9 @@ class SettingsFragment : Fragment() {
     /**
      * Explain what the probe does, then run it off the main thread if the user agrees.
      *
-     * Asked rather than run on tap because the name alone does not say that it touches nothing. On
-     * a head unit that already refuses to connect, an unexplained "test" invites the fear that it
-     * will make things worse.
+     * Both modes open the vendor channel and send RequestInit, which may activate Android Auto
+     * handling on the module. Watch-only skips the additional reconnect command; confirmation
+     * keeps this diagnostic separate from automatic route selection.
      */
     private fun confirmAndRunZbtProbe() {
         // Same builder and theme as every other dialog here. A bare AlertDialog.Builder came up
@@ -596,6 +598,7 @@ class SettingsFragment : Fragment() {
         pendingEnableRotary?.let { if (it != settings.enableRotary) settings.enableRotary = it }
         pendingMediaKeyRouting?.let { if (it != settings.mediaKeyRouting) settings.mediaKeyRouting = it }
         pendingAudioLatencyMultiplier?.let { if (it != settings.audioLatencyMultiplier) settings.audioLatencyMultiplier = it }
+        pendingAudioTimeCorrectionMode?.let { if (it != settings.audioMatchingMode) settings.audioMatchingMode = it }
         pendingAudioQueueCapacity?.let { if (it != settings.audioQueueCapacity) settings.audioQueueCapacity = it }
         pendingShowToastMessages?.let { if (it != settings.showToastMessages) settings.showToastMessages = it }
         pendingScreenOrientation?.let { if (it != settings.screenOrientation) settings.screenOrientation = it }
@@ -751,6 +754,7 @@ class SettingsFragment : Fragment() {
                           pendingUseAAudioOutput != settings.useAAudioOutput ||
                           pendingAttachHwDspEqualizer != settings.attachHwDspEqualizer ||
                           pendingAudioLatencyMultiplier != settings.audioLatencyMultiplier ||
+                          pendingAudioTimeCorrectionMode != settings.audioMatchingMode ||
                           pendingAudioQueueCapacity != settings.audioQueueCapacity ||
                           pendingInsetLeft != settings.insetLeft ||
                           pendingInsetTop != settings.insetTop ||
@@ -977,32 +981,28 @@ class SettingsFragment : Fragment() {
         ))
 
         if (pendingWifiConnectionMode == WifiLauncherMode.NATIVE) {
-            // BT Broker needs API 23 (Android 6.0) for the BLE client path used here.
-            // Below that, keep the row visible but disabled so the requirement is obvious.
-            val brokerSupported = Build.VERSION.SDK_INT >= NativeBTBrokerSession.MIN_SDK
-            val brokerLabel = if (!brokerSupported) {
-                getString(R.string.broker_settings_unsupported)
-            } else {
-                val brokerStore = NativeBTBrokerStore(requireContext())
-                when {
-                    !brokerStore.enabled -> getString(R.string.broker_settings_disabled)
-                    else -> brokerStore.deviceName
-                        ?: brokerStore.deviceAddress
-                        ?: getString(R.string.broker_settings_summary)
+            // ESP32 relay needs API 23 (Android 6.0) for BLE. Omit the row below that —
+            // a greyed-out "unsupported" entry looks like a missing setting.
+            if (Build.VERSION.SDK_INT >= Esp32RelaySession.MIN_SDK) {
+                val esp32RelayStore = Esp32RelayStore(requireContext())
+                val esp32RelayLabel = when {
+                    !esp32RelayStore.enabled -> getString(R.string.esp32_relay_settings_disabled)
+                    else -> esp32RelayStore.deviceName
+                        ?: esp32RelayStore.deviceAddress
+                        ?: getString(R.string.esp32_relay_settings_summary)
                 }
+                items.add(SettingItem.SettingEntry(
+                    stableId = "Esp32Relay",
+                    nameResId = R.string.esp32_relay_settings_title,
+                    value = esp32RelayLabel,
+                    searchKeywords = "bluetooth relay board esp32 pair disconnect ble openhu",
+                    onClick = {
+                        try {
+                            findNavController().navigate(R.id.action_settingsFragment_to_esp32RelaySettingsFragment)
+                        } catch (_: Exception) { }
+                    }
+                ))
             }
-            items.add(SettingItem.SettingEntry(
-                stableId = "NativeBTBroker",
-                nameResId = R.string.broker_settings_title,
-                value = brokerLabel,
-                searchKeywords = "bluetooth relay board esp32 pair disconnect ble openhu",
-                isEnabled = brokerSupported,
-                onClick = {
-                    try {
-                        findNavController().navigate(R.id.action_settingsFragment_to_brokerSettingsFragment)
-                    } catch (_: Exception) { }
-                }
-            ))
 
             items.add(SettingItem.SegmentedButtonSettingEntry(
                 stableId = "nativeApTransport",
@@ -1318,7 +1318,8 @@ class SettingsFragment : Fragment() {
             // acting on it, because a preference turned on under Native AA and then hidden by a
             // mode change would otherwise put a blackholing tun on a USB session. The other half
             // is DummyVpnPolicy.shouldStartForSession.
-            if (VpnControl.isVpnAvailable()) {
+            if (VpnControl.isVpnAvailable() &&
+                com.andrerinas.openheadunit.utils.DummyVpnPolicy.supportsSessionVpn(Build.VERSION.SDK_INT)) {
                 items.add(SettingItem.ToggleSettingEntry(
                     stableId = "keepDummyVpnDuringSession",
                     // Through VpnControl, not R: this copy lives in the github flavor's
@@ -2524,6 +2525,41 @@ class SettingsFragment : Fragment() {
             onClick = {
                 showAudioOffsetsDialog()
             }
+        ))
+
+        val matchingModes = com.andrerinas.openheadunit.decoder.audio.AudioTimeCorrectionMode.entries
+        val matchingLabels = arrayOf(getString(R.string.audio_matching_ohu), getString(R.string.audio_matching_wsola),
+            getString(R.string.audio_matching_phase_vocoder), getString(R.string.audio_matching_phase_vocoder_short),
+            getString(R.string.audio_matching_phase_gradient))
+        val matchingIndex = matchingModes.indexOf(pendingAudioTimeCorrectionMode ?: settings.audioMatchingMode)
+        items.add(SettingItem.SettingEntry(
+            stableId = "audioMatchingMode",
+            nameResId = R.string.audio_matching_mode,
+            value = matchingLabels[matchingIndex],
+            searchKeywords = kw(R.string.audio_matching_ohu, R.string.audio_matching_wsola, R.string.audio_matching_phase_vocoder, R.string.audio_matching_phase_vocoder_short, R.string.audio_matching_phase_gradient),
+            onClick = {
+                val builder = AlertDialog.Builder(requireContext())
+                val hints = intArrayOf(R.string.audio_matching_ohu_hint, R.string.audio_matching_wsola_hint,
+                    R.string.audio_matching_phase_vocoder_hint, R.string.audio_matching_phase_vocoder_short_hint,
+                    R.string.audio_matching_phase_gradient_hint)
+                val options = matchingLabels.mapIndexed { index, label ->
+                    getString(R.string.audio_matching_option, label, getString(hints[index]))
+                }
+                val adapter = ArrayAdapter(
+                    builder.context, R.layout.item_audio_matching_choice, options
+                )
+                builder.setTitle(R.string.audio_matching_mode)
+                    .setSingleChoiceItems(adapter, matchingIndex) { dialog, which ->
+                        pendingAudioTimeCorrectionMode = matchingModes[which]
+                        checkChanges()
+                        dialog.dismiss()
+                        updateSettingsList()
+                    }.show()
+            }
+        ))
+        items.add(SettingItem.InfoBanner(
+            stableId = "audioMatchingModeHint",
+            textResId = R.string.audio_matching_description
         ))
 
         items.add(SettingItem.SettingEntry(

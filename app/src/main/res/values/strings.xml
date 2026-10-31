@@ -1305,7 +1305,7 @@
     <string name="zbt_probe_title">Test the head unit\'s Bluetooth module</string>
     <string name="zbt_probe_idle">Tap to run</string>
     <string name="zbt_probe_running">Running…</string>
-    <string name="zbt_probe_message">Asks this unit\'s separate Bluetooth chip whether it will carry an Android Auto connection. It spends about eight seconds checking that the chip answers at all and, only if it does, watches for about a minute and a half. The line under this setting shows what is happening, and nothing else on the unit is touched.\n\nThe chip talks to one program at a time, so if a connection is already running through it the test says so instead of testing. Turn the setting above off first to test it on its own.\n\nWake and watch also asks the chip to reconnect to your phone for Android Auto. That is the only part that changes anything, and restarting the unit undoes it. Please export the log afterwards and attach it.</string>
+    <string name="zbt_probe_message">Both options initialize the Bluetooth module before monitoring it. This may affect its Bluetooth state. Wake and watch also requests a connection to your phone.\n\nThe test yields while OHU is using or checking the module. Export the log after the test.</string>
     <string name="zbt_probe_watch_only">Watch only</string>
     <string name="zbt_probe_wake_and_watch">Wake and watch</string>
     <string name="external_bt_blink_transport">Connect through the FYT external Bluetooth module</string>
@@ -1485,34 +1485,35 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="audio_settings_reconnect">Audio settings saved. Reconnect Android Auto to apply them.</string>
 
-    <!-- Bluetooth relay (ESP32 Classic BT broker) -->
-    <string name="broker_settings_title">Bluetooth relay (ESP32)</string>
-    <string name="broker_settings_summary">Bluetooth Relay settings for an ESP32 implementation.</string>
-    <string name="broker_settings_unsupported">Requires Android 6.0 (API 23)+</string>
-    <string name="broker_enabled">Use Bluetooth relay</string>
-    <string name="broker_enabled_description">Choose whether to use the Bluetooth relay.</string>
-    <string name="broker_settings_disabled">Off</string>
-    <string name="broker_saved_device">Saved Bluetooth relay</string>
-    <string name="broker_none">None</string>
-    <string name="broker_status">Link</string>
-    <string name="broker_scan">Scan</string>
-    <string name="broker_scan_action">Look for OpenHU-BT-Relay-Setup</string>
-    <string name="broker_scanning">Scanning…</string>
-    <string name="broker_found_device">Found device</string>
-    <string name="broker_forget">Remove Bluetooth relay</string>
-    <string name="broker_forget_value">Clear the saved device</string>
-    <string name="broker_pairing_header">Phone pairing</string>
-    <string name="broker_pairing_steps">1. Scan for OpenHU-BT-Relay-Setup.\n2. On the phone, forget any old OpenHU-BT-Relay entry, then leave Bluetooth settings open.\n3. Tap Pair phone (PIN 0000). Within 120 seconds, pair OpenHU-BT-Relay on the phone.\n4. If pairing mode ends right away, tap Pair phone once more.</string>
-    <string name="broker_phase_idle">Not connected</string>
-    <string name="broker_phase_connecting">Connecting…</string>
-    <string name="broker_phase_ready">Connected</string>
-    <string name="broker_phase_incomplete">Wi-Fi Direct group is not ready</string>
-    <string name="broker_phase_pairing">Phone: pair OpenHU-BT-Relay now — PIN 0000 (120 s)</string>
-    <string name="broker_pair">Pair phone</string>
-    <string name="broker_pair_value">After selecting the Bluetooth relay: clear its phone bonds, open discovery 120 s, PIN 0000</string>
-    <string name="broker_end_aa_on_disconnect">End Android Auto when the Bluetooth relay disconnects</string>
-    <string name="broker_end_aa_on_disconnect_description">While on, probes the Bluetooth relay every 2 seconds. If the BLE write fails twice in a row, the Android Auto session is closed</string>
-    <string name="broker_phase_failed">Failed: %1$s</string>
+    <!-- Bluetooth relay (ESP32) -->
+    <string name="esp32_relay_settings_title">Bluetooth relay (ESP32)</string>
+    <string name="esp32_relay_settings_summary">Bluetooth Relay settings for an ESP32 implementation.</string>
+    <string name="esp32_relay_enabled">Use Bluetooth relay</string>
+    <string name="esp32_relay_enabled_description">Choose whether to use the Bluetooth relay.</string>
+    <string name="esp32_relay_settings_disabled">Off</string>
+    <string name="esp32_relay_saved_device">Saved Bluetooth relay</string>
+    <string name="esp32_relay_saved_notice">Saved Bluetooth relay: %1$s</string>
+    <string name="esp32_relay_none">None</string>
+    <string name="esp32_relay_status">Status</string>
+    <string name="esp32_relay_status_notice">Status: %1$s</string>
+    <string name="esp32_relay_scan">Scan</string>
+    <string name="esp32_relay_scan_action">Look for OpenHU-BT-Relay-Setup</string>
+    <string name="esp32_relay_scanning">Scanning…</string>
+    <string name="esp32_relay_found_device">Found device</string>
+    <string name="esp32_relay_forget">Remove Bluetooth relay</string>
+    <string name="esp32_relay_forget_value">Clear the saved device</string>
+    <string name="esp32_relay_pairing_header">Phone pairing</string>
+    <string name="esp32_relay_pairing_steps">1. On the phone, remove the head unit itself and any old OpenHU-BT-Relay from Bluetooth.\n2. Turn the relay on → Scan → select OpenHU-BT-Relay-Setup → wait until status shows “pair OpenHU-BT-Relay” (120 s).\n3. On the phone, pair OpenHU-BT-Relay (PIN 0000).\n4. If something goes wrong, tap Pair phone.</string>
+    <string name="esp32_relay_phase_idle">Not connected</string>
+    <string name="esp32_relay_phase_connecting">Connecting…</string>
+    <string name="esp32_relay_phase_ready">Connected</string>
+    <string name="esp32_relay_phase_incomplete">Wi-Fi Direct group is not ready</string>
+    <string name="esp32_relay_phase_pairing">Phone: pair OpenHU-BT-Relay now — PIN 0000 (120 s)</string>
+    <string name="esp32_relay_pair">Pair phone</string>
+    <string name="esp32_relay_pair_value">Start phone pairing for 120 s (PIN 0000)</string>
+    <string name="esp32_relay_end_aa_on_disconnect">End Android Auto when the Bluetooth relay disconnects</string>
+    <string name="esp32_relay_end_aa_on_disconnect_description">Sends a health report to the Bluetooth relay every 2 seconds. If two reports fail in a row, the Android Auto session is closed</string>
+    <string name="esp32_relay_phase_failed">Failed: %1$s</string>
 
     <!-- Home screen -->
     <string name="home_kicker_active">Android Auto</string>
@@ -1656,4 +1657,18 @@
     <string name="wifi_scan_legacy_limit">Renewal on Android 8–10\n• Request a pause on connection, then every five minutes while connected.\n• Android may enable searches between requests. The interval limits repeated cleanup work; it cannot keep every scan stopped.\n\nIf enabling searches fails, keep Shizuku running and retry. Rebooting resets this temporary control.</string>
     <string name="native_aa_candidate_android_radio_description">Use Android Bluetooth instead of automatically selecting the head unit Bluetooth module. Leave off for automatic selection. If a module connection option is enabled, turn it off first.</string>
     <string name="external_bt_candidate_transport_description">Force connection through the head unit Bluetooth module instead of automatic selection. This requires a compatible module service. Leave off to allow Android Bluetooth when that service does not respond; forcing this option prevents that fallback.</string>
+
+    <string name="audio_matching_mode">Music time correction</string>
+    <string name="audio_matching_ohu">OHU</string>
+    <string name="audio_matching_wsola">WSOLA</string>
+    <string name="audio_matching_phase_vocoder">Phase Vocoder</string>
+    <string name="audio_matching_phase_vocoder_short">Phase Vocoder Short</string>
+    <string name="audio_matching_phase_gradient">Phase Gradient</string>
+    <string name="audio_matching_ohu_hint">Default</string>
+    <string name="audio_matching_wsola_hint">Lightweight</string>
+    <string name="audio_matching_phase_vocoder_hint">Balanced</string>
+    <string name="audio_matching_phase_vocoder_short_hint">Low latency</string>
+    <string name="audio_matching_phase_gradient_hint">Slow playback</string>
+    <string name="audio_matching_option" translatable="false">%1$s\n(%2$s)</string>
+    <string name="audio_matching_description">OHU remains the default. WSOLA aligns overlapping waveforms; Phase Vocoder adjusts spectral phases. Short uses a shorter analysis window. Phase Gradient integrates phase gradients to reconstruct phases. These independent methods add processing latency; their names do not rank sound quality.\n\nNative methods: PCM music. Navigation, voice responses, system sounds and AAC use OHU.\nReconnect to apply. Removed engine preferences reset to OHU.</string>
 </resources>
