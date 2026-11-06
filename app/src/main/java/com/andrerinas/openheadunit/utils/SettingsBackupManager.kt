@@ -96,6 +96,7 @@ object SettingsBackupManager {
         "debug-video-fault-injection" to ValueType.INT,
         "debug-video-fault-rate" to ValueType.INT,
         "debug-video-fault-budget" to ValueType.INT,
+        "debug-usb-read-fault" to ValueType.BOOLEAN,
         "debug-video-low-latency" to ValueType.BOOLEAN,
         "debug-video-feed-hold-ms" to ValueType.INT,
         "debug-force-memory-profile" to ValueType.STRING,
@@ -157,6 +158,7 @@ object SettingsBackupManager {
         "auto-start-self-mode" to ValueType.BOOLEAN,
         "auto-connect-delay-seconds" to ValueType.INT,
         "auto-start-on-usb" to ValueType.BOOLEAN,
+        "usb-connect-on-plug-in" to ValueType.BOOLEAN,
         "auto-start-on-boot" to ValueType.BOOLEAN,
         "auto-start-on-screen-on" to ValueType.BOOLEAN,
         "auto-start-on-wifi" to ValueType.BOOLEAN,
@@ -170,6 +172,9 @@ object SettingsBackupManager {
         "native-poke-bt-macs" to ValueType.STRING_SET,
         "native-poke-all-paired" to ValueType.BOOLEAN,
         "auto-disconnect-bt-delay-seconds" to ValueType.INT,
+        "external-power-disconnect" to ValueType.BOOLEAN,
+        "external-power-disconnect-delay-seconds" to ValueType.INT,
+        "external-power-screen-off" to ValueType.BOOLEAN,
         "app-language" to ValueType.STRING,
         "media-volume-offset" to ValueType.INT,
         "assistant-volume-offset" to ValueType.INT,
@@ -528,6 +533,7 @@ object SettingsBackupManager {
         Settings.syncAutoStartOnBootToDeviceStorage(context, settings.autoStartOnBoot)
         Settings.syncAutoStartOnScreenOnToDeviceStorage(context, settings.autoStartOnScreenOn)
         Settings.syncAutoStartOnUsbToDeviceStorage(context, settings.autoStartOnUsb)
+        Settings.syncUsbConnectOnPlugInToDeviceStorage(context, settings.usbConnectOnPlugIn)
         Settings.syncAutoStartOnWifiToDeviceStorage(context, settings.autoStartOnWifi)
         Settings.syncAutoStartWifiSsidToDeviceStorage(context, settings.autoStartWifiSsid)
         Settings.syncListenForUsbDevicesToDeviceStorage(context, settings.listenForUsbDevices)
