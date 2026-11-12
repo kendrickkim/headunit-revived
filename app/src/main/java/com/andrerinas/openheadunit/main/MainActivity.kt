@@ -1412,7 +1412,8 @@ class MainActivity : BaseActivity() {
             null
         }
 
-        if (issue == null) {
+        // Bluetooth-silent is still recorded for diagnostics, but its banner is not shown.
+        if (issue == null || issue == ConnectionIssue.BLUETOOTH_SENT_NO_DATA) {
             banner.visibility = View.GONE
             loggedBannerIssue = null
             return
