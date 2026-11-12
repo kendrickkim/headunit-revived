@@ -319,6 +319,9 @@
     <string name="car_launcher_autostart_info">Open Headunit este configurat ca lansator auto. Pornește automat la pornirea sistemului.</string>
     <string name="auto_start_on_boot_label">Pornire la boot</string>
     <string name="auto_start_on_boot_description">Deschide aplicația automat când dispozitivul pornește. Necesită permisiunea \'Afișare peste alte aplicații\' pe Android 10+.</string>
+    <string name="auto_start_on_boot_background_label">Așteaptă în fundal</string>
+    <string name="auto_start_on_boot_background_description">La pornire, pornește doar serviciul, fără a deschide aplicația. Aplicația apare când se conectează telefonul.</string>
+    <string name="auto_start_on_boot_background_summary">Pornește doar serviciul, fără a deschide aplicația.</string>
     <string name="auto_start_on_boot_summary">Deschide aplicația la pornirea dispozitivului.</string>
     <string name="auto_start_screen_on_label">Pornire la aprinderea ecranului</string>
     <string name="auto_start_screen_on_description">Deschide aplicația de fiecare dată când ecranul se aprinde. Ideal pentru unitățile auto care nu se opresc niciodată complet sau folosesc moduri de pornire rapidă unde celelalte opțiuni de pornire automată nu funcționează. Nu este recomandat pentru telefoane sau tablete.</string>
@@ -790,6 +793,7 @@
     <string name="export_settings">Exportă setările</string>
     <string name="export_settings_description">Salvează o copie de rezervă a setărilor ca fișier JSON.</string>
     <string name="export_settings_app_folder">Salvează în folderul de copii al aplicației</string>
+    <string name="onb_restore_settings">Restabilește setările dintr-o copie de rezervă</string>
     <string name="export_settings_downloads">Salvează în Descărcări</string>
     <string name="export_settings_choose_location">Alege locația de salvare</string>
     <string name="settings_exported">Setări exportate</string>

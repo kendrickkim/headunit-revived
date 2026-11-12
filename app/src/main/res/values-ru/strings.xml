@@ -293,6 +293,9 @@
     <string name="car_launcher_autostart_info">Open Headunit настроен как лаунчер авто. Он запускается автоматически при загрузке системы.</string>
     <string name="auto_start_on_boot_label">Запуск при загрузке</string>
     <string name="auto_start_on_boot_description">Автоматически открывать приложение при запуске устройства. На Android 10 и выше требуется разрешение «Поверх других приложений».</string>
+    <string name="auto_start_on_boot_background_label">Ждать в фоне</string>
+    <string name="auto_start_on_boot_background_description">При загрузке запускать только службу, не открывая приложение. Приложение появится, когда подключится телефон.</string>
+    <string name="auto_start_on_boot_background_summary">Запускать только службу, не открывая приложение.</string>
     <string name="auto_start_on_boot_summary">Открывает приложение при включении устройства.</string>
     <string name="auto_start_screen_on_label">Запуск при включении экрана</string>
     <string name="auto_start_screen_on_description">Открывать приложение каждый раз при включении экрана. Идеально для головных устройств, которые никогда полностью не выключаются или используют режимы быстрого запуска, где другие параметры автозапуска не работают. Не рекомендуется для телефонов и планшетов.</string>
@@ -797,6 +800,7 @@ Open Headunit предоставляется «как есть» без каки
     <string name="settings_export_failed">Не удалось экспортировать настройки: %1$s</string>
     <string name="settings_backup_saved_to">Резервная копия настроек сохранена в:\n%1$s</string>
     <string name="share_settings_backup">Поделиться резервной копией</string>
+    <string name="onb_restore_settings">Восстановить настройки из бэкапа</string>
     <string name="import_settings">Импорт настроек</string>
     <string name="import_settings_description">Восстановить настройки из резервной копии Open Headunit.</string>
     <string name="import_settings_app_folder">Импорт из папки резервных копий приложения</string>
