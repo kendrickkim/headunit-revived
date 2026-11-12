@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import com.andrerinas.openheadunit.app.ExternalPowerDisconnectPolicy
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
@@ -204,6 +205,18 @@ class Settings(private val context: Context) {
             fun fromInt(value: Int) = map[value] ?: DISCONNECT
         }
     }
+
+    /**
+     * Preferred action when leaving projection via Back or the exit swipe.
+     * [com.andrerinas.openheadunit.aap.ProjectionExitMenuPolicy.Default.ASK] shows the exit dialog.
+     */
+    var defaultProjectionExit: com.andrerinas.openheadunit.aap.ProjectionExitMenuPolicy.Default
+        get() = com.andrerinas.openheadunit.aap.ProjectionExitMenuPolicy.Default.fromInt(
+            prefs.getInt(KEY_DEFAULT_PROJECTION_EXIT, com.andrerinas.openheadunit.aap.ProjectionExitMenuPolicy.Default.ASK.value)
+        )
+        set(value) {
+            prefs.edit().putInt(KEY_DEFAULT_PROJECTION_EXIT, value.value).apply()
+        }
 
     // Forced scale for older devices (SurfaceView fix)
     var forcedScale: Boolean
@@ -489,21 +502,40 @@ class Settings(private val context: Context) {
         }
 
     // Custom Insets (Screen Margins)
+    // Persist only prefs. Session overrides from Intent must not mask reads/writes.
     var insetLeft: Int
         get() = prefs.getInt("inset-left", 0)
-        set(value) { prefs.edit().putInt("inset-left", value).apply() }
+        set(value) {
+            prefs.edit().putInt("inset-left", value).apply()
+            sessionInsetLeftOverride = null
+        }
 
     var insetTop: Int
         get() = prefs.getInt("inset-top", 0)
-        set(value) { prefs.edit().putInt("inset-top", value).apply() }
+        set(value) {
+            prefs.edit().putInt("inset-top", value).apply()
+            sessionInsetTopOverride = null
+        }
 
     var insetRight: Int
         get() = prefs.getInt("inset-right", 0)
-        set(value) { prefs.edit().putInt("inset-right", value).apply() }
+        set(value) {
+            prefs.edit().putInt("inset-right", value).apply()
+            sessionInsetRightOverride = null
+        }
 
     var insetBottom: Int
         get() = prefs.getInt("inset-bottom", 0)
-        set(value) { prefs.edit().putInt("inset-bottom", value).apply() }
+        set(value) {
+            prefs.edit().putInt("inset-bottom", value).apply()
+            sessionInsetBottomOverride = null
+        }
+
+    /** Live insets for layout: Intent session override per side, else persisted value. */
+    fun effectiveInsetLeft(): Int = sessionInsetLeftOverride ?: insetLeft
+    fun effectiveInsetTop(): Int = sessionInsetTopOverride ?: insetTop
+    fun effectiveInsetRight(): Int = sessionInsetRightOverride ?: insetRight
+    fun effectiveInsetBottom(): Int = sessionInsetBottomOverride ?: insetBottom
 
     // Cached Surface Dimensions (used to avoid mismatch flicker on next start)
     var cachedSurfaceWidth: Int
@@ -1998,6 +2030,53 @@ class Settings(private val context: Context) {
     companion object {
         const val PREFS_NAME = "settings"
 
+        /** Intent extras: one-shot insets for this process session (not written to prefs). */
+        const val EXTRA_USER_LEFT_PADDING = "user_left_padding"
+        const val EXTRA_USER_TOP_PADDING = "user_top_padding"
+        const val EXTRA_USER_RIGHT_PADDING = "user_right_padding"
+        const val EXTRA_USER_BOTTOM_PADDING = "user_bottom_padding"
+
+        @Volatile private var sessionInsetLeftOverride: Int? = null
+        @Volatile private var sessionInsetTopOverride: Int? = null
+        @Volatile private var sessionInsetRightOverride: Int? = null
+        @Volatile private var sessionInsetBottomOverride: Int? = null
+
+        data class SessionUserPadding(
+            val left: Int? = null,
+            val top: Int? = null,
+            val right: Int? = null,
+            val bottom: Int? = null,
+        ) {
+            val any: Boolean get() = left != null || top != null || right != null || bottom != null
+        }
+
+        /**
+         * Applies any present user_*_padding extras as live insets until the process dies.
+         * Missing extras leave that side unchanged (persisted or a previous session override).
+         * Does not touch SharedPreferences.
+         */
+        fun applyUserPaddingFromIntent(intent: Intent?): SessionUserPadding? {
+            if (intent == null) return null
+            fun read(extra: String): Int? =
+                if (intent.hasExtra(extra)) intent.getIntExtra(extra, 0).coerceAtLeast(0) else null
+            val applied = SessionUserPadding(
+                left = read(EXTRA_USER_LEFT_PADDING),
+                top = read(EXTRA_USER_TOP_PADDING),
+                right = read(EXTRA_USER_RIGHT_PADDING),
+                bottom = read(EXTRA_USER_BOTTOM_PADDING),
+            )
+            if (!applied.any) return null
+            applied.left?.let { sessionInsetLeftOverride = it }
+            applied.top?.let { sessionInsetTopOverride = it }
+            applied.right?.let { sessionInsetRightOverride = it }
+            applied.bottom?.let { sessionInsetBottomOverride = it }
+            return applied
+        }
+
+        /** @deprecated Use [applyUserPaddingFromIntent]. */
+        fun applyUserLeftPaddingFromIntent(intent: Intent?): Int? =
+            applyUserPaddingFromIntent(intent)?.left
+
         private val GESTURE_KEYS = listOf(
             "left-two-finger-gesture", "right-two-finger-gesture", "long-press-two-finger-gesture",
             "left-tap-two-finger-gesture", "right-tap-two-finger-gesture", "down-two-finger-gesture",
@@ -2027,6 +2106,7 @@ class Settings(private val context: Context) {
         const val KEY_ASSISTANT_VOLUME_OFFSET = "assistant-volume-offset"
         const val KEY_NAVIGATION_VOLUME_OFFSET = "navigation-volume-offset"
         const val KEY_ENABLE_CAR_LAUNCHER = "enable-car-launcher"
+        const val KEY_DEFAULT_PROJECTION_EXIT = "default-projection-exit"
         const val KEY_WIFI_DIRECT_BANDED_REFUSED_ON = "wifi-direct-banded-refused-on"
 
         const val AUTO_CONNECT_LAST_SESSION = "last-session"

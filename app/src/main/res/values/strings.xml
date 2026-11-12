@@ -753,6 +753,9 @@
     <string name="pref_floating_button_position_help">Where the floating button sits on the screen. For X, 0% is the left edge and 100% is the right edge. For Y, 0% is the top edge and 100% is the bottom edge. The button always stays fully on the screen.</string>
     <string name="pref_aa_exit_action_title">Android Auto Exit Action</string>
     <string name="pref_aa_exit_action_summary">Action when tapping Exit inside the Android Auto app drawer.</string>
+    <string name="pref_default_projection_exit_title">Default Android Auto exit</string>
+    <string name="pref_default_projection_exit_summary">What happens on Back or the exit swipe during Android Auto. Choose Ask each time to keep the exit menu.</string>
+    <string name="projection_exit_default_ask">Ask each time</string>
     <string name="pref_aa_exit_action_help">Chooses what happens when you tap Exit in Android Auto. Return to OEM Launcher shows this unit\'s own home screen. Return to App Home shows this app\'s home screen. With these two, the phone stays connected. Disconnect Session ends the session. When this app is the car launcher, Return to OEM Launcher acts as Return to App Home.</string>
     <string name="aa_exit_action_oem_launcher">Return to OEM Launcher (Minimize)</string>
     <string name="aa_exit_action_app_home">Return to App Home</string>

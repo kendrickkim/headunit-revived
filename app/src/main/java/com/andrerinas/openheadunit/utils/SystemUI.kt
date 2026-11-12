@@ -260,7 +260,7 @@ object SystemUI {
 
         private fun policy(): FitPolicy = FitPolicy(
             mode, mode == Settings.FullscreenMode.NONE && !enforcesEdgeToEdge(window),
-            Insets.of(settings.insetLeft, settings.insetTop, settings.insetRight, settings.insetBottom),
+            Insets.of(settings.effectiveInsetLeft(), settings.effectiveInsetTop(), settings.effectiveInsetRight(), settings.effectiveInsetBottom()),
             root.resources.configuration.orientation,
             HeadUnitScreenConfig.computeSettingsHash(settings, root.resources.configuration.orientation),
         )

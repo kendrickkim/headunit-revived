@@ -219,10 +219,10 @@ object HeadUnitScreenConfig {
         val realH: Int
         val usableW: Int
         val usableH: Int
-        var left = settings.insetLeft
-        var top = settings.insetTop
-        var right = settings.insetRight
-        var bottom = settings.insetBottom
+        var left = settings.effectiveInsetLeft()
+        var top = settings.effectiveInsetTop()
+        var right = settings.effectiveInsetRight()
+        var bottom = settings.effectiveInsetBottom()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val metrics = context.getSystemService(android.view.WindowManager::class.java).currentWindowMetrics
@@ -831,10 +831,10 @@ object HeadUnitScreenConfig {
         resolutionId = settings.resolutionId,
         dpiPixelDensity = settings.dpiPixelDensity,
         pixelAspectRatioE4 = settings.pixelAspectRatioE4,
-        insetLeft = settings.insetLeft,
-        insetTop = settings.insetTop,
-        insetRight = settings.insetRight,
-        insetBottom = settings.insetBottom,
+        insetLeft = settings.effectiveInsetLeft(),
+        insetTop = settings.effectiveInsetTop(),
+        insetRight = settings.effectiveInsetRight(),
+        insetBottom = settings.effectiveInsetBottom(),
         viewMode = settings.viewMode.ordinal,
         screenOrientation = settings.screenOrientation.ordinal,
         fullscreenMode = settings.fullscreenMode.value,
